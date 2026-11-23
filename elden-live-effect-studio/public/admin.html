@@ -87,6 +87,11 @@
       box-shadow: 0 0 10px #f59e0b;
       animation: pulse 1s infinite;
     }
+    .status-dot.waiting {
+      background: #06b6d4;
+      box-shadow: 0 0 10px #06b6d4;
+      animation: pulse 1.8s infinite;
+    }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(0.85); }
@@ -1239,7 +1244,7 @@
       <div class="card">
         <div class="card-title">1. Kết Nối Kênh TikTok Live</div>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="tiktokUsernameInput" value="eldenmedia" placeholder="Nhập ID kênh TikTok (vd: eldenmedia hoặc @id)" style="flex: 1; min-width: 220px;">
+          <input type="text" id="tiktokUsernameInput" value="" placeholder="Nhập ID kênh TikTok (vd: eldenmedia hoặc @id)" style="flex: 1; min-width: 220px;">
           <button class="btn btn-primary" id="btnConnect" onclick="toggleConnect()">Kết Nối</button>
         </div>
         <div id="liveInfoMsg" style="font-size: 0.82rem; color: #94a3b8; margin-top: 8px;">
@@ -1686,6 +1691,7 @@
     let currentRules = [];
     let availableVideos = [];
     let isConnectedLive = false;
+    let isWaitingLive = false;
     let currentView = 'table';
     let activeEditingRuleIdx = null; // index rule đang mở modal pool
     let activeTargetForGiftPicker = null; // { type: 'rule', rIdx: 0 } hoặc { type: 'sim' }
@@ -1820,27 +1826,49 @@
         text.innerText = `Đang Live @${status.username} (${status.viewerCount || 0} người xem)`;
         btn.innerText = 'Ngắt Kết Nối';
         btn.className = 'btn btn-danger';
+        btn.style.background = '';
+        btn.style.borderColor = '';
         isConnectedLive = true;
+        isWaitingLive = false;
       } else if (status.isConnecting) {
         dot.classList.add('connecting');
         text.innerText = `Đang kết nối @${status.username}...`;
         btn.innerText = 'Đang Vào...';
         btn.className = 'btn btn-warning';
         btn.disabled = true;
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        isConnectedLive = false;
+        isWaitingLive = false;
+      } else if (status.isWaitingLive) {
+        dot.classList.add('waiting');
+        text.innerText = `⏳ Đang lắng nghe @${status.username} (Tự kết nối khi Live)`;
+        btn.innerText = 'Dừng Lắng Nghe';
+        btn.className = 'btn btn-danger';
+        btn.style.background = '#0284c7';
+        btn.style.borderColor = '#0284c7';
+        isConnectedLive = false;
+        isWaitingLive = true;
       } else {
         text.innerText = 'Chưa kết nối Live';
         btn.innerText = 'Kết Nối';
         btn.className = 'btn btn-primary';
+        btn.style.background = '';
+        btn.style.borderColor = '';
         isConnectedLive = false;
+        isWaitingLive = false;
       }
     }
 
-    // CÀI ĐẶT KẾT NỐI TIKTOK NÂNG CAO
+    // CÀI ĐẶT KẾT NỐI TIKTOK NÂNG CAO & TỰ ĐỘNG LƯU ID
     async function loadTikTokSettings() {
       try {
         const res = await fetch('/api/tiktok/settings');
         const data = await res.json();
         if (data.success && data.settings) {
+          if (data.settings.username && document.getElementById('tiktokUsernameInput')) {
+            document.getElementById('tiktokUsernameInput').value = data.settings.username;
+          }
           if (document.getElementById('eulerApiKeyInput')) {
             document.getElementById('eulerApiKeyInput').value = data.settings.signApiKey || '';
           }
@@ -1852,13 +1880,14 @@
     }
 
     async function saveTikTokSettings() {
+      const username = document.getElementById('tiktokUsernameInput')?.value?.trim().replace(/^@/, '') || '';
       const signApiKey = document.getElementById('eulerApiKeyInput')?.value?.trim() || '';
       const sessionId = document.getElementById('tiktokSessionIdInput')?.value?.trim() || '';
       try {
         const res = await fetch('/api/tiktok/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signApiKey, sessionId })
+          body: JSON.stringify({ username, signApiKey, sessionId })
         });
         const data = await res.json();
         if (data.success) {
@@ -1869,15 +1898,32 @@
       }
     }
 
+    // Tự động lưu TikTok ID khi người dùng thay đổi
+    document.addEventListener('DOMContentLoaded', () => {
+      const userInput = document.getElementById('tiktokUsernameInput');
+      if (userInput) {
+        userInput.addEventListener('change', (e) => {
+          const val = e.target.value.trim().replace(/^@/, '');
+          if (val) {
+            fetch('/api/tiktok/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: val })
+            }).catch(() => {});
+          }
+        });
+      }
+    });
+
     // NGẮT / KẾT NỐI TỨC THÌ (KHÔNG CẦN RELOAD TRANG)
     async function toggleConnect() {
       const input = document.getElementById('tiktokUsernameInput');
       const btn = document.getElementById('btnConnect');
       const user = input.value.trim().replace(/^@/, '');
 
-      if (isConnectedLive) {
+      if (isConnectedLive || isWaitingLive) {
         // Cập nhật trạng thái giao diện NGAY LẬP TỨC
-        updateLiveStatusUI({ isConnected: false, isConnecting: false });
+        updateLiveStatusUI({ isConnected: false, isConnecting: false, isWaitingLive: false });
         try {
           await fetch('/api/tiktok/disconnect', { method: 'POST' });
         } catch (_) {}
@@ -1903,12 +1949,15 @@
           body: JSON.stringify({ username: user, signApiKey, sessionId })
         });
         const data = await res.json();
-        if (!data.success) {
-          updateLiveStatusUI({ isConnected: false, isConnecting: false });
-          alert('Không thể kết nối: ' + data.error);
+        if (data.isWaitingLive) {
+          updateLiveStatusUI({ isConnected: false, isConnecting: false, isWaitingLive: true, username: user });
+          showAppToast('info', `📡 Đang tự động lắng nghe kênh @${user}. Sẽ tự kết nối ngay khi Idol phát Live!`);
+        } else if (!data.success) {
+          updateLiveStatusUI({ isConnected: false, isConnecting: false, isWaitingLive: false });
+          alert('Không thể kết nối: ' + (data.error || 'Lỗi không xác định'));
         }
       } catch (err) {
-        updateLiveStatusUI({ isConnected: false, isConnecting: false });
+        updateLiveStatusUI({ isConnected: false, isConnecting: false, isWaitingLive: false });
         alert('Lỗi mạng kết nối: ' + err.message);
       }
     }

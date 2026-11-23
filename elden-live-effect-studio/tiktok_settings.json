@@ -1,4 +1,6 @@
 {
+  "username": "",
+  "autoConnect": true,
   "signApiKey": "",
   "signApiUrl": "",
   "sessionId": ""

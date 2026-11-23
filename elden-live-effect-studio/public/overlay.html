@@ -115,7 +115,47 @@
   </div>
 
   <script>
-    const socket = io();
+    // Cấu hình Socket.IO với cơ chế tự động kết nối lại vô hạn và độ trễ thấp
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000,
+      timeout: 20000,
+      transports: ['websocket', 'polling']
+    });
+
+    let lastDisconnectTime = null;
+
+    socket.on('connect', () => {
+      console.log('⚡ [OBS Overlay] Đã kết nối Socket.IO thành công!');
+      isProcessing = false;
+      lastDisconnectTime = null;
+    });
+
+    socket.on('disconnect', () => {
+      console.warn('⚠️ [OBS Overlay] Mất kết nối tới Server. Đang chờ kết nối lại...');
+      lastDisconnectTime = Date.now();
+    });
+
+    // Watchdog Ping cho OBS Browser Source:
+    // Khi người dùng tắt bật lại server, OBS Browser Source tự động reload trang sạch sẽ
+    setInterval(() => {
+      if (!socket.connected) {
+        fetch('/api/ping', { cache: 'no-store' })
+          .then(res => {
+            if (res.ok) {
+              if (lastDisconnectTime && (Date.now() - lastDisconnectTime > 3000)) {
+                console.log('🔄 [OBS Overlay] Server đã trực tuyến trở lại! Tự động làm mới trang...');
+                window.location.reload();
+              } else if (!socket.connected) {
+                socket.connect();
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    }, 2500);
 
     const videoContainer = document.getElementById('videoContainer');
     const effectVideo = document.getElementById('effectVideo');

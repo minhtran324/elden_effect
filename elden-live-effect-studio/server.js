@@ -31,17 +31,26 @@ if (!fs.existsSync(TEMPLATES_DIR)) fs.mkdirSync(TEMPLATES_DIR, { recursive: true
 function loadTikTokSettings() {
   try {
     if (fs.existsSync(TIKTOK_SETTINGS_FILE)) {
-      return JSON.parse(fs.readFileSync(TIKTOK_SETTINGS_FILE, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(TIKTOK_SETTINGS_FILE, 'utf8'));
+      return {
+        username: data.username || '',
+        autoConnect: data.autoConnect !== false,
+        signApiKey: data.signApiKey || '',
+        signApiUrl: data.signApiUrl || '',
+        sessionId: data.sessionId || ''
+      };
     }
   } catch (err) {
     console.error('Lỗi đọc tiktok_settings.json:', err);
   }
-  return { signApiKey: '', signApiUrl: '', sessionId: '' };
+  return { username: '', autoConnect: true, signApiKey: '', signApiUrl: '', sessionId: '' };
 }
 
 function saveTikTokSettings(settings) {
   try {
-    fs.writeFileSync(TIKTOK_SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf8');
+    const current = loadTikTokSettings();
+    const merged = { ...current, ...settings };
+    fs.writeFileSync(TIKTOK_SETTINGS_FILE, JSON.stringify(merged, null, 2), 'utf8');
   } catch (err) {
     console.error('Lỗi ghi tiktok_settings.json:', err);
   }
@@ -227,10 +236,16 @@ const decorUpload = multer({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Endpoint kiểm tra máy chủ còn sống (Watchdog Ping cho OBS Browser Source tự động kết nối lại)
+app.get('/api/ping', (req, res) => {
+  res.json({ ok: true, timestamp: Date.now() });
+});
+
 // Trạng thái hệ thống
 let currentLiveStatus = {
   isConnected: false,
   isConnecting: false,
+  isWaitingLive: false,
   username: '',
   roomId: '',
   viewerCount: 0,
@@ -954,7 +969,7 @@ app.get('/api/logs', (req, res) => {
   res.json({ success: true, logs: recentLogs });
 });
 
-// Cài đặt kết nối TikTok (EulerStream API Key / Session ID)
+// Cài đặt kết nối TikTok (EulerStream API Key / Session ID / Username / AutoConnect)
 app.get('/api/tiktok/settings', (req, res) => {
   res.json({ success: true, settings: loadTikTokSettings() });
 });
@@ -962,6 +977,8 @@ app.get('/api/tiktok/settings', (req, res) => {
 app.post('/api/tiktok/settings', (req, res) => {
   const current = loadTikTokSettings();
   const updated = {
+    username: typeof req.body?.username === 'string' ? req.body.username.replace(/^@/, '').trim() : (current.username || ''),
+    autoConnect: req.body?.autoConnect !== undefined ? Boolean(req.body.autoConnect) : (current.autoConnect !== false),
     signApiKey: typeof req.body?.signApiKey === 'string' ? req.body.signApiKey.trim() : (current.signApiKey || ''),
     signApiUrl: typeof req.body?.signApiUrl === 'string' ? req.body.signApiUrl.trim() : (current.signApiUrl || ''),
     sessionId: typeof req.body?.sessionId === 'string' ? req.body.sessionId.trim() : (current.sessionId || '')
@@ -970,17 +987,85 @@ app.post('/api/tiktok/settings', (req, res) => {
   res.json({ success: true, settings: updated });
 });
 
-// Kết nối TikTok Live
-app.post('/api/tiktok/connect', async (req, res) => {
-  const cleanUser = String(req.body?.username || '').replace(/^@/, '').trim();
-  if (!cleanUser) {
-    return res.status(400).json({ success: false, error: 'Chưa nhập TikTok ID' });
-  }
+let isCheckingLiveStatus = false;
 
+// Hàm kiểm tra và tự động kết nối khi Idol bật Live
+async function checkAndAutoConnectTikTok() {
+  if (isCheckingLiveStatus) return;
   const settings = loadTikTokSettings();
-  const signApiKey = (req.body?.signApiKey || settings.signApiKey || process.env.SIGN_API_KEY || '').trim();
-  const signApiUrl = (req.body?.signApiUrl || settings.signApiUrl || process.env.SIGN_API_URL || '').trim();
-  const sessionId = (req.body?.sessionId || settings.sessionId || process.env.TIKTOK_SESSION_ID || '').trim();
+  const user = (settings.username || '').replace(/^@/, '').trim();
+  if (!user || settings.autoConnect === false) return;
+
+  // Nếu đang kết nối phòng live rồi thì không làm gì
+  if (activeTiktokConn && currentLiveStatus.isConnected) return;
+
+  isCheckingLiveStatus = true;
+  try {
+    const signApiKey = (settings.signApiKey || process.env.SIGN_API_KEY || '').trim();
+    const signApiUrl = (settings.signApiUrl || process.env.SIGN_API_URL || '').trim();
+    const sessionId = (settings.sessionId || process.env.TIKTOK_SESSION_ID || '').trim();
+
+    try {
+      const host = signApiUrl ? new URL(signApiUrl).host : 'api.eulerstream.com';
+      process.env.WHITELIST_AUTHENTICATED_SESSION_ID_HOST = host;
+    } catch (_) {
+      process.env.WHITELIST_AUTHENTICATED_SESSION_ID_HOST = 'api.eulerstream.com';
+    }
+
+    if (signApiUrl) {
+      SignConfig.basePath = signApiUrl;
+      SignConfig.cachedInstance = undefined;
+    }
+    if (signApiKey) {
+      SignConfig.apiKey = signApiKey;
+      SignConfig.cachedInstance = undefined;
+    }
+
+    const connOptions = {
+      processInitialData: true,
+      enableExtendedGiftInfo: false
+    };
+    if (signApiKey) connOptions.signApiKey = signApiKey;
+    if (sessionId) {
+      connOptions.session = { cookie: `sessionid=${sessionId};` };
+      connOptions.authenticateWs = true;
+    }
+
+    const probeConn = new TikTokLiveConnection(user, connOptions);
+    const isLive = await probeConn.fetchIsLive().catch(() => null);
+
+    if (isLive === true) {
+      addLog('info', `🎯 Phát hiện kênh @${user} ĐANG BẬT LIVE! Đang tự động kết nối...`);
+      await performConnectTikTok(user, { signApiKey, signApiUrl, sessionId });
+    } else {
+      if (!currentLiveStatus.isConnected && !currentLiveStatus.isConnecting) {
+        if (!currentLiveStatus.isWaitingLive || currentLiveStatus.username !== user) {
+          currentLiveStatus = {
+            isConnected: false,
+            isConnecting: false,
+            isWaitingLive: true,
+            username: user,
+            roomId: '',
+            viewerCount: 0,
+            error: null
+          };
+          io.emit('tiktok_status', currentLiveStatus);
+        }
+      }
+    }
+  } catch (err) {
+    // Lỗi kiểm tra live nhẹ nhàng không ném ra ngoài
+  } finally {
+    isCheckingLiveStatus = false;
+  }
+}
+
+// Hàm thực thi kết nối TikTok Live
+async function performConnectTikTok(cleanUser, options = {}) {
+  const settings = loadTikTokSettings();
+  const signApiKey = (options.signApiKey || settings.signApiKey || process.env.SIGN_API_KEY || '').trim();
+  const signApiUrl = (options.signApiUrl || settings.signApiUrl || process.env.SIGN_API_URL || '').trim();
+  const sessionId = (options.sessionId || settings.sessionId || process.env.TIKTOK_SESSION_ID || '').trim();
 
   if (activeTiktokConn) {
     try { activeTiktokConn.disconnect(); } catch (_) {}
@@ -990,6 +1075,7 @@ app.post('/api/tiktok/connect', async (req, res) => {
   currentLiveStatus = {
     isConnected: false,
     isConnecting: true,
+    isWaitingLive: false,
     username: cleanUser,
     roomId: '',
     viewerCount: 0,
@@ -997,7 +1083,6 @@ app.post('/api/tiktok/connect', async (req, res) => {
   };
   io.emit('tiktok_status', currentLiveStatus);
 
-  // Đảm bảo whitelist host cho authenticated session
   try {
     const host = signApiUrl ? new URL(signApiUrl).host : 'api.eulerstream.com';
     process.env.WHITELIST_AUTHENTICATED_SESSION_ID_HOST = host;
@@ -1005,7 +1090,6 @@ app.post('/api/tiktok/connect', async (req, res) => {
     process.env.WHITELIST_AUTHENTICATED_SESSION_ID_HOST = 'api.eulerstream.com';
   }
 
-  // Áp dụng cấu hình ký chữ ký EulerStream
   if (signApiUrl) {
     SignConfig.basePath = signApiUrl;
     SignConfig.cachedInstance = undefined;
@@ -1019,13 +1103,9 @@ app.post('/api/tiktok/connect', async (req, res) => {
     processInitialData: true,
     enableExtendedGiftInfo: false
   };
-  if (signApiKey) {
-    connOptions.signApiKey = signApiKey;
-  }
+  if (signApiKey) connOptions.signApiKey = signApiKey;
   if (sessionId) {
-    connOptions.session = {
-      cookie: `sessionid=${sessionId};`
-    };
+    connOptions.session = { cookie: `sessionid=${sessionId};` };
     connOptions.authenticateWs = true;
   }
 
@@ -1035,6 +1115,7 @@ app.post('/api/tiktok/connect', async (req, res) => {
     currentLiveStatus = {
       isConnected: true,
       isConnecting: false,
+      isWaitingLive: false,
       username: cleanUser,
       roomId: state?.roomId || '',
       viewerCount: 0,
@@ -1045,14 +1126,45 @@ app.post('/api/tiktok/connect', async (req, res) => {
   });
 
   conn.on('disconnected', () => {
-    currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false };
-    addLog('info', `Mất kết nối với phòng Live @${cleanUser}`);
+    activeTiktokConn = null;
+    const cfg = loadTikTokSettings();
+    if (cfg.autoConnect !== false && cfg.username) {
+      currentLiveStatus = {
+        isConnected: false,
+        isConnecting: false,
+        isWaitingLive: true,
+        username: cleanUser,
+        roomId: '',
+        viewerCount: 0,
+        error: null
+      };
+      addLog('info', `Mất kết nối với phòng Live @${cleanUser}. Đang tiếp tục tự động lắng nghe...`);
+    } else {
+      currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false, isWaitingLive: false };
+      addLog('info', `Mất kết nối với phòng Live @${cleanUser}`);
+    }
     io.emit('tiktok_status', currentLiveStatus);
   });
 
   conn.on('streamEnd', () => {
-    currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false, error: 'Phiên Live đã kết thúc' };
-    addLog('info', `Phiên Live @${cleanUser} đã kết thúc`);
+    try { conn.disconnect(); } catch (_) {}
+    activeTiktokConn = null;
+    const cfg = loadTikTokSettings();
+    if (cfg.autoConnect !== false && cfg.username) {
+      currentLiveStatus = {
+        isConnected: false,
+        isConnecting: false,
+        isWaitingLive: true,
+        username: cleanUser,
+        roomId: '',
+        viewerCount: 0,
+        error: null
+      };
+      addLog('info', `Phiên Live @${cleanUser} đã kết thúc. Hệ thống đang tiếp tục lắng nghe phiên Live kế tiếp...`);
+    } else {
+      currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false, isWaitingLive: false, error: 'Phiên Live đã kết thúc' };
+      addLog('info', `Phiên Live @${cleanUser} đã kết thúc`);
+    }
     io.emit('tiktok_status', currentLiveStatus);
   });
 
@@ -1068,12 +1180,7 @@ app.post('/api/tiktok/connect', async (req, res) => {
     try {
       const parsed = parseGiftPayload(data);
       if (!parsed) return;
-
-      // Nếu là combo streak đang dở dang thì chờ kết thúc để tính trọn vẹn số quà
-      if (parsed.isComboGift && !parsed.isComboFinished) {
-        return;
-      }
-
+      if (parsed.isComboGift && !parsed.isComboFinished) return;
       handleGift(parsed);
     } catch (err) {
       console.error('Lỗi xử lý sự kiện quà tặng:', err);
@@ -1082,18 +1189,44 @@ app.post('/api/tiktok/connect', async (req, res) => {
 
   activeTiktokConn = conn;
 
+  const isLive = await conn.fetchIsLive().catch(() => null);
+  if (isLive === false) {
+    // Kênh chưa live -> chuyển sang chế độ LẮNG NGHE TỰ ĐỘNG
+    currentLiveStatus = {
+      isConnected: false,
+      isConnecting: false,
+      isWaitingLive: true,
+      username: cleanUser,
+      roomId: '',
+      viewerCount: 0,
+      error: null
+    };
+    io.emit('tiktok_status', currentLiveStatus);
+    addLog('info', `📡 Kênh @${cleanUser} hiện chưa phát Live. Hệ thống đang chế độ lắng nghe, sẽ TỰ ĐỘNG KẾT NỐI ngay khi Idol bấm Live!`);
+    return { success: true, isWaitingLive: true };
+  }
+
+  const state = await Promise.race([
+    conn.connect(),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Quá 25s không kết nối được phòng live. Vui lòng kiểm tra kênh đã phát live chưa.')), 25000))
+  ]);
+
+  return { success: true, roomId: state?.roomId };
+}
+
+// Kết nối TikTok Live
+app.post('/api/tiktok/connect', async (req, res) => {
+  const cleanUser = String(req.body?.username || '').replace(/^@/, '').trim();
+  if (!cleanUser) {
+    return res.status(400).json({ success: false, error: 'Chưa nhập TikTok ID' });
+  }
+
+  // Tự động lưu TikTok ID và bật AutoConnect
+  saveTikTokSettings({ username: cleanUser, autoConnect: true });
+
   try {
-    const isLive = await conn.fetchIsLive().catch(() => null);
-    if (isLive === false) {
-      throw new Error(`Kênh @${cleanUser} hiện chưa phát Live trên TikTok. Idol hãy BẤM PHÁT LIVE trên điện thoại/máy tính trước, sau đó bấm Kết Nối lại nhé!`);
-    }
-
-    const state = await Promise.race([
-      conn.connect(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Quá 25s không kết nối được phòng live. Vui lòng kiểm tra kênh đã phát live chưa.')), 25000))
-    ]);
-
-    res.json({ success: true, roomId: state?.roomId });
+    const result = await performConnectTikTok(cleanUser, req.body);
+    res.json(result);
   } catch (err) {
     let rawMsg = err.message || String(err);
     let msg = rawMsg;
@@ -1108,15 +1241,23 @@ app.post('/api/tiktok/connect', async (req, res) => {
       rawMsg.includes("not online") ||
       rawMsg.includes("offline")
     ) {
-      msg = `Kênh @${cleanUser} hiện chưa phát Live trên TikTok hoặc nhập sai TikTok ID.\n\n` +
-            `👉 Hướng dẫn khắc phục:\n` +
-            `1. Kênh CHƯA BẬT LIVE: TikTok chỉ cấp luồng Webcast khi streamer đang phát trực tiếp. Idol hãy BẤM PHÁT LIVE trên TikTok trước rồi mới bấm Kết Nối.\n` +
-            `2. Kiểm tra TikTok ID: Cần nhập đúng TikTok Username (ví dụ: tiktok.com/@username/live -> ID là username), không phải Tên hiển thị (biệt danh).\n` +
-            `3. Đang cài đặt OBS mà chưa muốn Live: Hãy chuyển sang tab "🎮 Bắn Test & Giả Lập" trên thanh menu để test video, quà tặng và OBS mượt mà ngay lập tức!`;
+      // Kênh chưa live -> chuyển sang chế độ tự động lắng nghe
+      currentLiveStatus = {
+        isConnected: false,
+        isConnecting: false,
+        isWaitingLive: true,
+        username: cleanUser,
+        roomId: '',
+        viewerCount: 0,
+        error: null
+      };
+      io.emit('tiktok_status', currentLiveStatus);
+      addLog('info', `📡 Kênh @${cleanUser} hiện chưa phát Live. Hệ thống đang tự động lắng nghe, sẽ KẾT NỐI NGAY khi Idol phát Live!`);
+      return res.json({ success: true, isWaitingLive: true, message: `Đang tự động lắng nghe kênh @${cleanUser}` });
     } else if (rawMsg.includes("requires a Business plan") || rawMsg.includes("Failed to sign a request")) {
       msg = `EulerStream báo lỗi: Cần API Key hoặc gói Business để ký Webcast TikTok. Vui lòng mở "Cài đặt kết nối nâng cao" bên dưới để nhập Euler API Key hoặc Session ID, hoặc dùng tab "🎮 Bắn Test & Giả Lập" để trải nghiệm hiệu ứng ngay tức thì!`;
     }
-    currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false, error: msg };
+    currentLiveStatus = { ...currentLiveStatus, isConnected: false, isConnecting: false, isWaitingLive: false, error: msg };
     io.emit('tiktok_status', currentLiveStatus);
     res.status(400).json({ success: false, error: msg });
   }
@@ -1127,7 +1268,9 @@ app.post('/api/tiktok/disconnect', (req, res) => {
     try { activeTiktokConn.disconnect(); } catch (_) {}
     activeTiktokConn = null;
   }
-  currentLiveStatus = { isConnected: false, isConnecting: false, username: '', roomId: '', viewerCount: 0, error: null };
+  // Tạm dừng tự động kết nối khi người dùng bấm ngắt chủ động
+  saveTikTokSettings({ autoConnect: false });
+  currentLiveStatus = { isConnected: false, isConnecting: false, isWaitingLive: false, username: '', roomId: '', viewerCount: 0, error: null };
   io.emit('tiktok_status', currentLiveStatus);
   res.json({ success: true });
 });
@@ -1776,6 +1919,17 @@ httpServer.listen(PORT, () => {
   console.log(`👉 Link nhúng OBS Video Effects: http://localhost:${PORT}/overlay.html`);
   console.log(`👉 Link nhúng OBS Hũ Quà Vật Lý (Jar): http://localhost:${PORT}/jar.html`);
   console.log(`====================================================`);
+
+  const savedSettings = loadTikTokSettings();
+  if (savedSettings.username && savedSettings.autoConnect !== false) {
+    currentLiveStatus.username = savedSettings.username;
+    currentLiveStatus.isWaitingLive = true;
+    console.log(`📡 [AUTO-LISTEN] Đang lắng nghe kênh @${savedSettings.username}... Hệ thống sẽ tự động kết nối ngay khi Idol phát Live.`);
+    addLog('info', `📡 Đang tự động lắng nghe kênh @${savedSettings.username}... Hệ thống sẽ tự động kết nối ngay khi Idol phát Live.`);
+    setTimeout(checkAndAutoConnectTikTok, 2500);
+  }
+  // Định kỳ mỗi 10 giây kiểm tra xem Idol đã bật live chưa nếu đang ở chế độ autoConnect
+  setInterval(checkAndAutoConnectTikTok, 10000);
 
   if (process.argv.includes('--open') || process.env.AUTO_OPEN === '1') {
     try {

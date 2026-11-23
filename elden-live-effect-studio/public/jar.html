@@ -1775,10 +1775,20 @@ function drawDecor(ctx, geom) {
     // ==========================================
     // 9. KẾT NỐI WEBSOCKET NHẬN SỰ KIỆN TỪ SERVER
     // ==========================================
-    const socket = io();
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000,
+      timeout: 20000,
+      transports: ['websocket', 'polling']
+    });
+
+    let lastDisconnectTime = null;
 
     socket.on('connect', () => {
       console.log('⚡ [JAR] Đã kết nối Socket.IO thành công!');
+      lastDisconnectTime = null;
       // Yêu cầu nạp cấu hình hũ mới nhất
       fetch('/api/jar/config')
         .then(r => r.json())
@@ -1791,6 +1801,29 @@ function drawDecor(ctx, geom) {
           }
         }).catch(() => {});
     });
+
+    socket.on('disconnect', () => {
+      console.warn('⚠️ [JAR] Mất kết nối tới Server. Đang chờ kết nối lại...');
+      lastDisconnectTime = Date.now();
+    });
+
+    // Watchdog Ping cho OBS Browser Source: Tự động tải lại trang khi server khởi động lại
+    setInterval(() => {
+      if (!socket.connected) {
+        fetch('/api/ping', { cache: 'no-store' })
+          .then(res => {
+            if (res.ok) {
+              if (lastDisconnectTime && (Date.now() - lastDisconnectTime > 3000)) {
+                console.log('🔄 [JAR] Server đã trực tuyến trở lại! Tự động làm mới trang...');
+                window.location.reload();
+              } else if (!socket.connected) {
+                socket.connect();
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    }, 2500);
 
     // Nhận quà rơi vào hũ
     socket.on('jar_drop_gift', (data) => {
