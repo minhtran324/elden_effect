@@ -695,9 +695,8 @@
       simulatedGifts: [] // Dùng để test thả quà rơi trực tiếp trong Studio
     };
 
-    // THƯ VIỆN STICKER CÓ SẴN (ĐẶC BIỆT: LOGO NT-STUDIO)
+    // THƯ VIỆN STICKER CÓ SẴN
     const STICKER_LIBRARY = [
-      { id: 'nt_studio', cat: 'badge', name: 'Logo NT-Studio (Cọp Vàng)', src: '/uploads/decor/sticker_nt_studio.png' },
       { id: 'bunny', cat: 'chibi', name: 'Thỏ Yếm Xanh', src: '/uploads/decor/sticker_bunny.svg' },
       { id: 'chibi_elden', cat: 'chibi', name: 'Mascot Elden', src: '/uploads/decor/decor_chibi_mascot.svg' },
       { id: 'ribbon_2010', cat: 'ribbon', name: 'Nơ 20/10', src: '/uploads/decor/sticker_ribbon_2010.svg' },
@@ -1419,16 +1418,12 @@
               layer: s.layer || 'front'
             });
           });
-        } else {
-          // Mặc định gắn sticker Logo NT-Studio ở đáy hũ
-          addStickerToCanvas('/uploads/decor/sticker_nt_studio.png', 'Logo NT-Studio (Cọp Vàng)');
         }
       } catch (err) {
         console.warn('Fallback default:', err);
         calculateCanvasDimensions();
         loadJarImage(state.baseImgUrl);
         loadFrontOverlay(state.frontOverlayUrl);
-        addStickerToCanvas('/uploads/decor/sticker_nt_studio.png', 'Logo NT-Studio (Cọp Vàng)');
       }
 
       filterStickers('all');

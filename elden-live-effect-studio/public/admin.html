@@ -1146,6 +1146,120 @@
             </div>
           </div>
 
+          <!-- BỘ CĂN CHỈNH KHUNG LÒNG HŨ (HITBOX TUNER) & ĐỒ HỌA THỦY TINH 3D -->
+          <div style="margin-top: 14px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(9, 15, 29, 0.95)); border: 1.5px solid rgba(245, 158, 11, 0.5); border-radius: 10px; padding: 14px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 6px;">
+                  <span>🎯</span> CĂN CHỈNH KHUNG LÒNG HŨ (HITBOX TUNER) & HIỆU ỨNG THỦY TINH 3D
+                </div>
+                <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 2px;">
+                  Tự động căn chỉnh theo mọi kiểu ảnh hũ (Bể cầu, Hũ cổ lọ, Bình hoa, Hũ trụ) - Khóa lòng kính 100% không lọt ra ngoài nơ & đế!
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-sm" id="btnToggleHitboxWireframe" onclick="toggleDebugHitbox()" style="background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #38bdf8; font-weight: 700;">
+                  👁️ Bật Khung Dây Hitbox
+                </button>
+              </div>
+            </div>
+
+            <!-- CHỌN MẪU KHUNG CÓ SẴN (SHAPE PRESETS) -->
+            <div style="margin-bottom: 12px;">
+              <span style="font-size: 0.76rem; color: #cbd5e1; font-weight: 700;">Chọn dáng lòng hũ nhanh:</span>
+              <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm" id="presetShapeSphere" onclick="setHitboxShapePreset('sphere')" style="background: #1e293b; color: #f8fafc;">
+                  🔮 Bể Cầu Tròn (Fishbowl)
+                </button>
+                <button type="button" class="btn btn-sm" id="presetShapeBottle" onclick="setHitboxShapePreset('bottle')" style="background: #1e293b; color: #f8fafc;">
+                  🏺 Hũ Cổ Lọ (Bottle / Lọ Hoa)
+                </button>
+                <button type="button" class="btn btn-sm" id="presetShapeCylinder" onclick="setHitboxShapePreset('cylinder')" style="background: #1e293b; color: #f8fafc;">
+                  🥛 Hũ Trụ Đứng (Mason Jar)
+                </button>
+              </div>
+            </div>
+
+            <!-- CÔNG TẮC ĐỒ HỌA THỦY TINH 3D & KHÓA LÒNG KÍNH -->
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; background: rgba(30, 41, 59, 0.5); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #38bdf8; cursor: pointer;">
+                <input type="checkbox" id="jarGlassRealismCheck" checked onchange="toggleGlassRealism(this.checked)" style="accent-color: #38bdf8;">
+                ✨ Ánh bóng & Khúc xạ kính 3D (Glass Realism)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #10b981; cursor: pointer;">
+                <input type="checkbox" id="jarClipGiftsCheck" checked onchange="toggleClipGiftsToJar(this.checked)" style="accent-color: #10b981;">
+                🛡️ Khóa lòng kính chống lọt quà (Clip Gifts)
+              </label>
+            </div>
+
+            <!-- BẢNG THANH TRƯỢT CĂN CHỈNH CHI TIẾT (LIVE SLIDERS) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Bán kính ngang (R-X):</span>
+                  <span id="labelHitboxRx" style="color: #fbbf24; font-weight: 700;">31.5%</span>
+                </div>
+                <input type="range" id="hitboxRxSlider" min="0.15" max="0.48" step="0.005" value="0.315" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('radiusX', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Bán kính dọc (R-Y):</span>
+                  <span id="labelHitboxRy" style="color: #fbbf24; font-weight: 700;">24.0%</span>
+                </div>
+                <input type="range" id="hitboxRySlider" min="0.15" max="0.45" step="0.005" value="0.24" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('radiusY', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Tâm lòng hũ (Center Y):</span>
+                  <span id="labelHitboxCy" style="color: #fbbf24; font-weight: 700;">58.0%</span>
+                </div>
+                <input type="range" id="hitboxCySlider" min="0.35" max="0.75" step="0.01" value="0.58" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('centerY', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Độ cao miệng (Mouth Y):</span>
+                  <span id="labelHitboxMouthY" style="color: #fbbf24; font-weight: 700;">12.0%</span>
+                </div>
+                <input type="range" id="hitboxMouthYSlider" min="0.05" max="0.35" step="0.01" value="0.12" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('mouthY', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Độ rộng miệng/cổ (Neck Width):</span>
+                  <span id="labelHitboxNeckW" style="color: #fbbf24; font-weight: 700;">38.0%</span>
+                </div>
+                <input type="range" id="hitboxNeckWSlider" min="0.15" max="0.70" step="0.01" value="0.38" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('neckWidth', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Chiều cao cổ lọ (Neck Height):</span>
+                  <span id="labelHitboxNeckH" style="color: #fbbf24; font-weight: 700;">20.0%</span>
+                </div>
+                <input type="range" id="hitboxNeckHSlider" min="0.05" max="0.40" step="0.01" value="0.20" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('neckHeight', parseFloat(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Dịch ngang (Offset X):</span>
+                  <span id="labelHitboxOffsetX" style="color: #fbbf24; font-weight: 700;">0px</span>
+                </div>
+                <input type="range" id="hitboxOffsetXSlider" min="-80" max="80" step="1" value="0" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('offsetX', parseInt(this.value))">
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #94a3b8;">
+                  <span>Dịch dọc (Offset Y):</span>
+                  <span id="labelHitboxOffsetY" style="color: #fbbf24; font-weight: 700;">0px</span>
+                </div>
+                <input type="range" id="hitboxOffsetYSlider" min="-80" max="80" step="1" value="0" style="width: 100%; margin-top: 4px; accent-color: #fbbf24;" oninput="updateHitboxSlider('offsetY', parseInt(this.value))">
+              </div>
+            </div>
+          </div>
+
           <!-- Cài đặt Hiệu ứng Dải sáng & Lấp lánh quanh viền hũ -->
           <div style="margin-top: 14px; background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 12px;">
             <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -3432,6 +3546,150 @@
 
       const shakeThreshold = document.getElementById('jarShakeThresholdInput');
       if (shakeThreshold) shakeThreshold.value = cfg.shakeThreshold || 50;
+
+      // Cấu hình Hitbox & Hiệu ứng Thủy tinh 3D
+      const hb = cfg.hitbox || {};
+      const currentShape = hb.shape || (cfg.style === 'fishbowl' ? 'sphere' : 'cylinder');
+      ['sphere', 'bottle', 'cylinder'].forEach(s => {
+        const btn = document.getElementById(`presetShape${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        if (btn) {
+          btn.style.background = s === currentShape ? '#f59e0b' : '#1e293b';
+          btn.style.color = s === currentShape ? '#000' : '#f8fafc';
+          btn.style.fontWeight = s === currentShape ? '800' : '600';
+        }
+      });
+
+      const btnWireframe = document.getElementById('btnToggleHitboxWireframe');
+      if (btnWireframe) {
+        const isDebug = !!cfg.debugHitbox;
+        btnWireframe.style.background = isDebug ? '#06b6d4' : 'rgba(6, 182, 212, 0.2)';
+        btnWireframe.style.color = isDebug ? '#000' : '#38bdf8';
+        btnWireframe.textContent = isDebug ? '👁️ ĐANG HIỆN KHUNG DÂY (Bấm tắt)' : '👁️ Bật Khung Dây Hitbox';
+      }
+
+      const glassChk = document.getElementById('jarGlassRealismCheck');
+      if (glassChk) glassChk.checked = cfg.glassRealism !== false;
+      const clipChk = document.getElementById('jarClipGiftsCheck');
+      if (clipChk) clipChk.checked = cfg.clipGiftsToJar !== false;
+
+      const rxVal = hb.radiusX !== undefined ? hb.radiusX : 0.315;
+      const sliderRx = document.getElementById('hitboxRxSlider');
+      if (sliderRx) sliderRx.value = rxVal;
+      const lblRx = document.getElementById('labelHitboxRx');
+      if (lblRx) lblRx.textContent = (rxVal * 100).toFixed(1) + '%';
+
+      const ryVal = hb.radiusY !== undefined ? hb.radiusY : 0.24;
+      const sliderRy = document.getElementById('hitboxRySlider');
+      if (sliderRy) sliderRy.value = ryVal;
+      const lblRy = document.getElementById('labelHitboxRy');
+      if (lblRy) lblRy.textContent = (ryVal * 100).toFixed(1) + '%';
+
+      const cyVal = hb.centerY !== undefined ? hb.centerY : 0.58;
+      const sliderCy = document.getElementById('hitboxCySlider');
+      if (sliderCy) sliderCy.value = cyVal;
+      const lblCy = document.getElementById('labelHitboxCy');
+      if (lblCy) lblCy.textContent = (cyVal * 100).toFixed(1) + '%';
+
+      const mouthYVal = hb.mouthY !== undefined ? hb.mouthY : 0.12;
+      const sliderMouthY = document.getElementById('hitboxMouthYSlider');
+      if (sliderMouthY) sliderMouthY.value = mouthYVal;
+      const lblMouthY = document.getElementById('labelHitboxMouthY');
+      if (lblMouthY) lblMouthY.textContent = (mouthYVal * 100).toFixed(1) + '%';
+
+      const neckWVal = hb.neckWidth !== undefined ? hb.neckWidth : 0.38;
+      const sliderNeckW = document.getElementById('hitboxNeckWSlider');
+      if (sliderNeckW) sliderNeckW.value = neckWVal;
+      const lblNeckW = document.getElementById('labelHitboxNeckW');
+      if (lblNeckW) lblNeckW.textContent = (neckWVal * 100).toFixed(1) + '%';
+
+      const neckHVal = hb.neckHeight !== undefined ? hb.neckHeight : 0.20;
+      const sliderNeckH = document.getElementById('hitboxNeckHSlider');
+      if (sliderNeckH) sliderNeckH.value = neckHVal;
+      const lblNeckH = document.getElementById('labelHitboxNeckH');
+      if (lblNeckH) lblNeckH.textContent = (neckHVal * 100).toFixed(1) + '%';
+
+      const offXVal = hb.offsetX || 0;
+      const sliderOffX = document.getElementById('hitboxOffsetXSlider');
+      if (sliderOffX) sliderOffX.value = offXVal;
+      const lblOffX = document.getElementById('labelHitboxOffsetX');
+      if (lblOffX) lblOffX.textContent = `${offXVal}px`;
+
+      const offYVal = hb.offsetY || 0;
+      const sliderOffY = document.getElementById('hitboxOffsetYSlider');
+      if (sliderOffY) sliderOffY.value = offYVal;
+      const lblOffY = document.getElementById('labelHitboxOffsetY');
+      if (lblOffY) lblOffY.textContent = `${offYVal}px`;
+    }
+    
+    // --- ĐIỀU KHIỂN KHUNG LÒNG HŨ (HITBOX TUNER) & ĐỒ HỌA THỦY TINH 3D ---
+    async function toggleDebugHitbox() {
+      const newVal = !currentJarConfig.debugHitbox;
+      currentJarConfig.debugHitbox = newVal;
+      applyJarConfigToUI(currentJarConfig);
+      await saveJarConfigPartial({ debugHitbox: newVal });
+    }
+
+    async function toggleGlassRealism(checked) {
+      currentJarConfig.glassRealism = checked;
+      await saveJarConfigPartial({ glassRealism: checked });
+    }
+
+    async function toggleClipGiftsToJar(checked) {
+      currentJarConfig.clipGiftsToJar = checked;
+      await saveJarConfigPartial({ clipGiftsToJar: checked });
+    }
+
+    async function setHitboxShapePreset(shape) {
+      if (!currentJarConfig.hitbox) currentJarConfig.hitbox = {};
+      currentJarConfig.hitbox.shape = shape;
+
+      if (shape === 'sphere') {
+        currentJarConfig.hitbox.radiusX = 0.315;
+        currentJarConfig.hitbox.radiusY = 0.24;
+        currentJarConfig.hitbox.centerY = 0.58;
+        currentJarConfig.hitbox.mouthY = 0.12;
+        currentJarConfig.hitbox.neckWidth = 0.38;
+        currentJarConfig.hitbox.neckHeight = 0.20;
+      } else if (shape === 'bottle') {
+        currentJarConfig.hitbox.radiusX = 0.28;
+        currentJarConfig.hitbox.radiusY = 0.26;
+        currentJarConfig.hitbox.centerY = 0.62;
+        currentJarConfig.hitbox.mouthY = 0.10;
+        currentJarConfig.hitbox.neckWidth = 0.26;
+        currentJarConfig.hitbox.neckHeight = 0.26;
+      } else if (shape === 'cylinder') {
+        currentJarConfig.hitbox.radiusX = 0.32;
+        currentJarConfig.hitbox.radiusY = 0.30;
+        currentJarConfig.hitbox.centerY = 0.56;
+        currentJarConfig.hitbox.mouthY = 0.12;
+        currentJarConfig.hitbox.neckWidth = 0.54;
+        currentJarConfig.hitbox.neckHeight = 0.15;
+      }
+      currentJarConfig.hitbox.offsetX = 0;
+      currentJarConfig.hitbox.offsetY = 0;
+
+      applyJarConfigToUI(currentJarConfig);
+      await saveJarConfigPartial({ hitbox: currentJarConfig.hitbox });
+    }
+
+    let hitboxDebounceTimer = null;
+    function updateHitboxSlider(field, val) {
+      if (!currentJarConfig.hitbox) currentJarConfig.hitbox = {};
+      currentJarConfig.hitbox[field] = val;
+
+      if (field === 'radiusX') document.getElementById('labelHitboxRx').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'radiusY') document.getElementById('labelHitboxRy').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'centerY') document.getElementById('labelHitboxCy').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'mouthY') document.getElementById('labelHitboxMouthY').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'neckWidth') document.getElementById('labelHitboxNeckW').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'neckHeight') document.getElementById('labelHitboxNeckH').textContent = (val * 100).toFixed(1) + '%';
+      else if (field === 'offsetX') document.getElementById('labelHitboxOffsetX').textContent = `${val}px`;
+      else if (field === 'offsetY') document.getElementById('labelHitboxOffsetY').textContent = `${val}px`;
+
+      clearTimeout(hitboxDebounceTimer);
+      hitboxDebounceTimer = setTimeout(async () => {
+        await saveJarConfigPartial({ hitbox: currentJarConfig.hitbox });
+      }, 100);
     }
     
     function switchJarTab(tab) {

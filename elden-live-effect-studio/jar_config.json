@@ -39,22 +39,24 @@
   "shimmerSparkles": true,
   "jarAspect": "square",
   "jarPadding": {
-    "top": 0,
+    "top": 20,
     "bottom": 0,
-    "left": 0,
-    "right": 0
+    "left": 15,
+    "right": 15
   },
-  "stickers": [
-    {
-      "id": "sticker_nt_studio",
-      "name": "Logo NT-Studio",
-      "url": "/uploads/decor/sticker_nt_studio.png",
-      "x": 50,
-      "y": 86,
-      "scale": 0.85,
-      "rotation": 0,
-      "opacity": 0.98,
-      "layer": "front"
-    }
-  ]
+  "stickers": [],
+  "debugHitbox": false,
+  "clipGiftsToJar": true,
+  "glassRealism": true,
+  "hitbox": {
+    "shape": "sphere",
+    "radiusX": 0.315,
+    "radiusY": 0.24,
+    "centerY": 0.58,
+    "mouthY": 0.12,
+    "neckWidth": 0.38,
+    "neckHeight": 0.2,
+    "offsetX": 0,
+    "offsetY": 0
+  }
 }

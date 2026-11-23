@@ -508,7 +508,7 @@
       customJarImage: '/uploads/decor/iridescent_fishbowl_transparent.png',
       frontOverlayImage: '/uploads/decor/iridescent_fishbowl_front_overlay.png',
       hideDefaultJarOnCustom: true,
-      decorImage: '/uploads/decor/sticker_nt_studio.png',
+      decorImage: '',
       decorText: '',
       decorPosition: 'bottom',
       decorScale: 0.85,
@@ -524,7 +524,7 @@
       shakeThreshold: 1000,
       enableFloorAccumulation: true,
       giftCapacity: 400,
-      giftScaleGlobal: 1.0,
+      giftScaleGlobal: 0.85,
       giftSizeSmall: 16,
       giftSizeMedium: 26,
       giftSizeLarge: 38,
@@ -537,31 +537,35 @@
       goalEnabled: false,
       goalTargetCoins: 500,
       currentCoins: 0,
-      bounciness: 0.32,
+      bounciness: 0.20,
       soundEnabled: true,
       soundVolume: 0.3,
       autoBurstOnGoal: false,
       autoResetSeconds: 5,
       jarAspect: 'square',
-      jarPadding: {
-        top: 20,
-        bottom: 20,
-        left: 20,
-        right: 20
+      debugHitbox: false,
+      clipGiftsToJar: true,
+      glassRealism: true,
+      hitbox: {
+        shape: 'sphere', // 'sphere' | 'bottle' | 'cylinder'
+        radiusX: 0.31,
+        radiusY: 0.24,
+        centerY: 0.58,
+        mouthY: 0.12,
+        neckWidth: 0.38,
+        neckHeight: 0.36,
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1.0,
+        scaleY: 1.0
       },
-      stickers: [
-        {
-          id: 'sticker_nt_studio',
-          name: 'Logo NT-Studio',
-          url: '/uploads/decor/sticker_nt_studio.png',
-          x: 50,
-          y: 86,
-          scale: 0.85,
-          rotation: 0,
-          opacity: 0.98,
-          layer: 'front'
-        }
-      ]
+      jarPadding: {
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+      },
+      stickers: []
     };
 
     // Trạng thái tương tác
@@ -652,7 +656,7 @@
 
       const w = baseW * scale;
       const h = baseH * scale;
-      const wallThickness = 16 * scale;
+      const wallThickness = 28 * scale;
 
       // Tâm (cx, cy) chuẩn xác theo % vị trí
       const cx = (width * posX) / 100;
@@ -663,12 +667,13 @@
       const imgX = cx - w / 2;
       const imgY = cy - h / 2;
 
-      // Tọa độ lòng bể cầu tròn thủy tinh (Inner Spherical Cavity)
-      const bowlCx = cx;
-      const bowlCy = imgY + h * 0.54;
-      const bowlR = w * 0.37;
-      const mouthY = imgY + h * 0.12;
-      const mouthW = w * 0.44;
+      const hitboxCfg = jarConfig.hitbox || {};
+      const rx = w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : 0.315);
+      const ry = h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : 0.24);
+      const cavityCy = imgY + h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : 0.58) + (hitboxCfg.offsetY || 0);
+      const cavityCx = cx + (hitboxCfg.offsetX || 0);
+      const mouthY = imgY + h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : 0.12);
+      const mouthW = w * (hitboxCfg.neckWidth !== undefined ? hitboxCfg.neckWidth : 0.38);
 
       jarGeometry = {
         cx,
@@ -679,20 +684,19 @@
         imgY,
         imgW,
         imgH,
-        bowlCx,
-        bowlCy,
-        bowlR,
-        mouthY,
-        mouthW,
         neckW: mouthW,
-        neckH: h * 0.18,
+        neckH,
         wallThickness,
         aspect,
-        isFishbowl
+        isFishbowl,
+        bowlCx: cavityCx,
+        bowlCy: cavityCy,
+        bowlR: rx,
+        mouthY,
+        mouthW
       };
     }
 
-    
     // Tường bao đáy màn hình & 2 biên trái phải để quà tràn hũ rơi xuống đất chồng chất
     let screenBoundaries = [];
     function rebuildScreenBoundaries() {
@@ -727,6 +731,135 @@
       }
     }
 
+    // Lưu trữ đỉnh của lòng hũ cho clipping và debug hitbox
+    let currentCavityPoints = [];
+
+    function getCavityPoints(geom, hitboxCfg) {
+      const shape = hitboxCfg.shape || (geom.isFishbowl ? 'sphere' : 'cylinder');
+      const { cx, imgY, w, h } = geom;
+
+      const defaultRx = shape === 'sphere' ? 0.315 : (shape === 'bottle' ? 0.28 : 0.32);
+      const defaultRy = shape === 'sphere' ? 0.24 : (shape === 'bottle' ? 0.26 : 0.30);
+      const defaultCy = shape === 'sphere' ? 0.58 : (shape === 'bottle' ? 0.62 : 0.56);
+      const defaultMouthY = 0.12;
+      const defaultNeckW = shape === 'bottle' ? 0.26 : 0.38;
+      const defaultNeckH = shape === 'bottle' ? 0.26 : 0.20;
+
+      const rx = w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : defaultRx);
+      const ry = h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : defaultRy);
+      const cavityCy = imgY + h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : defaultCy) + (hitboxCfg.offsetY || 0);
+      const cavityCx = cx + (hitboxCfg.offsetX || 0);
+      const mouthY = imgY + h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : defaultMouthY);
+      const mouthHalfW = (w * (hitboxCfg.neckWidth !== undefined ? hitboxCfg.neckWidth : defaultNeckW)) / 2;
+      const neckH = h * (hitboxCfg.neckHeight !== undefined ? hitboxCfg.neckHeight : defaultNeckH);
+      const neckBottomY = mouthY + neckH;
+
+      const points = [];
+
+      if (shape === 'sphere') {
+        // 🔮 BỂ CẦU TRÒN (Sphere / Fishbowl)
+        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
+        const neckHalfW = mouthHalfW * 1.05;
+        points.push({ x: cavityCx + neckHalfW, y: neckBottomY });
+
+        const shoulderSteps = 8;
+        for (let i = 1; i <= shoulderSteps; i++) {
+          const f = i / shoulderSteps;
+          const ease = f * f * (3 - 2 * f);
+          const px = cavityCx + neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5);
+          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
+          points.push({ x: px, y: py });
+        }
+
+        const arcSteps = 24;
+        for (let i = 1; i <= arcSteps; i++) {
+          const angle = (Math.PI * i) / arcSteps;
+          const px = cavityCx + rx * Math.cos(angle);
+          const py = cavityCy + ry * Math.sin(angle);
+          points.push({ x: px, y: py });
+        }
+
+        for (let i = shoulderSteps - 1; i >= 0; i--) {
+          const f = i / shoulderSteps;
+          const ease = f * f * (3 - 2 * f);
+          const px = cavityCx - (neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5));
+          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
+          points.push({ x: px, y: py });
+        }
+
+        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
+
+      } else if (shape === 'bottle') {
+        // 🏺 HŨ CỔ LỌ / BÌNH HOA (Bottle / Vase)
+        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
+        points.push({ x: cavityCx + mouthHalfW, y: neckBottomY });
+
+        const thetaJoin = -0.22 * Math.PI;
+        const joinX = rx * Math.cos(thetaJoin);
+        const joinY = ry * Math.sin(thetaJoin);
+
+        const shoulderSteps = 10;
+        for (let i = 1; i <= shoulderSteps; i++) {
+          const f = i / shoulderSteps;
+          const ease = f * f * (3 - 2 * f);
+          const px = cavityCx + mouthHalfW + (joinX - mouthHalfW) * ease;
+          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
+          points.push({ x: px, y: py });
+        }
+
+        const arcSteps = 28;
+        const thetaEnd = Math.PI - thetaJoin;
+        for (let i = 1; i <= arcSteps; i++) {
+          const angle = thetaJoin + ((thetaEnd - thetaJoin) * i) / arcSteps;
+          const px = cavityCx + rx * Math.cos(angle);
+          const py = cavityCy + ry * Math.sin(angle);
+          points.push({ x: px, y: py });
+        }
+
+        for (let i = shoulderSteps; i >= 1; i--) {
+          const f = (i - 1) / shoulderSteps;
+          const ease = f * f * (3 - 2 * f);
+          const px = cavityCx - (mouthHalfW + (joinX - mouthHalfW) * ease);
+          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
+          points.push({ x: px, y: py });
+        }
+
+        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
+
+      } else {
+        // 🥛 HŨ TRỤ ĐỨNG / MASON JAR (Cylinder)
+        const bottomY = cavityCy + ry;
+        const cornerR = Math.min(rx * 0.35, 36);
+
+        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
+        points.push({ x: cavityCx + mouthHalfW, y: mouthY + 24 });
+        points.push({ x: cavityCx + rx, y: mouthY + 44 });
+        points.push({ x: cavityCx + rx, y: bottomY - cornerR });
+
+        for (let i = 1; i <= 6; i++) {
+          const a = (Math.PI * 0.5) * (i / 6);
+          points.push({
+            x: cavityCx + rx - cornerR + cornerR * Math.cos(a),
+            y: bottomY - cornerR + cornerR * Math.sin(a)
+          });
+        }
+
+        for (let i = 1; i <= 6; i++) {
+          const a = (Math.PI * 0.5) + (Math.PI * 0.5) * (i / 6);
+          points.push({
+            x: cavityCx - rx + cornerR + cornerR * Math.cos(a),
+            y: bottomY - cornerR + cornerR * Math.sin(a)
+          });
+        }
+
+        points.push({ x: cavityCx - rx, y: mouthY + 44 });
+        points.push({ x: cavityCx - mouthHalfW, y: mouthY + 24 });
+        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
+      }
+
+      return points;
+    }
+
     function rebuildJarBodies() {
       // Xoá các tường cũ nếu có
       if (jarWalls.length > 0) {
@@ -737,163 +870,57 @@
       if (jarState.isBurst) return;
 
       calculateJarGeometry();
-      const { cx, cy, w, h, neckW, neckH, wallThickness, aspect, isFishbowl, bowlCx, bowlCy, bowlR, mouthY, mouthW, imgY } = jarGeometry;
-      const halfW = w / 2;
-      const halfH = h / 2;
-      const halfNeckW = neckW / 2;
-      const scale = jarConfig.jarScale || 1.0;
-      const bounciness = Math.min(Number(jarConfig.bounciness) || 0.28, 0.22);
+      const hitboxCfg = jarConfig.hitbox || {};
+      const { cx, w, h, imgY } = jarGeometry;
+      const bounciness = Math.min(Number(jarConfig.bounciness) || 0.22, 0.22);
+      const wallThickness = 28 * (jarConfig.jarScale || 1.0);
 
-      if (isFishbowl) {
-        // ========================================================
-        // VẬT LÝ BỂ CẦU PHA LÊ TRÒN (CIRCULAR SPHERICAL BOWL HITBOX)
-        // 24 phân đoạn vòng cung chuẩn xác khép kín, quà lăn tự nhiên
-        // ========================================================
-        const numSegments = 24;
-        const startAngle = -0.28 * Math.PI; // Mép miệng bên phải
-        const endAngle = 1.28 * Math.PI;    // Mép miệng bên trái (quét qua đáy)
-        const totalSweep = endAngle - startAngle;
+      currentCavityPoints = getCavityPoints(jarGeometry, hitboxCfg);
 
-        for (let i = 0; i < numSegments; i++) {
-          const theta = startAngle + (totalSweep * (i + 0.5)) / numSegments;
-          const segX = bowlCx + Math.cos(theta) * bowlR;
-          const segY = bowlCy + Math.sin(theta) * bowlR;
-          const segLen = (bowlR * (totalSweep / numSegments)) * 1.35; // Overlap kín khít không lọt quà
+      // Tạo các phân đoạn va chạm kín khít 100% không kẽ hở
+      for (let i = 0; i < currentCavityPoints.length - 1; i++) {
+        const p1 = currentCavityPoints[i];
+        const p2 = currentCavityPoints[i + 1];
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 1) continue;
 
-          const seg = Bodies.rectangle(segX, segY, segLen, wallThickness, {
-            isStatic: true,
-            angle: theta + Math.PI / 2,
-            friction: 0.22,
-            restitution: bounciness,
-            label: 'jar_wall'
-          });
-          jarWalls.push(seg);
-        }
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        const angle = Math.atan2(dy, dx);
 
-        // 2 Phễu định hướng dẫn quà rơi chuẩn xác qua miệng hũ
-        const leftFunnel = Bodies.rectangle(bowlCx - w * 0.23, imgY + h * 0.12, w * 0.16, wallThickness, {
+        const seg = Bodies.rectangle(midX, midY, len * 1.55, wallThickness, {
           isStatic: true,
-          angle: 0.62,
-          friction: 0.1,
+          angle: angle,
+          friction: 0.25,
           restitution: bounciness,
           label: 'jar_wall'
         });
-        const rightFunnel = Bodies.rectangle(bowlCx + w * 0.23, imgY + h * 0.12, w * 0.16, wallThickness, {
-          isStatic: true,
-          angle: -0.62,
-          friction: 0.1,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-
-        // 2 chặn mép cổ để quà rơi tốc độ cao không văng ra ngoài
-        const leftCollar = Bodies.rectangle(bowlCx - mouthW * 0.52, imgY + h * 0.22, 14 * scale, h * 0.12, {
-          isStatic: true,
-          friction: 0.1,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-        const rightCollar = Bodies.rectangle(bowlCx + mouthW * 0.52, imgY + h * 0.22, 14 * scale, h * 0.12, {
-          isStatic: true,
-          friction: 0.1,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-
-        jarWalls = [leftFunnel, rightFunnel, leftCollar, rightCollar, ...jarWalls];
-      } else {
-        // Fallback hũ khối chữ nhật bo góc
-        const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
-        const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
-        const innerFloorY = cy + halfH - baseThick;
-        const centralBottomW = Math.max(60, w - 2 * cornerR + 16);
-
-        const bottom = Bodies.rectangle(cx, innerFloorY + wallThickness / 2, centralBottomW, wallThickness, {
-          isStatic: true,
-          friction: 0.85,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-        const chamferLen = cornerR * 1.6;
-        const blX = cx - halfW + cornerR * 0.48;
-        const blY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
-        const bottomLeftCorner = Bodies.rectangle(blX, blY, chamferLen, wallThickness, {
-          isStatic: true,
-          angle: Math.PI / 4,
-          friction: 0.85,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-        const brX = cx + halfW - cornerR * 0.48;
-        const brY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
-        const bottomRightCorner = Bodies.rectangle(brX, brY, chamferLen, wallThickness, {
-          isStatic: true,
-          angle: -Math.PI / 4,
-          friction: 0.85,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-
-        const wallTopY = cy - halfH + neckH;
-        const wallBottomY = innerFloorY - cornerR * 0.8;
-        const wallH = (wallBottomY - wallTopY) + 20;
-        const wallCenterY = (wallTopY + wallBottomY) / 2;
-
-        const leftWall = Bodies.rectangle(cx - halfW + wallThickness / 2, wallCenterY, wallThickness, wallH, {
-          isStatic: true,
-          friction: 0.2,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-        const rightWall = Bodies.rectangle(cx + halfW - wallThickness / 2, wallCenterY, wallThickness, wallH, {
-          isStatic: true,
-          friction: 0.2,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-
-        const shoulderW = halfW - halfNeckW;
-        const leftShoulder = Bodies.rectangle(cx - halfNeckW - shoulderW / 2 + 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
-          isStatic: true,
-          angle: 0.36,
-          friction: 0.15,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-        const rightShoulder = Bodies.rectangle(cx + halfNeckW + shoulderW / 2 - 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
-          isStatic: true,
-          angle: -0.36,
-          friction: 0.15,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-
-        const leftLip = Bodies.rectangle(cx - halfNeckW + wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
-          isStatic: true,
-          friction: 0.1,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-        const rightLip = Bodies.rectangle(cx + halfNeckW - wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
-          isStatic: true,
-          friction: 0.1,
-          restitution: Number(jarConfig.bounciness) || 0.35,
-          label: 'jar_wall'
-        });
-
-        jarWalls = [
-          bottom,
-          bottomLeftCorner,
-          bottomRightCorner,
-          leftWall,
-          rightWall,
-          leftShoulder,
-          rightShoulder,
-          leftLip,
-          rightLip
-        ];
+        jarWalls.push(seg);
       }
 
+      // 2 Phễu định hướng dẫn quà rơi chuẩn xác qua miệng hũ
+      const mouthY = currentCavityPoints[0].y;
+      const mouthRightX = currentCavityPoints[0].x;
+      const mouthLeftX = currentCavityPoints[currentCavityPoints.length - 1].x;
+
+      const leftFunnel = Bodies.rectangle(mouthLeftX - w * 0.08, mouthY - 20, w * 0.18, wallThickness, {
+        isStatic: true,
+        angle: 0.65,
+        friction: 0.1,
+        restitution: bounciness,
+        label: 'jar_wall'
+      });
+      const rightFunnel = Bodies.rectangle(mouthRightX + w * 0.08, mouthY - 20, w * 0.18, wallThickness, {
+        isStatic: true,
+        angle: -0.65,
+        friction: 0.1,
+        restitution: bounciness,
+        label: 'jar_wall'
+      });
+
+      jarWalls.push(leftFunnel, rightFunnel);
       World.add(engine.world, jarWalls);
     }
 
@@ -1847,6 +1874,111 @@
       ctx.restore();
     }
 
+    // ========================================================
+    // ĐỒ HỌA THỦY TINH 3D CHÂN THỰC (REALISTIC GLASS OPTICS)
+    // ========================================================
+
+    // 1. Chiều sâu không gian 3D lòng hũ kính (vẽ TRƯỚC quà)
+    function drawInnerGlassDepth(ctx, geom) {
+      // Giữ lòng hũ trong suốt 100% tự nhiên theo ảnh hũ gốc
+    }
+
+    // 2. Lớp phản chiếu ánh sáng và vệt bóng mặt kính trước (vẽ TRÊN quà)
+    function drawGlassFrontReflection(ctx, geom) {
+      if (jarConfig.glassRealism === false) return;
+      const hitboxCfg = jarConfig.hitbox || {};
+      const rx = geom.w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : 0.315);
+      const ry = geom.h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : 0.24);
+      const cavityCy = geom.imgY + geom.h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : 0.58) + (hitboxCfg.offsetY || 0);
+      const cavityCx = geom.cx + (hitboxCfg.offsetX || 0);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+
+      // Vệt phản xạ ánh bóng cong hình lưỡi liềm bên trái (Curved Specular Crescent)
+      const specX = cavityCx - rx * 0.45;
+      const specY = cavityCy - ry * 0.35;
+      const specR = rx * 0.48;
+
+      const specGrad = ctx.createRadialGradient(specX, specY, 0, specX, specY, specR);
+      specGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+      specGrad.addColorStop(0.45, 'rgba(224, 242, 254, 0.08)');
+      specGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.fillStyle = specGrad;
+      ctx.beginPath();
+      ctx.ellipse(specX, specY, specR, specR * 0.65, -Math.PI / 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Viền phản quang mỏng thanh thoát dọc mép kính
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.20)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.ellipse(cavityCx, cavityCy, rx * 0.94, ry * 0.94, 0, 0.72 * Math.PI, 1.10 * Math.PI, false);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // 3. Khung dây vật lý hỗ trợ căn chỉnh chuẩn xác theo mọi ảnh mẫu hũ (Debug Hitbox Wireframe)
+    function drawDebugHitbox(ctx, geom, points) {
+      if (!jarConfig.debugHitbox || !points || points.length < 3) return;
+
+      ctx.save();
+      // a. Đường viền lòng hũ (Neon Cyan Dash)
+      ctx.strokeStyle = '#06b6d4';
+      ctx.lineWidth = 3.0;
+      ctx.setLineDash([8, 5]);
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.stroke();
+
+      // b. Các chốt đỉnh (Amber Dots)
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#f59e0b';
+      for (let i = 0; i < points.length; i++) {
+        ctx.beginPath();
+        ctx.arc(points[i].x, points[i].y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // c. Tâm lòng hũ & hồng tâm căn chỉnh (Red Crosshair)
+      const hitboxCfg = jarConfig.hitbox || {};
+      const cavityCy = geom.imgY + geom.h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : 0.58) + (hitboxCfg.offsetY || 0);
+      const cavityCx = geom.cx + (hitboxCfg.offsetX || 0);
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2.0;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(cavityCx - 22, cavityCy);
+      ctx.lineTo(cavityCx + 22, cavityCy);
+      ctx.moveTo(cavityCx, cavityCy - 22);
+      ctx.lineTo(cavityCx, cavityCy + 22);
+      ctx.stroke();
+
+      // d. Bảng thông số đo đạc trực quan
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(cavityCx - 95, cavityCy - 48, 190, 26);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cavityCx - 95, cavityCy - 48, 190, 26);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`HITBOX: ${hitboxCfg.shape || 'sphere'} [${points.length} pts]`, cavityCx, cavityCy - 35);
+
+      ctx.restore();
+    }
+
     // Vẽ một hạt quà vật lý (Gift Sprite)
     function drawGiftBody(ctx, b) {
       const { x, y } = b.position;
@@ -1965,6 +2097,7 @@
       // --- LAYER 1: MẶT SAU & THÂN THỦY TINH TRONG SUỐT (BASE BOWL) ---
       if (!jarState.isBurst) {
         drawJarBackground(ctx, jarGeometry, jarConfig.style);
+        drawInnerGlassDepth(ctx, jarGeometry);
       }
 
       // --- LAYER 2: DECOR / STICKERS DƯỚI KÍNH (BEHIND-GLASS) ---
@@ -1972,27 +2105,58 @@
         drawDecorStickers(ctx, jarGeometry, 'behind_glass');
       }
 
-      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
-      giftBodies.forEach(b => drawGiftBody(ctx, b));
+      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG (CÓ MẶT NẠ LÒNG HŨ CHỐNG LỌT QUÀ) ---
+      if (giftBodies.length > 0) {
+        ctx.save();
+        if (jarConfig.clipGiftsToJar !== false && currentCavityPoints && currentCavityPoints.length > 3) {
+          const mouthY = currentCavityPoints[0].y;
+          // Mở rộng toàn bộ bầu trời phía trên miệng hũ (-1000 đến width+1000) không bị cắt
+          // Khi quà rơi vào trong miệng hũ, được khóa kín khít theo từng tọa độ lòng kính chống lọt
+          ctx.beginPath();
+          ctx.moveTo(-1000, -1000);
+          ctx.lineTo(width + 1000, -1000);
+          ctx.lineTo(width + 1000, mouthY);
+          ctx.lineTo(currentCavityPoints[0].x, mouthY);
+          for (let i = 1; i < currentCavityPoints.length; i++) {
+            ctx.lineTo(currentCavityPoints[i].x, currentCavityPoints[i].y);
+          }
+          ctx.lineTo(-1000, mouthY);
+          ctx.closePath();
+          ctx.clip();
+        }
 
-      // --- LAYER 4: MẶT TRƯỚC PHẢN CHIẾU ÁNH SÁNG, NƠ, CỔ BÈO & BÓNG KÍNH (FOREGROUND OVERLAY) ---
+        giftBodies.forEach(b => drawGiftBody(ctx, b));
+        ctx.restore();
+      }
+
+      // --- LAYER 4: HIỆU ỨNG PHẢN CHIẾU ÁNH BÓNG MẶT KÍNH TRƯỚC (QUÉT LÊN TRÊN QUÀ) ---
+      if (!jarState.isBurst) {
+        drawGlassFrontReflection(ctx, jarGeometry);
+      }
+
+      // --- LAYER 5: MẶT TRƯỚC PHẢN CHIẾU ÁNH SÁNG, NƠ, CỔ BÈO & BÓNG KÍNH (FOREGROUND OVERLAY) ---
       if (!jarState.isBurst) {
         drawJarForegroundHighlights(ctx, jarGeometry, jarConfig.style);
       }
 
-      // --- LAYER 5: DECOR & STICKERS MẶT TRƯỚC HŨ (LOGO, STICKER NT-STUDIO) ---
+      // --- LAYER 6: DECOR & STICKERS MẶT TRƯỚC HŨ ---
       if (!jarState.isBurst) {
         drawDecorStickers(ctx, jarGeometry, 'front');
       }
 
-      // --- LAYER 6: HIỆU ỨNG DẢI SÁNG LẤP LÁNH CHẠY QUANH VIỀN HŨ (60FPS CAUSTIC SHIMMER & SPARKLES) ---
+      // --- LAYER 7: HIỆU ỨNG DẢI SÁNG LẤP LÁNH CHẠY QUANH VIỀN HŨ (60FPS CAUSTIC SHIMMER & SPARKLES) ---
       if (!jarState.isBurst) {
         drawRealisticRimShimmer(ctx, jarGeometry, time);
       }
 
-      // --- LAYER 7: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
+      // --- LAYER 8: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
       if (!jarState.isBurst && jarState.crackLevel > 0) {
         drawCracks(ctx, jarGeometry.cx, jarGeometry.cy, jarGeometry.w, jarGeometry.h, jarState.crackLevel);
+      }
+
+      // --- LAYER 9: KHUNG DÂY VẬT LÝ CĂN CHỈNH (DEBUG HITBOX WIREFRAME) ---
+      if (!jarState.isBurst && jarConfig.debugHitbox) {
+        drawDebugHitbox(ctx, jarGeometry, currentCavityPoints);
       }
 
       ctx.restore();
