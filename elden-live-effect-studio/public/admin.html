@@ -2273,8 +2273,12 @@
 
       if (type === 'random_pool') {
         if (!rule.videoPool || rule.videoPool.length <= 1) {
+          const selectedFiles = new Set((rule.videoPool || []).map(v => v.file));
+          const nextUnused = availableVideos.find(av => !selectedFiles.has(av.url));
+          const fileToAdd = nextUnused ? nextUnused.url : (availableVideos[1]?.url || availableVideos[0]?.url || '');
+          const nameToAdd = nextUnused ? nextUnused.name : 'Video 2';
           rule.videoPool = (rule.videoPool || []).concat([
-            { id: 'v_' + Date.now(), name: 'Video 2', file: availableVideos[1]?.url || availableVideos[0]?.url || '', weight: 50 }
+            { id: 'v_' + Date.now(), name: nameToAdd, file: fileToAdd, weight: 50 }
           ]);
         }
       } else if (type === 'min_coins') {
@@ -2565,6 +2569,11 @@
         const pct = Math.round(((Number(v.weight) || 0) / totalW) * 100);
         const color = POOL_COLORS[vIdx % POOL_COLORS.length];
 
+        // Lấy danh sách video đã được chọn bởi các hàng KHÁC trong pool này
+        const otherSelectedFiles = new Set(pool.filter((_, idx) => idx !== vIdx).map(item => item.file));
+        // Lọc danh sách: Chỉ giữ video của hàng này hoặc video chưa được hàng nào chọn (nếu đã chọn ở hàng khác thì ẩn khỏi dropdown)
+        const selectableVideos = availableVideos.filter(av => av.url === v.file || !otherSelectedFiles.has(av.url));
+
         const row = document.createElement('div');
         row.style.cssText = `
           display: flex; gap: 10px; align-items: center; background: #0f182b;
@@ -2576,7 +2585,7 @@
           <input type="text" value="${escapeHtml(v.name)}" style="width: 140px; font-weight: 700;" onchange="updatePoolVideoName(${vIdx}, this.value)">
 
           <select style="flex: 1;" onchange="updatePoolVideoFile(${vIdx}, this.value)">
-            ${availableVideos.map(av => `<option value="${av.url}" ${v.file === av.url ? 'selected' : ''}>${av.name}</option>`).join('')}
+            ${selectableVideos.map(av => `<option value="${av.url}" ${v.file === av.url ? 'selected' : ''}>${escapeHtml(av.name)}</option>`).join('')}
           </select>
 
           <!-- Ô NHẬP % DUY NHẤT (TỰ ĐỘNG CHIA TỶ LỆ) -->
@@ -2643,10 +2652,22 @@
       if (!rule) return;
       rule.videoPool = rule.videoPool || [];
 
+      // Tìm video trong kho chưa có trong danh sách random này
+      const selectedFiles = new Set(rule.videoPool.map(v => v.file));
+      const nextUnused = availableVideos.find(av => !selectedFiles.has(av.url));
+
+      if (!nextUnused && availableVideos.length > 0 && rule.videoPool.length >= availableVideos.length) {
+        showAppToast('warning', 'Tất cả video trong kho đã được thêm vào danh sách random!');
+        return;
+      }
+
+      const fileToAdd = nextUnused ? nextUnused.url : (availableVideos[0]?.url || '');
+      const nameToAdd = nextUnused ? nextUnused.name : ('Video ' + (rule.videoPool.length + 1));
+
       rule.videoPool.push({
         id: 'v_' + Date.now(),
-        name: 'Video ' + (rule.videoPool.length + 1),
-        file: availableVideos[rule.videoPool.length % availableVideos.length]?.url || availableVideos[0]?.url || '',
+        name: nameToAdd,
+        file: fileToAdd,
         weight: 20
       });
 
