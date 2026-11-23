@@ -45,13 +45,13 @@
     "right": 15
   },
   "stickers": [],
-  "debugHitbox": false,
+  "debugHitbox": true,
   "clipGiftsToJar": true,
   "glassRealism": true,
   "hitbox": {
     "shape": "sphere",
-    "radiusX": 0.315,
-    "radiusY": 0.24,
+    "radiusX": 0.355,
+    "radiusY": 0.295,
     "centerY": 0.58,
     "mouthY": 0.12,
     "neckWidth": 0.38,
