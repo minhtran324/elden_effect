@@ -296,19 +296,20 @@ let activeTiktokConn = null;
 const KNOWN_TIKTOK_GIFTS = {
   // 1 xu
   '5655': { name: 'Hoa Hồng', coins: 1 },
+  '5827': { name: 'Kem Ốc Quế', coins: 1 },
   '8913': { name: 'Thả Tim Cho Tôi', coins: 1 },
   '5269': { name: 'TikTok', coins: 1 },
   '6064': { name: 'Cây Kem', coins: 1 },
   '5760': { name: 'Tạ Tay', coins: 1 },
   // 5 xu
-  '5827': { name: 'Ngón Tay Thả Tim', coins: 5 },
+  '5487': { name: 'Ngón Tay Thả Tim', coins: 5 },
   // 9 - 10 xu
   '5764': { name: 'Trà Sữa', coins: 9 },
-  '5879': { name: 'Kem Ốc Quế', coins: 10 },
-  '5487': { name: 'Bóng Bay', coins: 10 },
   // 20 xu
+  '626064': { name: 'Nghệ Sĩ Đường Phố G.O.A.T.', coins: 20 },
   '5509': { name: 'Nước Hoa', coins: 20 },
   // 30 xu (Bánh Vòng)
+  '5879': { name: 'Bánh Vòng', coins: 30 },
   '5659': { name: 'Bánh Vòng', coins: 30 },
   '6508': { name: 'Bánh Vòng', coins: 30 },
   '6267': { name: 'Bánh Vòng', coins: 30 },
@@ -334,10 +335,14 @@ const KNOWN_TIKTOK_GIFTS = {
   '5704': { name: 'Vũ Trụ TikTok', coins: 44999 }
 };
 
-// Chuẩn hóa chuỗi tiếng Việt để so sánh tên quà chính xác tuyệt đối
+// Chuẩn hóa chuỗi để so sánh tên quà chính xác tuyệt đối
 function normalizeGiftStr(str) {
   if (!str) return '';
-  return String(str).normalize('NFC').trim().toLowerCase();
+  return String(str)
+    .normalize('NFC')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
 }
 
 function stripVietnameseDiacritics(str) {
@@ -347,25 +352,31 @@ function stripVietnameseDiacritics(str) {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
 }
 
-// So sánh tên quà: hỗ trợ gõ có dấu, không dấu, tên tiếng Anh (Donut / Rose)
+// So sánh tên quà: KHỚP CHÍNH XÁC TOÀN BỘ (Exact Match) hỗ trợ có dấu, không dấu, và alias Anh - Việt 1-1
+// Tuyệt đối KHÔNG dùng substring (.includes) để tránh trùng lặp 1-2 từ đầu (như "Hoa hồng" vs "Hoa hồng vĩnh cửu")
 function matchGiftName(ruleGiftName, incomingGiftName) {
   if (!ruleGiftName || !incomingGiftName) return false;
   const r = normalizeGiftStr(ruleGiftName);
   const inc = normalizeGiftStr(incomingGiftName);
 
+  // 1. So khớp chính xác 100%
   if (r === inc) return true;
-  if (inc.includes(r) || r.includes(inc)) return true;
 
+  // 2. So khớp chính xác 100% sau khi bỏ dấu tiếng Việt (ví dụ "hoa hồng" === "hoa hong")
   const rClean = stripVietnameseDiacritics(r);
   const incClean = stripVietnameseDiacritics(inc);
-  if (rClean === incClean || incClean.includes(rClean) || rClean.includes(incClean)) return true;
+  if (rClean === incClean) return true;
 
+  // 3. Danh sách bí danh tương đương chuẩn xác 1-1 giữa tiếng Việt và tiếng Anh TikTok
+  // CHÚ Ý: Mọi phần tử ở đây phải khớp CHÍNH XÁC toàn bộ cụm từ, KHÔNG dùng includes()
   const aliases = [
-    ['bánh vòng', 'banh vong', 'donut', 'doughnut'],
     ['hoa hồng', 'hoa hong', 'rose'],
+    ['kem ốc quế', 'kem oc que', 'ice cream cone', 'ice cream'],
+    ['bánh vòng', 'banh vong', 'bánh donut', 'banh donut', 'donut', 'doughnut'],
     ['thả tim cho tôi', 'tha tim cho toi', 'heart me', 'like'],
     ['ngón tay thả tim', 'ngon tay tha tim', 'finger heart'],
     ['trà sữa', 'tra sua', 'boba', 'bubble tea'],
@@ -375,12 +386,16 @@ function matchGiftName(ruleGiftName, incomingGiftName) {
     ['pháo hoa', 'phao hoa', 'fireworks'],
     ['du thuyền', 'du thuyen', 'yacht'],
     ['sư tử', 'su tu', 'lion'],
-    ['vũ trụ tiktok', 'vu tru tiktok', 'tiktok universe']
+    ['vũ trụ tiktok', 'vu tru tiktok', 'tiktok universe'],
+    ['nghệ sĩ đường phố g.o.a.t.', 'nghe si duong pho g.o.a.t.', 'g.o.a.t. busker', 'goat busker', 'busker'],
+    ['gấu trúc', 'gau truc', 'panda'],
+    ['tiền bay', 'tien bay', 'money gun'],
+    ['kim cương', 'kim cuong', 'diamond']
   ];
 
   for (const group of aliases) {
-    const rMatch = group.some(a => r.includes(a) || rClean.includes(stripVietnameseDiacritics(a)));
-    const incMatch = group.some(a => inc.includes(a) || incClean.includes(stripVietnameseDiacritics(a)));
+    const rMatch = group.some(a => r === a || rClean === stripVietnameseDiacritics(a));
+    const incMatch = group.some(a => inc === a || incClean === stripVietnameseDiacritics(a));
     if (rMatch && incMatch) return true;
   }
 
@@ -526,18 +541,21 @@ function isRuleMatchingGift(rule, parsed) {
 
   const { giftId, giftName, rawGiftName, localizedName } = parsed;
 
-  // 1. So khớp theo ID quà (Chính xác tuyệt đối 100%, khắc phục hoàn toàn rào cản tiếng Anh / tiếng Việt)
+  // 1. So khớp theo ID quà (Chính xác tuyệt đối 100%, không bị ảnh hưởng bởi ngôn ngữ Anh / Việt)
   let ruleGiftId = rule.giftId ? String(rule.giftId) : null;
   if (!ruleGiftId && rule.giftName && Array.isArray(liveGiftsCache)) {
-    const f = liveGiftsCache.find(g => g.name.toLowerCase() === rule.giftName.toLowerCase().trim());
+    const f = liveGiftsCache.find(g => normalizeGiftStr(g.name) === normalizeGiftStr(rule.giftName));
     if (f) ruleGiftId = String(f.id);
   }
 
-  if (ruleGiftId && giftId && ruleGiftId === String(giftId)) {
-    return true;
+  // NẾU CẢ RULE VÀ MÓN QUÀ NHẬN ĐƯỢC ĐỀU CÓ GIFT ID:
+  // So khớp ID là chuẩn xác nhất: bằng ID thì trúng, KHÁC ID thì CHẮC CHẮN SAI (không được so sánh chữ lung tung)
+  if (ruleGiftId && giftId) {
+    return ruleGiftId === String(giftId);
   }
 
-  // 2. So khớp theo tên quà (kiểm tra mọi biến thể: tiếng Việt có dấu/không dấu, tên gốc tiếng Anh từ TikTok)
+  // 2. So khớp theo tên quà (chỉ dùng khi rule hoặc quà không có giftId, ví dụ tự gõ tên test simulator)
+  // Chỉ so khớp CHÍNH XÁC (Exact Match), tuyệt đối không dùng substring để tránh trùng lặp 1-2 từ đầu
   const candidateNames = [giftName, rawGiftName, localizedName].filter(Boolean);
   for (const cand of candidateNames) {
     if (matchGiftName(rule.giftName, cand)) return true;
