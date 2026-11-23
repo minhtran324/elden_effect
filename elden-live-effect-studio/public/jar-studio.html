@@ -751,6 +751,46 @@
               <input type="range" id="padSidesSlider" min="0" max="150" step="5" value="20" oninput="updatePadding('sides', this.value)">
             </div>
           </div>
+
+          <div class="panel-box" style="border-color: #38bdf8; background: linear-gradient(180deg, #131d33, #090f1d);">
+            <div class="panel-box-title" style="color: #38bdf8;">
+              <span>📺 Vị Trí & Tỷ Lệ Toàn Bộ Hũ Trên OBS:</span>
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.45;">
+              Kéo di chuyển hoặc phóng to/thu nhỏ toàn bộ hũ và quà trên màn hình livestream OBS. Tự động kéo theo toàn bộ quà bên trong không bị rời rạc!
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Vị trí ngang trên OBS (Trái - Phải):</span>
+                <b id="lblStudioObsPosX" style="color: #38bdf8;">50%</b>
+              </label>
+              <input type="range" id="studioObsPosXSlider" min="10" max="90" step="1" value="50" oninput="updateStudioObsPos('jarPosX', this.value)">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Vị trí dọc trên OBS (Trên - Dưới):</span>
+                <b id="lblStudioObsPosY" style="color: #fbbf24;">78%</b>
+              </label>
+              <input type="range" id="studioObsPosYSlider" min="20" max="95" step="1" value="78" oninput="updateStudioObsPos('jarPosY', this.value)">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <label class="form-label">
+                <span>Kích thước hũ trên OBS (Scale):</span>
+                <b id="lblStudioObsScale" style="color: #a855f7;">100%</b>
+              </label>
+              <input type="range" id="studioObsScaleSlider" min="0.4" max="1.6" step="0.05" value="1.0" oninput="updateStudioObsPos('jarScale', this.value)">
+            </div>
+
+            <span class="form-label" style="margin-bottom: 4px;">Vị trí nhanh trên livestream:</span>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+              <button type="button" class="btn btn-sm" onclick="setStudioObsPreset(50, 78, 1.0)" style="justify-content: center; font-size: 0.7rem; padding: 6px 2px;">🎯 Giữa Dưới</button>
+              <button type="button" class="btn btn-sm" onclick="setStudioObsPreset(27, 78, 0.85)" style="justify-content: center; font-size: 0.7rem; padding: 6px 2px;">👈 Góc Trái</button>
+              <button type="button" class="btn btn-sm" onclick="setStudioObsPreset(73, 78, 0.85)" style="justify-content: center; font-size: 0.7rem; padding: 6px 2px;">👉 Góc Phải</button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -827,6 +867,9 @@
       showHitbox: true,
       glassRealism: true,
       clipGifts: true,
+      jarPosX: 50,
+      jarPosY: 78,
+      jarScale: 1.0,
       hitbox: {
         shape: 'sphere',
         radiusX: 0.315,
@@ -925,6 +968,43 @@
       if (side === 'bottom') { state.padBottom = num; document.getElementById('lblPadBottom').textContent = num + 'px'; }
       if (side === 'sides') { state.padLeft = num; state.padRight = num; document.getElementById('lblPadSides').textContent = num + 'px'; }
       calculateCanvasDimensions();
+    }
+
+    let studioObsPosTimer = null;
+    function updateStudioObsPos(field, val) {
+      const num = Number(val);
+      state[field] = num;
+      if (field === 'jarPosX') document.getElementById('lblStudioObsPosX').textContent = `${num}%`;
+      if (field === 'jarPosY') document.getElementById('lblStudioObsPosY').textContent = `${num}%`;
+      if (field === 'jarScale') document.getElementById('lblStudioObsScale').textContent = `${Math.round(num * 100)}%`;
+
+      clearTimeout(studioObsPosTimer);
+      studioObsPosTimer = setTimeout(() => {
+        fetch('/api/jar/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: num })
+        }).catch(() => {});
+      }, 100);
+    }
+
+    function setStudioObsPreset(x, y, scale) {
+      document.getElementById('studioObsPosXSlider').value = x;
+      document.getElementById('lblStudioObsPosX').textContent = `${x}%`;
+      document.getElementById('studioObsPosYSlider').value = y;
+      document.getElementById('lblStudioObsPosY').textContent = `${y}%`;
+      document.getElementById('studioObsScaleSlider').value = scale;
+      document.getElementById('lblStudioObsScale').textContent = `${Math.round(scale * 100)}%`;
+      state.jarPosX = x;
+      state.jarPosY = y;
+      state.jarScale = scale;
+
+      fetch('/api/jar/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jarPosX: x, jarPosY: y, jarScale: scale })
+      }).catch(() => {});
+      showToast('📺', `Đã chỉnh vị trí OBS: X ${x}%, Y ${y}%, Scale ${Math.round(scale * 100)}%`);
     }
 
     // ==========================================
@@ -1915,6 +1995,9 @@
         shimmerRimEffect: state.showShimmer,
         shimmerRimSpeed: state.shimmerSpeed,
         shimmerSparkles: state.showSparkles,
+        jarPosX: typeof state.jarPosX === 'number' ? state.jarPosX : 50,
+        jarPosY: typeof state.jarPosY === 'number' ? state.jarPosY : 78,
+        jarScale: typeof state.jarScale === 'number' ? state.jarScale : 1.0,
         hitbox: state.hitbox,
         clipGiftsToJar: state.clipGifts,
         glassRealism: state.glassRealism,
@@ -2010,6 +2093,28 @@
         }
         if (cfg.shimmerRimEffect !== undefined) state.showShimmer = cfg.shimmerRimEffect;
         if (cfg.shimmerRimSpeed !== undefined) state.shimmerSpeed = Number(cfg.shimmerRimSpeed);
+
+        if (cfg.jarPosX !== undefined) {
+          state.jarPosX = Number(cfg.jarPosX);
+          const el = document.getElementById('studioObsPosXSlider');
+          if (el) el.value = state.jarPosX;
+          const lbl = document.getElementById('lblStudioObsPosX');
+          if (lbl) lbl.textContent = `${state.jarPosX}%`;
+        }
+        if (cfg.jarPosY !== undefined) {
+          state.jarPosY = Number(cfg.jarPosY);
+          const el = document.getElementById('studioObsPosYSlider');
+          if (el) el.value = state.jarPosY;
+          const lbl = document.getElementById('lblStudioObsPosY');
+          if (lbl) lbl.textContent = `${state.jarPosY}%`;
+        }
+        if (cfg.jarScale !== undefined) {
+          state.jarScale = Number(cfg.jarScale);
+          const el = document.getElementById('studioObsScaleSlider');
+          if (el) el.value = state.jarScale;
+          const lbl = document.getElementById('lblStudioObsScale');
+          if (lbl) lbl.textContent = `${Math.round(state.jarScale * 100)}%`;
+        }
 
         if (cfg.hitbox) {
           state.hitbox = { ...state.hitbox, ...cfg.hitbox };
