@@ -1042,7 +1042,7 @@
               <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">🌐 Tỉ Lệ Toàn Bộ Quà (Global Multiplier):</span>
               <b id="labelGiftScaleGlobal" style="color: #fbbf24; font-size: 0.9rem;">100%</b>
             </div>
-            <input type="range" id="jarGiftScaleGlobalSlider" min="0.5" max="2.0" step="0.05" value="1.0" style="width: 100%; margin-top: 8px;" oninput="updateGiftScaleGlobal(this.value)">
+            <input type="range" id="jarGiftScaleGlobalSlider" min="0.25" max="2.5" step="0.05" value="1.0" style="width: 100%; margin-top: 8px;" oninput="updateGiftScaleGlobal(this.value)">
           </div>
 
           <!-- CÁC NHÓM QUÀ CỤ THỂ -->
@@ -1054,7 +1054,7 @@
                 <b id="labelGiftSizeSmall" style="color: #fda4af;">15px</b>
               </div>
               <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Hoa Hồng, Nốt Nhạc, Kẹo Mút...</div>
-              <input type="range" id="jarGiftSizeSmallSlider" min="10" max="28" step="1" value="15" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Small', this.value)">
+              <input type="range" id="jarGiftSizeSmallSlider" min="6" max="36" step="1" value="15" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Small', this.value)">
             </div>
 
             <!-- Nhóm 2: Quà vừa 10-99 xu -->
@@ -1064,7 +1064,7 @@
                 <b id="labelGiftSizeMedium" style="color: #fde68a;">24px</b>
               </div>
               <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Bánh Vòng, Trái Tim, Kính Râm...</div>
-              <input type="range" id="jarGiftSizeMediumSlider" min="16" max="38" step="1" value="24" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Medium', this.value)">
+              <input type="range" id="jarGiftSizeMediumSlider" min="10" max="48" step="1" value="24" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Medium', this.value)">
             </div>
 
             <!-- Nhóm 3: Quà lớn 100-999 xu -->
@@ -1074,7 +1074,7 @@
                 <b id="labelGiftSizeLarge" style="color: #c4b5fd;">35px</b>
               </div>
               <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Pháo Hoa, Xe Hơi, Vương Miện...</div>
-              <input type="range" id="jarGiftSizeLargeSlider" min="24" max="52" step="1" value="35" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Large', this.value)">
+              <input type="range" id="jarGiftSizeLargeSlider" min="16" max="68" step="1" value="35" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Large', this.value)">
             </div>
 
             <!-- Nhóm 4: Quà VIP >= 1000 xu -->
@@ -1084,7 +1084,7 @@
                 <b id="labelGiftSizeVIP" style="color: #fca5a5;">52px</b>
               </div>
               <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Sư Tử, Thiên Nga, Vũ Trụ TikTok...</div>
-              <input type="range" id="jarGiftSizeVIPSlider" min="36" max="75" step="1" value="52" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('VIP', this.value)">
+              <input type="range" id="jarGiftSizeVIPSlider" min="24" max="96" step="1" value="52" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('VIP', this.value)">
             </div>
           </div>
         </div>
@@ -3467,14 +3467,22 @@
       saveJarSettingsField('giftCapacity', Number(val));
     }
 
+    let giftScaleTimer = null;
     function updateGiftScaleGlobal(val) {
       document.getElementById('labelGiftScaleGlobal').textContent = `${Math.round(val * 100)}%`;
-      saveJarSettingsField('giftScaleGlobal', Number(val));
+      clearTimeout(giftScaleTimer);
+      giftScaleTimer = setTimeout(() => {
+        saveJarSettingsField('giftScaleGlobal', Number(val));
+      }, 120);
     }
 
+    let giftSizeTimer = null;
     function updateGiftSize(type, val) {
       document.getElementById(`labelGiftSize${type}`).textContent = `${val}px`;
-      saveJarSettingsField(`giftSize${type}`, Number(val));
+      clearTimeout(giftSizeTimer);
+      giftSizeTimer = setTimeout(() => {
+        saveJarSettingsField(`giftSize${type}`, Number(val));
+      }, 120);
     }
 async function setJarPositionPreset(x, y, scale) {
       document.getElementById('jarPosXSlider').value = x;
