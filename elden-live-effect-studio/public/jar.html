@@ -691,6 +691,8 @@
         isFishbowl,
         bowlCx: cavityCx,
         bowlCy: cavityCy,
+        bowlRx: rx,
+        bowlRy: ry,
         bowlR: rx,
         mouthY,
         mouthW
@@ -983,34 +985,69 @@
 
     // Co giãn kích thước tất cả các quà ĐÃ RƠI TRONG HŨ ngay lập tức theo thời gian thực & Tự động nén dồn xuống đáy
     function resizeActiveGiftBodies() {
-      const { bowlCx, bowlCy, bowlR, isFishbowl, cx, cy, h } = jarGeometry;
-      const targetFloorY = isFishbowl ? (bowlCy + bowlR - 12) : (cy + h / 2 - 20);
+      if (!giftBodies || giftBodies.length === 0) return;
+
+      const bowlCx = jarGeometry.bowlCx || jarGeometry.cx;
+      const bowlCy = jarGeometry.bowlCy || jarGeometry.cy;
+      const rx = jarGeometry.bowlRx || jarGeometry.bowlR || (jarGeometry.w * 0.37);
+      const ry = jarGeometry.bowlRy || (jarGeometry.h * 0.335);
+      const mouthY = jarGeometry.mouthY || (jarGeometry.cy - jarGeometry.h * 0.38);
+      const floorY = bowlCy + ry - 14;
 
       giftBodies.forEach(b => {
         if (!b || !b.giftData) return;
         const targetR = getGiftRadius(b.giftData.coins, b.giftData.giftId);
         const curR = b.giftData.radius || b.circleRadius || 18;
+
         if (Math.abs(targetR - curR) > 0.4) {
-          const scaleFactor = targetR / curR;
-          Body.scale(b, scaleFactor, scaleFactor);
+          const ratio = targetR / curR;
+
+          // 1. Co giãn kích thước vật thể Matter.js
+          Body.scale(b, ratio, ratio);
           b.giftData.radius = targetR;
           b.circleRadius = targetR;
 
-          // Đánh thức vật thể đang ngủ
-          Matter.Sleeping.set(b, false);
-          b.isSleeping = false;
+          const oldX = b.position.x;
+          const oldY = b.position.y;
 
-          // Nếu co nhỏ lại, tự động nén dồn tọa độ xuống đáy hũ để tránh khoảng trống rời rạc
-          if (scaleFactor < 0.99) {
-            b.position.y += (targetFloorY - b.position.y) * (1 - scaleFactor) * 0.72;
-            b.position.x += (bowlCx - b.position.x) * (1 - scaleFactor) * 0.35;
+          // Nếu quà đang nằm trên sàn màn hình bên ngoài hũ
+          if (oldY >= height - 40) {
+            const screenFloorY = height - targetR - 4;
+            Body.setPosition(b, { x: oldX, y: Math.min(oldY, screenFloorY) });
+          }
+          // Nếu quà đang ở trong phạm vi lòng hũ
+          else if (oldY >= mouthY - 10) {
+            // Khi co nhỏ lại (ratio < 0.99): Tự động nén dồn tọa độ theo tỷ lệ hướng về đáy hũ và trục giữa
+            // Giúp các món quà co lại lập tức xếp khít chồng lên nhau ở đáy hũ, không bao giờ bị bay lơ lửng trong không trung
+            if (ratio < 0.99) {
+              const newX = bowlCx + (oldX - bowlCx) * ratio;
+              const newY = floorY - (floorY - oldY) * ratio;
+
+              // Khóa giới hạn an toàn tuyệt đối không bao giờ chui lọt qua đáy hoặc thành hũ
+              const relX = (newX - bowlCx) / Math.max(1, rx);
+              const clampedRelX = Math.max(-0.85, Math.min(0.85, relX));
+              const maxFloorAtX = bowlCy + ry * Math.sqrt(Math.max(0, 1 - clampedRelX * clampedRelX)) - targetR - 10;
+              const clampedY = Math.min(newY, maxFloorAtX);
+
+              Body.setPosition(b, { x: newX, y: clampedY });
+            } else {
+              // Khi phóng to lên: Đảm bảo không bị lún qua đáy hũ
+              const relX = (oldX - bowlCx) / Math.max(1, rx);
+              const clampedRelX = Math.max(-0.85, Math.min(0.85, relX));
+              const maxFloorAtX = bowlCy + ry * Math.sqrt(Math.max(0, 1 - clampedRelX * clampedRelX)) - targetR - 10;
+              if (oldY > maxFloorAtX) {
+                Body.setPosition(b, { x: oldX, y: maxFloorAtX });
+              }
+            }
           }
 
-          // Cấp vận tốc dồn rơi tự nhiên
+          // Cấp vận tốc dồn rơi tự nhiên và đánh thức vật thể
           Body.setVelocity(b, {
-            x: (bowlCx - b.position.x) * 0.04 + (Math.random() - 0.5) * 0.4,
-            y: Math.max(b.velocity.y, 2.5)
+            x: (Math.random() - 0.5) * 0.3,
+            y: Math.max(b.velocity.y, 1.2 + Math.random() * 0.6)
           });
+          Matter.Sleeping.set(b, false);
+          b.isSleeping = false;
         }
       });
     }
