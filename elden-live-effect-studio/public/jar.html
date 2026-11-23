@@ -504,40 +504,64 @@
     // Cấu hình hũ mặc định
     let jarConfig = {
       enabled: true,
-      style: 'mason',
-      customJarImage: '',
+      style: 'fishbowl',
+      customJarImage: '/uploads/decor/iridescent_fishbowl_transparent.png',
+      frontOverlayImage: '/uploads/decor/iridescent_fishbowl_front_overlay.png',
       hideDefaultJarOnCustom: true,
-      decorImage: '',
+      decorImage: '/uploads/decor/sticker_nt_studio.png',
       decorText: '',
-      decorPosition: 'center',
-      decorScale: 1.0,
-      decorOpacity: 0.95,
+      decorPosition: 'bottom',
+      decorScale: 0.85,
+      decorOpacity: 0.98,
       jarPosX: 50,
-      jarPosY: 82,
+      jarPosY: 78,
       jarScale: 1.0,
       dropOrigin: 'top',
       dropMode: 'straight', // 'straight' | 'shower'
-      dropSpread: 0.2,
-      fallSpeed: 1.0,
-      gravity: 1.0,
-      shakeThreshold: 50,
+      dropSpread: 0.16,
+      fallSpeed: 0.65,
+      gravity: 1.05,
+      shakeThreshold: 1000,
       enableFloorAccumulation: true,
-      giftCapacity: 600,
+      giftCapacity: 400,
       giftScaleGlobal: 1.0,
-      giftSizeSmall: 15,
-      giftSizeMedium: 24,
-      giftSizeLarge: 35,
-      giftSizeVIP: 52,
+      giftSizeSmall: 16,
+      giftSizeMedium: 26,
+      giftSizeLarge: 38,
+      giftSizeVIP: 54,
       glowEffect: true,
       sparkleEffect: true,
-      goalEnabled: true,
+      shimmerRimEffect: true,
+      shimmerRimSpeed: 1.0,
+      shimmerSparkles: true,
+      goalEnabled: false,
       goalTargetCoins: 500,
       currentCoins: 0,
-      bounciness: 0.35,
+      bounciness: 0.32,
       soundEnabled: true,
-      soundVolume: 0.7,
-      autoBurstOnGoal: true,
-      autoResetSeconds: 5
+      soundVolume: 0.3,
+      autoBurstOnGoal: false,
+      autoResetSeconds: 5,
+      jarAspect: 'square',
+      jarPadding: {
+        top: 20,
+        bottom: 20,
+        left: 20,
+        right: 20
+      },
+      stickers: [
+        {
+          id: 'sticker_nt_studio',
+          name: 'Logo NT-Studio',
+          url: '/uploads/decor/sticker_nt_studio.png',
+          x: 50,
+          y: 86,
+          scale: 0.85,
+          rotation: 0,
+          opacity: 0.98,
+          layer: 'front'
+        }
+      ]
     };
 
     // Trạng thái tương tác
@@ -603,10 +627,18 @@
       const scale = jarConfig.jarScale || 1.0;
       const posX = typeof jarConfig.jarPosX === 'number' ? jarConfig.jarPosX : 50;
       const posY = typeof jarConfig.jarPosY === 'number' ? jarConfig.jarPosY : 82;
-      const aspect = jarConfig.jarAspect || 'vertical';
+      const aspect = jarConfig.jarAspect || 'square';
+      const isFishbowl = aspect === 'square' || jarConfig.style === 'fishbowl' || (jarConfig.customJarImage && jarConfig.customJarImage.includes('fishbowl'));
 
       let baseW, baseH, neckW, neckH;
-      if (aspect === 'horizontal') {
+      if (isFishbowl) {
+        // BỂ CẦU TRÒN PHA LÊ (Square 1:1)
+        const minDim = Math.min(width * 0.88, height * 0.58);
+        baseW = minDim;
+        baseH = minDim;
+        neckW = baseW * 0.54 * scale;
+        neckH = baseH * 0.22 * scale;
+      } else if (aspect === 'horizontal') {
         // KHỔ NGANG (Horizontal Wide Jar / Bể Hũ Rộng)
         baseW = Math.min(560, width * 0.85);
         baseH = Math.min(380, height * 0.45);
@@ -622,11 +654,11 @@
 
       const w = baseW * scale;
       const h = baseH * scale;
-      const wallThickness = 20 * scale;
+      const wallThickness = 22 * scale;
 
       // Tọa độ tâm (cx, cy) theo % do người dùng kéo chỉnh
       const cx = (width * posX) / 100;
-      const cy = (height * posY) / 100 - (h * 0.42);
+      const cy = isFishbowl ? ((height * posY) / 100 - (h * 0.38)) : ((height * posY) / 100 - (h * 0.42));
 
       jarGeometry = {
         cx,
@@ -636,7 +668,8 @@
         neckW,
         neckH,
         wallThickness,
-        aspect
+        aspect,
+        isFishbowl
       };
     }
 
@@ -685,120 +718,151 @@
       if (jarState.isBurst) return;
 
       calculateJarGeometry();
-      const { cx, cy, w, h, neckW, neckH, wallThickness, aspect } = jarGeometry;
+      const { cx, cy, w, h, neckW, neckH, wallThickness, aspect, isFishbowl } = jarGeometry;
       const halfW = w / 2;
       const halfH = h / 2;
       const halfNeckW = neckW / 2;
       const scale = jarConfig.jarScale || 1.0;
+      const bounciness = Math.min(Number(jarConfig.bounciness) || 0.32, 0.28);
 
-      // 1. Thông số bo góc và sàn đáy hũ
-      // cornerR: bán kính bo tròn góc đáy (36px cho dọc, 44px cho ngang)
-      const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
-      // baseThick: độ dày đế kính đáy (32px để quà nằm trọn vẹn bên trong lòng kính, không chạm mép đáy ngoài)
-      const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
-      const innerFloorY = cy + halfH - baseThick;
+      if (isFishbowl) {
+        // ========================================================
+        // VẬT LÝ BỂ CẦU PHA LÊ TRÒN (CIRCULAR SPHERICAL BOWL HITBOX)
+        // 16 phân đoạn vòng cung chuẩn xác khép kín, quà lăn tự nhiên
+        // ========================================================
+        const sphereR = (w / 2) * 0.88;
+        const sphereCx = cx;
+        const sphereCy = cy + h * 0.08;
+        const numSegments = 16;
+        const startAngle = -0.22 * Math.PI; // Mép miệng bên phải
+        const endAngle = 1.22 * Math.PI;    // Mép miệng bên trái (quét qua đáy)
+        const totalSweep = endAngle - startAngle;
 
-      // 2. Sàn đáy phẳng chính giữa (Central Bottom Floor)
-      // Độ rộng đáy bằng chiều rộng trừ đi 2 góc bo tròn, cộng thêm overlap 16px để bịt kín
-      const centralBottomW = Math.max(60, w - 2 * cornerR + 16);
-      const bottom = Bodies.rectangle(cx, innerFloorY + wallThickness / 2, centralBottomW, wallThickness, {
-        isStatic: true,
-        friction: 0.85,
-        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
-        label: 'jar_wall'
-      });
+        for (let i = 0; i < numSegments; i++) {
+          const theta = startAngle + (totalSweep * (i + 0.5)) / numSegments;
+          const segX = sphereCx + Math.cos(theta) * sphereR;
+          const segY = sphereCy + Math.sin(theta) * sphereR;
+          const segLen = (sphereR * (totalSweep / numSegments)) * 1.36; // Overlap kín khít không lọt quà
 
-      // 3. Bo góc tròn đáy bên trái (Bottom-Left Curved Chamfer 45°)
-      // Nối tiếp liền mạch từ mép sàn lên thành tường trái, dài hơn để overlap chống lọt quà
-      const chamferLen = cornerR * 1.6;
-      const blX = cx - halfW + cornerR * 0.48;
-      const blY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
-      const bottomLeftCorner = Bodies.rectangle(blX, blY, chamferLen, wallThickness, {
-        isStatic: true,
-        angle: Math.PI / 4, // Góc nghiêng 45 độ bo tròn mềm mại
-        friction: 0.85,
-        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
-        label: 'jar_wall'
-      });
+          const seg = Bodies.rectangle(segX, segY, segLen, wallThickness, {
+            isStatic: true,
+            angle: theta + Math.PI / 2,
+            friction: 0.85,
+            restitution: bounciness,
+            label: 'jar_wall'
+          });
+          jarWalls.push(seg);
+        }
 
-      // 4. Bo góc tròn đáy bên phải (Bottom-Right Curved Chamfer -45°)
-      const brX = cx + halfW - cornerR * 0.48;
-      const brY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
-      const bottomRightCorner = Bodies.rectangle(brX, brY, chamferLen, wallThickness, {
-        isStatic: true,
-        angle: -Math.PI / 4, // Góc nghiêng -45 độ bo tròn mềm mại
-        friction: 0.85,
-        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
-        label: 'jar_wall'
-      });
+        // 2 Phễu định hướng dẫn quà rơi chuẩn xác qua miệng hũ
+        const leftLip = Bodies.rectangle(cx - w * 0.35, cy - h * 0.28, w * 0.24, wallThickness, {
+          isStatic: true,
+          angle: 0.52,
+          friction: 0.15,
+          restitution: bounciness,
+          label: 'jar_wall'
+        });
+        const rightLip = Bodies.rectangle(cx + w * 0.35, cy - h * 0.28, w * 0.24, wallThickness, {
+          isStatic: true,
+          angle: -0.52,
+          friction: 0.15,
+          restitution: bounciness,
+          label: 'jar_wall'
+        });
+        jarWalls.push(leftLip, rightLip);
+      } else {
+        // Fallback hũ khối chữ nhật bo góc
+        const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
+        const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
+        const innerFloorY = cy + halfH - baseThick;
+        const centralBottomW = Math.max(60, w - 2 * cornerR + 16);
 
-      // 5. Tường trái thân hũ (Kéo dài từ mép vát bo tròn lên tận vai cổ hũ, overlap kín khít)
-      const wallTopY = cy - halfH + neckH;
-      const wallBottomY = innerFloorY - cornerR * 0.8;
-      const wallH = (wallBottomY - wallTopY) + 20;
-      const wallCenterY = (wallTopY + wallBottomY) / 2;
+        const bottom = Bodies.rectangle(cx, innerFloorY + wallThickness / 2, centralBottomW, wallThickness, {
+          isStatic: true,
+          friction: 0.85,
+          restitution: bounciness,
+          label: 'jar_wall'
+        });
+        const chamferLen = cornerR * 1.6;
+        const blX = cx - halfW + cornerR * 0.48;
+        const blY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
+        const bottomLeftCorner = Bodies.rectangle(blX, blY, chamferLen, wallThickness, {
+          isStatic: true,
+          angle: Math.PI / 4,
+          friction: 0.85,
+          restitution: bounciness,
+          label: 'jar_wall'
+        });
+        const brX = cx + halfW - cornerR * 0.48;
+        const brY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
+        const bottomRightCorner = Bodies.rectangle(brX, brY, chamferLen, wallThickness, {
+          isStatic: true,
+          angle: -Math.PI / 4,
+          friction: 0.85,
+          restitution: bounciness,
+          label: 'jar_wall'
+        });
 
-      const leftWall = Bodies.rectangle(cx - halfW + wallThickness / 2, wallCenterY, wallThickness, wallH, {
-        isStatic: true,
-        friction: 0.2,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
+        const wallTopY = cy - halfH + neckH;
+        const wallBottomY = innerFloorY - cornerR * 0.8;
+        const wallH = (wallBottomY - wallTopY) + 20;
+        const wallCenterY = (wallTopY + wallBottomY) / 2;
 
-      // 6. Tường phải thân hũ
-      const rightWall = Bodies.rectangle(cx + halfW - wallThickness / 2, wallCenterY, wallThickness, wallH, {
-        isStatic: true,
-        friction: 0.2,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
+        const leftWall = Bodies.rectangle(cx - halfW + wallThickness / 2, wallCenterY, wallThickness, wallH, {
+          isStatic: true,
+          friction: 0.2,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
+        const rightWall = Bodies.rectangle(cx + halfW - wallThickness / 2, wallCenterY, wallThickness, wallH, {
+          isStatic: true,
+          friction: 0.2,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
 
-      // 7. Vai trái uốn cong vào cổ hũ
-      const shoulderW = halfW - halfNeckW;
-      const leftShoulder = Bodies.rectangle(cx - halfNeckW - shoulderW / 2 + 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
-        isStatic: true,
-        angle: 0.36,
-        friction: 0.15,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
+        const shoulderW = halfW - halfNeckW;
+        const leftShoulder = Bodies.rectangle(cx - halfNeckW - shoulderW / 2 + 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
+          isStatic: true,
+          angle: 0.36,
+          friction: 0.15,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
+        const rightShoulder = Bodies.rectangle(cx + halfNeckW + shoulderW / 2 - 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
+          isStatic: true,
+          angle: -0.36,
+          friction: 0.15,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
 
-      // 8. Vai phải uốn cong vào cổ hũ
-      const rightShoulder = Bodies.rectangle(cx + halfNeckW + shoulderW / 2 - 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
-        isStatic: true,
-        angle: -0.36,
-        friction: 0.15,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
+        const leftLip = Bodies.rectangle(cx - halfNeckW + wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
+          isStatic: true,
+          friction: 0.1,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
+        const rightLip = Bodies.rectangle(cx + halfNeckW - wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
+          isStatic: true,
+          friction: 0.1,
+          restitution: Number(jarConfig.bounciness) || 0.35,
+          label: 'jar_wall'
+        });
 
-      // 9. Cổ & Miệng bên trái
-      const leftLip = Bodies.rectangle(cx - halfNeckW + wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
-        isStatic: true,
-        friction: 0.1,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
+        jarWalls = [
+          bottom,
+          bottomLeftCorner,
+          bottomRightCorner,
+          leftWall,
+          rightWall,
+          leftShoulder,
+          rightShoulder,
+          leftLip,
+          rightLip
+        ];
+      }
 
-      // 10. Cổ & Miệng bên phải
-      const rightLip = Bodies.rectangle(cx + halfNeckW - wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
-        isStatic: true,
-        friction: 0.1,
-        restitution: Number(jarConfig.bounciness) || 0.35,
-        label: 'jar_wall'
-      });
-
-      jarWalls = [
-        bottom,
-        bottomLeftCorner,
-        bottomRightCorner,
-        leftWall,
-        rightWall,
-        leftShoulder,
-        rightShoulder,
-        leftLip,
-        rightLip
-      ];
       World.add(engine.world, jarWalls);
     }
 
@@ -1452,19 +1516,43 @@
     }
 
     function drawJarForegroundHighlights(ctx, geom, style) {
+      const { cx, cy, w, h, neckW, neckH, aspect, isFishbowl } = geom;
+      const halfW = w / 2;
+      const halfH = h / 2;
+      const scale = jarConfig.jarScale || 1.0;
+
+      // 1. Nếu có ảnh Overlay mặt trước (Front Overlay: Nơ, cổ bèo, viền miệng hũ, bóng kính pha lê)
+      const overlayUrl = jarConfig.frontOverlayImage || (jarConfig.customJarImage && jarConfig.customJarImage.includes('fishbowl') ? '/uploads/decor/iridescent_fishbowl_front_overlay.png' : '');
+      if (overlayUrl) {
+        const overlayImg = preloadImage(overlayUrl);
+        if (overlayImg && overlayImg.complete && overlayImg.naturalWidth > 0) {
+          const pad = jarConfig.jarPadding || { top: 0, bottom: 0, left: 0, right: 0 };
+          const pTop = Number(pad.top) || 0;
+          const pBottom = Number(pad.bottom) || 0;
+          const pLeft = Number(pad.left) || 0;
+          const pRight = Number(pad.right) || 0;
+
+          const drawW = w + (pLeft + pRight) * scale;
+          const drawH = h + (pTop + pBottom) * scale;
+          const drawX = cx - halfW - pLeft * scale;
+          const drawY = cy - halfH - pTop * scale;
+
+          ctx.save();
+          ctx.drawImage(overlayImg, drawX, drawY, drawW, drawH);
+          ctx.restore();
+          return;
+        }
+      }
+
       const isCustom = style === 'custom_image' || (jarConfig.hideDefaultJarOnCustom && jarConfig.customJarImage);
       if (isCustom) return;
 
-      const { cx, cy, w, h, neckW, neckH, aspect } = geom;
-      const halfW = w / 2;
-      const halfH = h / 2;
       const halfNeckW = neckW / 2;
-      const scale = jarConfig.jarScale || 1.0;
       const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
 
       ctx.save();
 
-      // 1. Vạch sáng phản chiếu dọc viền bo cong bên trái
+      // Vạch sáng phản chiếu dọc viền bo cong bên trái
       const lightGrad = ctx.createLinearGradient(cx - halfW + 10, cy, cx - halfW + 48, cy);
       lightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
       lightGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
@@ -1480,7 +1568,7 @@
       ctx.closePath();
       ctx.fill();
 
-      // 2. Viền loá sáng mỏng thanh thoát dọc cạnh phải
+      // Viền loá sáng mỏng thanh thoát dọc cạnh phải
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -1488,7 +1576,7 @@
       ctx.lineTo(cx + halfW - 14, cy + halfH - cornerR);
       ctx.stroke();
 
-      // 3. Đường nét viền kính mềm mại theo đúng hình dáng hũ bo góc
+      // Đường nét viền kính mềm mại theo đúng hình dáng hũ bo góc
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -1505,7 +1593,7 @@
       ctx.quadraticCurveTo(cx - halfW, cy + halfH, cx - halfW + cornerR, cy + halfH);
       ctx.stroke();
 
-      // 4. Ren xoắn cổ hũ và vành miệng bo tròn
+      // Ren xoắn cổ hũ và vành miệng bo tròn
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -1514,27 +1602,222 @@
 
       ctx.restore();
     }
-function drawDecor(ctx, geom) {
-      if (!jarConfig.decorImage) return;
 
-      const img = preloadImage(jarConfig.decorImage);
-      if (!img || !img.complete || img.naturalWidth === 0) return;
+    // Vẽ sticker / decor theo phân tầng ('behind_glass' hoặc 'front')
+    function drawDecorStickers(ctx, geom, targetLayer = 'front') {
+      const { cx, cy, w, h } = geom;
+      const scale = jarConfig.jarScale || 1.0;
 
-      const { cx, cy, h } = geom;
-      const scale = jarConfig.decorScale || 1.0;
-      const opacity = jarConfig.decorOpacity !== undefined ? jarConfig.decorOpacity : 0.95;
+      // 1. Vẽ mảng stickers tùy chỉnh
+      if (Array.isArray(jarConfig.stickers) && jarConfig.stickers.length > 0) {
+        jarConfig.stickers.forEach(stk => {
+          if (!stk || !stk.url) return;
+          const stkLayer = stk.layer || 'front';
+          if (stkLayer !== targetLayer) return;
 
-      let targetY = cy;
-      if (jarConfig.decorPosition === 'top') targetY = cy - h * 0.28;
-      else if (jarConfig.decorPosition === 'bottom') targetY = cy + h * 0.28;
-      else if (jarConfig.decorPosition === 'neck') targetY = cy - h * 0.42;
+          const img = preloadImage(stk.url);
+          if (!img || !img.complete || img.naturalWidth === 0) return;
 
-      const targetW = 220 * scale;
-      const targetH = (img.naturalHeight / img.naturalWidth) * targetW;
+          const stkX = cx + ((stk.x !== undefined ? stk.x - 50 : 0) / 100) * w;
+          const stkY = cy + ((stk.y !== undefined ? stk.y - 50 : 0) / 100) * h;
+          const stkScale = (stk.scale || 1.0) * scale;
+          const stkRot = ((stk.rotation || 0) * Math.PI) / 180;
+          const stkAlpha = stk.opacity !== undefined ? stk.opacity : 1.0;
+
+          const baseStkW = w * 0.52;
+          const drawW = baseStkW * stkScale;
+          const drawH = (img.naturalHeight / img.naturalWidth) * drawW;
+
+          ctx.save();
+          ctx.translate(stkX, stkY);
+          ctx.rotate(stkRot);
+          ctx.globalAlpha = stkAlpha;
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+          ctx.restore();
+        });
+      }
+
+      // 2. Tương thích ngược decorImage đơn lẻ (nếu chưa có trong stickers)
+      if (targetLayer === 'front' && jarConfig.decorImage) {
+        const alreadyInStickers = Array.isArray(jarConfig.stickers) && jarConfig.stickers.some(s => s && s.url === jarConfig.decorImage);
+        if (!alreadyInStickers) {
+          const img = preloadImage(jarConfig.decorImage);
+          if (img && img.complete && img.naturalWidth > 0) {
+            let targetY = cy;
+            if (jarConfig.decorPosition === 'top') targetY = cy - h * 0.28;
+            else if (jarConfig.decorPosition === 'bottom') targetY = cy + h * 0.34;
+            else if (jarConfig.decorPosition === 'neck') targetY = cy - h * 0.38;
+
+            const dScale = (jarConfig.decorScale || 1.0) * scale;
+            const opacity = jarConfig.decorOpacity !== undefined ? jarConfig.decorOpacity : 0.95;
+            const targetW = (w * 0.52) * dScale;
+            const targetH = (img.naturalHeight / img.naturalWidth) * targetW;
+
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.drawImage(img, cx - targetW / 2, targetY - targetH / 2, targetW, targetH);
+            ctx.restore();
+          }
+        }
+      }
+    }
+
+    // ========================================================
+    // HIỆU ỨNG DẢI SÁNG LẤP LÁNH CHẠY QUANH VIỀN HŨ (60FPS CAUSTIC SHIMMER & TWINKLING SPARKLES)
+    // ========================================================
+    let rimSparkles = [];
+
+    function drawRealisticRimShimmer(ctx, geom, time) {
+      if (jarConfig.shimmerRimEffect === false) return;
+      const { cx, cy, w, h } = geom;
+      const scale = jarConfig.jarScale || 1.0;
+      const speed = Number(jarConfig.shimmerRimSpeed) || 1.0;
+
+      // 1. Tọa độ vành miệng elip trên cùng
+      const mouthX = cx;
+      const mouthY = cy - h * 0.375;
+      const mouthRx = w * 0.285;
+      const mouthRy = h * 0.052;
+
+      // Góc quét liên tục của chùm sáng
+      const sweepAngle = (time * 0.0019 * speed) % (Math.PI * 2);
 
       ctx.save();
-      ctx.globalAlpha = opacity;
-      ctx.drawImage(img, cx - targetW / 2, targetY - targetH / 2, targetW, targetH);
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Điểm đầu của chùm sao chổi
+      const headX = mouthX + Math.cos(sweepAngle) * mouthRx;
+      const headY = mouthY + Math.sin(sweepAngle) * mouthRy;
+
+      // Vẽ vệt đuôi gradient ánh cầu vồng mềm mại
+      const trailAngle = sweepAngle - 0.75;
+      const tailX = mouthX + Math.cos(trailAngle) * mouthRx;
+      const tailY = mouthY + Math.sin(trailAngle) * mouthRy;
+
+      const trailGrad = ctx.createLinearGradient(headX, headY, tailX, tailY);
+      trailGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+      trailGrad.addColorStop(0.25, 'rgba(167, 243, 208, 0.75)');
+      trailGrad.addColorStop(0.65, 'rgba(244, 114, 182, 0.4)');
+      trailGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.strokeStyle = trailGrad;
+      ctx.lineWidth = 3.8 * scale;
+      ctx.beginPath();
+      ctx.ellipse(mouthX, mouthY, mouthRx, mouthRy, 0, trailAngle, sweepAngle, false);
+      ctx.stroke();
+
+      // Hào quang tỏa sáng tại đầu chùm tia sáng
+      const flareGrad = ctx.createRadialGradient(headX, headY, 0, headX, headY, 20 * scale);
+      flareGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      flareGrad.addColorStop(0.3, 'rgba(253, 224, 71, 0.85)');
+      flareGrad.addColorStop(0.6, 'rgba(244, 114, 182, 0.35)');
+      flareGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.fillStyle = flareGrad;
+      ctx.beginPath();
+      ctx.arc(headX, headY, 20 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sao 4 cánh lấp lánh tại tâm chùm sáng
+      drawDiamondStar(ctx, headX, headY, 14 * scale, 1.0, '#ffffff');
+
+      // 2. Chùm sáng thứ hai chạy êm đềm dọc đường viền bụng dưới hũ pha lê
+      const bellyY = cy + h * 0.08;
+      const bellyR = (w / 2) * 0.88;
+      const bellySweep = Math.PI * 0.18 + (Math.sin(time * 0.0014 * speed) * 0.5 + 0.5) * (Math.PI * 0.64);
+      const bellyX = cx + Math.cos(bellySweep) * bellyR;
+      const bellyPtY = bellyY + Math.sin(bellySweep) * bellyR;
+
+      const bFlare = ctx.createRadialGradient(bellyX, bellyPtY, 0, bellyX, bellyPtY, 18 * scale);
+      bFlare.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+      bFlare.addColorStop(0.4, 'rgba(125, 211, 252, 0.5)');
+      bFlare.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = bFlare;
+      ctx.beginPath();
+      ctx.arc(bellyX, bellyPtY, 18 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Các ngôi sao pha lê nhấp nháy tĩnh tại các điểm nhấn (Nơ hồng, ngọc trai, ren cổ)
+      const bowPulse = (Math.sin(time * 0.0032) * 0.5 + 0.5);
+      drawDiamondStar(ctx, cx + w * 0.34, cy - h * 0.26, (12 + bowPulse * 8) * scale, 0.4 + bowPulse * 0.6, '#ffd1dc');
+
+      const pearlPulse = (Math.sin(time * 0.004 + 1.5) * 0.5 + 0.5);
+      drawDiamondStar(ctx, cx + w * 0.31, cy - h * 0.17, (10 + pearlPulse * 7) * scale, 0.35 + pearlPulse * 0.65, '#e0f2fe');
+
+      const leftPulse = (Math.sin(time * 0.0036 + 3.0) * 0.5 + 0.5);
+      drawDiamondStar(ctx, cx - w * 0.32, cy - h * 0.32, (10 + leftPulse * 6) * scale, 0.35 + leftPulse * 0.65, '#fef08a');
+
+      // 4. Các hạt sao lấp lánh ngẫu nhiên sinh ra dọc viền hũ
+      if (jarConfig.shimmerSparkles !== false && Math.random() < 0.14) {
+        const onRim = Math.random() < 0.65;
+        let sx, sy;
+        if (onRim) {
+          const a = Math.random() * Math.PI * 2;
+          sx = mouthX + Math.cos(a) * mouthRx + (Math.random() - 0.5) * 6;
+          sy = mouthY + Math.sin(a) * mouthRy + (Math.random() - 0.5) * 6;
+        } else {
+          const a = Math.PI * 0.15 + Math.random() * Math.PI * 0.7;
+          sx = cx + Math.cos(a) * bellyR + (Math.random() - 0.5) * 8;
+          sy = bellyY + Math.sin(a) * bellyR + (Math.random() - 0.5) * 8;
+        }
+        rimSparkles.push({
+          x: sx,
+          y: sy,
+          size: (5 + Math.random() * 8) * scale,
+          rot: Math.random() * Math.PI,
+          vrot: (Math.random() - 0.5) * 0.06,
+          alpha: 1.0,
+          decay: 0.02 + Math.random() * 0.025,
+          color: ['#ffffff', '#fde047', '#f472b6', '#38bdf8', '#a7f3d0'][Math.floor(Math.random() * 5)]
+        });
+      }
+
+      for (let i = rimSparkles.length - 1; i >= 0; i--) {
+        const s = rimSparkles[i];
+        s.alpha -= s.decay;
+        s.rot += s.vrot;
+        if (s.alpha <= 0) {
+          rimSparkles.splice(i, 1);
+          continue;
+        }
+        drawDiamondStar(ctx, s.x, s.y, s.size, s.alpha, s.color, s.rot);
+      }
+
+      ctx.restore();
+    }
+
+    // Hàm vẽ ngôi sao 4 cánh lấp lánh (Diamond Starburst)
+    function drawDiamondStar(ctx, x, y, size, alpha, color, rot = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+      // Lõi sáng trung tâm
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.75);
+      g.addColorStop(0, '#ffffff');
+      g.addColorStop(0.4, color);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 0.75, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cánh sao dọc nhọn mềm mại
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.quadraticCurveTo(size * 0.12, 0, 0, size);
+      ctx.quadraticCurveTo(-size * 0.12, 0, 0, -size);
+      ctx.fill();
+
+      // Cánh sao ngang
+      ctx.beginPath();
+      ctx.moveTo(-size, 0);
+      ctx.quadraticCurveTo(0, size * 0.12, size, 0);
+      ctx.quadraticCurveTo(0, -size * 0.12, -size, 0);
+      ctx.fill();
+
       ctx.restore();
     }
 
@@ -1653,25 +1936,35 @@ function drawDecor(ctx, geom) {
         drawAuraGlow(ctx, jarGeometry);
       }
 
-      // --- LAYER 1: MẶT SAU & THÂN THỦY TINH TRONG SUỐT ---
+      // --- LAYER 1: MẶT SAU & THÂN THỦY TINH TRONG SUỐT (BASE BOWL) ---
       if (!jarState.isBurst) {
         drawJarBackground(ctx, jarGeometry, jarConfig.style);
       }
 
-      // --- LAYER 2: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
-      giftBodies.forEach(b => drawGiftBody(ctx, b));
-
-      // --- LAYER 3: HÌNH ẢNH DECOR XOÁ PHÔNG (PNG/STICKER/LOGO) ---
+      // --- LAYER 2: DECOR / STICKERS DƯỚI KÍNH (BEHIND-GLASS) ---
       if (!jarState.isBurst) {
-        drawDecor(ctx, jarGeometry);
+        drawDecorStickers(ctx, jarGeometry, 'behind_glass');
       }
 
-      // --- LAYER 4: MẶT TRƯỚC PHẢN CHIẾU ÁNH SÁNG & VIỀN REN (FOREGROUND) ---
+      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
+      giftBodies.forEach(b => drawGiftBody(ctx, b));
+
+      // --- LAYER 4: MẶT TRƯỚC PHẢN CHIẾU ÁNH SÁNG, NƠ, CỔ BÈO & BÓNG KÍNH (FOREGROUND OVERLAY) ---
       if (!jarState.isBurst) {
         drawJarForegroundHighlights(ctx, jarGeometry, jarConfig.style);
       }
 
-      // --- LAYER 5: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
+      // --- LAYER 5: DECOR & STICKERS MẶT TRƯỚC HŨ (LOGO, STICKER NT-STUDIO) ---
+      if (!jarState.isBurst) {
+        drawDecorStickers(ctx, jarGeometry, 'front');
+      }
+
+      // --- LAYER 6: HIỆU ỨNG DẢI SÁNG LẤP LÁNH CHẠY QUANH VIỀN HŨ (60FPS CAUSTIC SHIMMER & SPARKLES) ---
+      if (!jarState.isBurst) {
+        drawRealisticRimShimmer(ctx, jarGeometry, time);
+      }
+
+      // --- LAYER 7: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
       if (!jarState.isBurst && jarState.crackLevel > 0) {
         drawCracks(ctx, jarGeometry.cx, jarGeometry.cy, jarGeometry.w, jarGeometry.h, jarState.crackLevel);
       }

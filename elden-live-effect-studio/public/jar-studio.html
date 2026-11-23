@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>🏺 Elden Jar Studio Pro · Thiết Kế & Xoá Phông Hũ Quà Live</title>
+  <title>🏺 Jar Studio Pro · Thiết Kế Hũ Pha Lê & Dán Sticker 8K</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -48,12 +48,12 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #fff;
     }
     .brand-badge {
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      background: linear-gradient(135deg, #f59e0b, #ec4899);
       color: #fff;
       font-size: 0.7rem;
       padding: 3px 8px;
@@ -85,6 +85,8 @@
     .btn-gold:hover { filter: brightness(1.1); box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); }
     .btn-cyan { background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; border-color: #0284c7; }
     .btn-cyan:hover { filter: brightness(1.1); box-shadow: 0 0 14px rgba(6, 182, 212, 0.45); }
+    .btn-pink { background: linear-gradient(135deg, #ec4899, #f43f5e); color: #fff; border-color: #ec4899; }
+    .btn-pink:hover { filter: brightness(1.1); box-shadow: 0 0 14px rgba(236, 72, 153, 0.45); }
     .btn-danger { background: #ef4444; border-color: #ef4444; color: #fff; }
     .btn-danger:hover { background: #dc2626; }
     .btn-sm { padding: 4px 10px; font-size: 0.76rem; }
@@ -94,28 +96,11 @@
       color: var(--cyan);
     }
 
-    /* TOP TOOLBAR PRESETS */
-    .toolbar-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #090f1d;
-      padding: 3px 6px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    .toolbar-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      font-weight: 700;
-      margin-right: 4px;
-    }
-
     /* MAIN WORKSPACE */
     .workspace {
       flex: 1;
       display: grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 410px 1fr;
       overflow: hidden;
     }
 
@@ -129,12 +114,12 @@
     }
     .sidebar-tabs {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       background: #0b1120;
       border-bottom: 1px solid var(--border);
     }
     .sidebar-tab-btn {
-      padding: 10px 4px;
+      padding: 12px 4px;
       font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-muted);
@@ -158,238 +143,177 @@
       flex: 1;
       overflow-y: auto;
       padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
     }
 
-    /* PANEL CARDS */
+    /* PANEL BOX */
     .panel-box {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
     .panel-box-title {
       font-size: 0.8rem;
       font-weight: 800;
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      color: #f1f5f9;
       margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* PRESET GRIDS */
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 8px;
-    }
-    .preset-card {
-      background: #0b111e;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .preset-card:hover {
-      border-color: #38bdf8;
-      background: #111a2d;
-      transform: translateY(-2px);
-    }
-    .preset-card.active {
-      border-color: #38bdf8;
-      background: rgba(56, 189, 248, 0.15);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-    }
-    .preset-card img {
-      max-width: 60px;
-      max-height: 60px;
-      object-fit: contain;
-    }
-    .preset-card span {
-      font-size: 0.72rem;
+    .form-label {
+      font-size: 0.76rem;
       font-weight: 700;
-      color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #1e293b;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      background: #090f1d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: var(--border-focus);
     }
 
     /* STICKER CATALOG */
     .sticker-cat-tabs {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       overflow-x: auto;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
     }
     .sticker-cat-btn {
-      padding: 4px 8px;
+      padding: 4px 10px;
       font-size: 0.72rem;
+      font-weight: 700;
       border-radius: 6px;
-      background: #090f1d;
       border: 1px solid var(--border);
+      background: #1a2744;
       color: var(--text-muted);
       cursor: pointer;
       white-space: nowrap;
     }
     .sticker-cat-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
     }
     .sticker-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      max-height: 240px;
+      max-height: 220px;
       overflow-y: auto;
-      padding: 4px;
-      background: #090f1d;
-      border-radius: 8px;
-      border: 1px solid var(--border);
+      padding: 2px;
     }
     .sticker-item {
-      aspect-ratio: 1;
-      background: #131d33;
+      background: #0b1120;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 6px;
-      cursor: pointer;
+      padding: 8px 4px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
       transition: all 0.15s;
     }
     .sticker-item:hover {
       border-color: #38bdf8;
       background: #1e293b;
-      transform: scale(1.08);
+      transform: translateY(-2px);
     }
     .sticker-item img {
-      max-width: 100%;
-      max-height: 100%;
+      width: 52px;
+      height: 52px;
       object-fit: contain;
     }
-
-    /* TEMPLATE GALLERY CARDS */
-    .template-card {
-      background: #0b111e;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: all 0.15s;
-      position: relative;
-    }
-    .template-card:hover {
-      border-color: #38bdf8;
-      background: #0e172a;
-    }
-    .template-card.active {
-      border-color: var(--gold);
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
-    }
-    .template-preview-box {
-      width: 100%;
-      height: 140px;
-      background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 16px 16px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .template-preview-box img {
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-    }
-    .template-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .template-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #fff;
+    .sticker-item span {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-align: center;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex: 1;
-    }
-    .template-badge {
-      font-size: 0.68rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #1e293b;
-      color: #94a3b8;
-      font-weight: 700;
-    }
-    .template-badge.active-badge {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-      border: 1px solid #f59e0b;
-    }
-    .template-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr 40px;
-      gap: 6px;
+      width: 100%;
+      padding: 0 4px;
     }
 
-    /* CENTER WORKSPACE / CANVAS */
-    .stage {
-      background: #060911;
+    /* ACTIVE STICKER LIST */
+    .active-sticker-card {
+      background: #0b1120;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s;
+    }
+    .active-sticker-card.selected {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    /* CANVAS STAGE (RIGHT) */
+    .canvas-stage {
+      background: radial-gradient(circle at center, #131c31 0%, #060912 100%);
       position: relative;
       overflow: hidden;
-    }
-    .canvas-viewport {
-      flex: 1;
-      overflow: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px;
-      position: relative;
     }
+    .canvas-stage.bg-checker {
+      background-image: 
+        linear-gradient(45deg, #0e1526 25%, transparent 25%), 
+        linear-gradient(-45deg, #0e1526 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #0e1526 75%), 
+        linear-gradient(-45deg, transparent 75%, #0e1526 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+      background-color: #080c18;
+    }
+    .canvas-stage.bg-dark {
+      background: #050811;
+    }
+    .canvas-stage.bg-live {
+      background: linear-gradient(180deg, #180928 0%, #0d122b 50%, #080f1d 100%);
+    }
+
     .canvas-wrapper {
       position: relative;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(139, 92, 246, 0.15);
       border-radius: 12px;
-      overflow: visible;
-      transition: transform 0.1s ease;
+      overflow: hidden;
+      transform-origin: center center;
+      transition: transform 0.1s ease-out;
     }
-    .canvas-bg-checker {
-      background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 20px 20px;
-    }
-    .canvas-bg-dark {
-      background: #0b1120;
-    }
-    .canvas-bg-live {
-      background: linear-gradient(180deg, #182234 0%, #0c1322 100%);
-    }
-    #stageCanvas {
+    canvas#stageCanvas {
       display: block;
-      border-radius: 12px;
       cursor: crosshair;
     }
 
@@ -399,82 +323,40 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
       padding: 6px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
       z-index: 10;
-    }
-    .floating-sticker-menu {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(12px);
-      border: 1px solid #38bdf8;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      z-index: 15;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
     }
 
-    /* FORM CONTROLS */
-    label.form-label {
-      font-size: 0.74rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    input[type="range"] {
-      width: 100%;
-      accent-color: #38bdf8;
-      cursor: pointer;
-    }
-    input[type="text"], select {
-      width: 100%;
-      background: #090f1d;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 7px 10px;
-      color: #fff;
-      font-size: 0.8rem;
-    }
-    input[type="text"]:focus, select:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
-
-    /* NOTIFICATION TOAST */
+    /* TOAST NOTIFICATION */
     .toast {
       position: fixed;
-      top: 24px;
+      bottom: 24px;
       right: 24px;
-      background: #0f172a;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
       border: 1px solid #38bdf8;
       color: #fff;
-      padding: 12px 18px;
+      padding: 10px 18px;
       border-radius: 10px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-      transform: translateY(-50px);
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transform: translateY(100px);
       opacity: 0;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 9999;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 1000;
+      pointer-events: none;
     }
     .toast.show {
       transform: translateY(0);
@@ -486,268 +368,270 @@
 
   <!-- TOP HEADER -->
   <header>
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <a href="/admin.html" class="btn btn-sm" title="Quay lại Admin Dashboard">
-        ← Về Quản Trị
-      </a>
-      <div class="brand">
-        <span>🏺 Elden Jar Studio Pro</span>
-        <span class="brand-badge">Matter.js Physics Ready</span>
-      </div>
+    <div class="brand">
+      <span style="font-size: 1.35rem;">🔮</span>
+      <span>Jar Studio Pro</span>
+      <span class="brand-badge">8K Physics</span>
+      <span style="font-size: 0.74rem; color: #94a3b8; margin-left: 6px;">Bể Cầu Pha Lê Cầu Vồng & Decor PNG</span>
     </div>
 
-    <!-- KHỔ KHUNG HÌNH (ASPECT PRESETS) -->
-    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-      <div class="toolbar-group">
-        <span class="toolbar-label">📐 Khổ Hũ:</span>
-        <button class="btn btn-sm active" id="btnAspectVertical" onclick="setAspectPreset('vertical')">
-          📱 Dọc (4:5)
-        </button>
-        <button class="btn btn-sm" id="btnAspectHorizontal" onclick="setAspectPreset('horizontal')">
-          🖥️ Ngang (4:3)
-        </button>
-        <button class="btn btn-sm" id="btnAspectSquare" onclick="setAspectPreset('square')">
-          ⬛ Vuông (1:1)
-        </button>
-      </div>
-
-      <!-- NỚI RỘNG LỀ NHANH (PADDING PRESETS) -->
-      <div class="toolbar-group">
-        <span class="toolbar-label">↔️ Nới Lề:</span>
-        <button class="btn btn-sm" id="btnPadCompact" onclick="setPaddingPreset(0, 0, 0)">0px (Gọn)</button>
-        <button class="btn btn-sm active" id="btnPadNormal" onclick="setPaddingPreset(70, 50, 60)">+60px (Chuẩn)</button>
-        <button class="btn btn-sm" id="btnPadWide" onclick="setPaddingPreset(120, 80, 100)">+100px (Rộng)</button>
-      </div>
-
-      <!-- XUẤT & ÁP DỤNG -->
-      <button class="btn btn-primary" onclick="openSaveTemplateModal()">
-        💾 Lưu Vào Thư Viện
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <button class="btn btn-sm btn-pink" onclick="dropSimulatedGift()" title="Thả thử nghiệm một món quà vào hũ xem va chạm và hiệu ứng">
+        🎁 Thả Thử Quà Vào Hũ
       </button>
-      <button class="btn btn-gold" onclick="applyDirectlyToOBS()">
-        ⚡ Áp Dụng Lên OBS (1-Click)
+      <button class="btn btn-sm" id="btnToggleShimmerHeader" onclick="toggleShimmerPreview()" title="Bật/tắt xem trước vệt sáng lấp lánh">
+        ✨ Vệt Sáng Viền: BẬT
       </button>
-      <button class="btn btn-sm" onclick="exportTransparentPng()" title="Tải ảnh PNG không kèm viền hướng dẫn">
-        📥 Xuất PNG
+      <div style="width: 1px; height: 22px; background: var(--border);"></div>
+      <a href="/admin.html#jarSection" class="btn btn-sm">
+        ← Về Admin
+      </a>
+      <button class="btn btn-gold btn-sm" onclick="quickApplyToObs()">
+        ⚡ ÁP DỤNG NGAY LÊN OBS
       </button>
     </div>
   </header>
 
-  <!-- WORKSPACE -->
+  <!-- MAIN WORKSPACE -->
   <div class="workspace">
 
     <!-- SIDEBAR (LEFT) -->
     <div class="sidebar">
       <div class="sidebar-tabs">
         <button class="sidebar-tab-btn active" id="tabBtnJar" onclick="switchSidebarTab('jar')">
-          <span style="font-size: 1.1rem;">🏺</span>
-          <span>Hũ Gốc</span>
-        </button>
-        <button class="sidebar-tab-btn" id="tabBtnChroma" onclick="switchSidebarTab('chroma')">
-          <span style="font-size: 1.1rem;">✂️</span>
-          <span>Xóa Phông</span>
+          <span style="font-size: 1.15rem;">🔮</span>
+          <span>Hũ Pha Lê</span>
         </button>
         <button class="sidebar-tab-btn" id="tabBtnStickers" onclick="switchSidebarTab('stickers')">
-          <span style="font-size: 1.1rem;">✨</span>
-          <span>Sticker</span>
+          <span style="font-size: 1.15rem;">✨</span>
+          <span>Dán Sticker</span>
+        </button>
+        <button class="sidebar-tab-btn" id="tabBtnShimmer" onclick="switchSidebarTab('shimmer')">
+          <span style="font-size: 1.15rem;">🌈</span>
+          <span>Vệt Sáng</span>
         </button>
         <button class="sidebar-tab-btn" id="tabBtnPadding" onclick="switchSidebarTab('padding')">
-          <span style="font-size: 1.1rem;">📐</span>
-          <span>Nới Lề</span>
-        </button>
-        <button class="sidebar-tab-btn" id="tabBtnLibrary" onclick="switchSidebarTab('library')">
-          <span style="font-size: 1.1rem;">📚</span>
-          <span>Thư Viện</span>
+          <span style="font-size: 1.15rem;">📐</span>
+          <span>Căn Chỉnh</span>
         </button>
       </div>
 
       <div class="sidebar-content">
 
-        <!-- TAB 1: CHỌN HŨ GỐC & NẠP ẢNH TỪ MÁY / AI -->
+        <!-- TAB 1: HŨ GỐC & TẢI ẢNH MỚI -->
         <div id="paneJar">
-          <div class="panel-box" style="margin-bottom: 14px;">
-            <div class="panel-box-title">
-              <span>📤 Nạp Ảnh Hũ Từ Máy Hoặc AI:</span>
-            </div>
-            <input type="file" id="baseImageFileInput" accept="image/png,image/webp,image/jpeg,image/svg+xml" style="display: none;" onchange="handleBaseImageUpload(this)">
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; height: 38px;" onclick="document.getElementById('baseImageFileInput').click()">
-              🖼️ Tải Ảnh Hũ Mới (PNG / WebP / AI)
-            </button>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">
-              Hỗ trợ ảnh render từ Midjourney, DALL-E, Photoshop. Dùng công cụ Xoá Phông ở Tab bên cạnh để lọc sạch nền xanh lá hoặc đen!
-            </div>
-          </div>
-
-          <div class="panel-box" style="margin-bottom: 14px;">
-            <div class="panel-box-title">
-              <span>🏺 Chọn Kiểu Hũ Cơ Bản:</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <button class="btn btn-sm active" id="presetBtnVertical" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;" onclick="selectBasicJarType('vertical')">
-                <span style="font-size: 1.4rem;">🏺</span>
-                <span style="font-weight: 800;">Hũ Pha Lê Dọc</span>
-                <span style="font-size: 0.68rem; color: #94a3b8;">Khổ chuẩn 4:5 bo góc tròn</span>
-              </button>
-              <button class="btn btn-sm" id="presetBtnHorizontal" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;" onclick="selectBasicJarType('horizontal')">
-                <span style="font-size: 1.4rem;">🌊</span>
-                <span style="font-weight: 800;">Bể Hũ Ngang Rộng</span>
-                <span style="font-size: 0.68rem; color: #94a3b8;">Khổ 4:3 đáy rộng không che Idol</span>
-              </button>
-            </div>
-          </div>
-
           <div class="panel-box">
             <div class="panel-box-title">
-              <span>📥 Tải Khung Mẫu Định Vị AI:</span>
+              <span>🔮 Mẫu Hũ Đang Sử Dụng:</span>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <a href="/uploads/decor/jar_template_guide.svg" download="khung_hu_doc_ai_guide.svg" class="btn btn-sm" style="flex: 1; justify-content: center;">
-                📥 Khung Dọc (SVG)
-              </a>
-              <a href="/uploads/decor/jar_horizontal_template_guide.svg" download="khung_hu_ngang_ai_guide.svg" class="btn btn-sm" style="flex: 1; justify-content: center;">
-                📥 Khung Ngang (SVG)
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: XOÁ PHÔNG CHROMA KEY -->
-        <div id="paneChroma" style="display: none;">
-          <div class="panel-box" style="margin-bottom: 14px;">
-            <div class="panel-box-title">
-              <span>Bật / Tắt Xóa Phông:</span>
-              <input type="checkbox" id="chromaEnabledChk" checked onchange="toggleChroma(this.checked)" style="width: 18px; height: 18px; accent-color: #38bdf8;">
-            </div>
-
-            <div style="margin-bottom: 12px;">
-              <span class="form-label">Chọn Màu Phông Cần Xóa:</span>
-              <div style="display: flex; gap: 6px; margin-top: 6px;">
-                <button class="btn btn-sm active" id="btnChromaGreen" style="flex: 1; background: #00ff00; color: #000; border-color: #00ff00; font-weight: 800;" onclick="setChromaColor('#00ff00')">Xanh Lá</button>
-                <button class="btn btn-sm" id="btnChromaBlack" style="flex: 1; background: #000000; color: #fff; border-color: #334155; font-weight: 800;" onclick="setChromaColor('#000000')">Đen</button>
-                <button class="btn btn-sm" id="btnChromaWhite" style="flex: 1; background: #ffffff; color: #000; border-color: #cbd5e1; font-weight: 800;" onclick="setChromaColor('#ffffff')">Trắng</button>
-                <button class="btn btn-sm" id="btnChromaEyedropper" style="background: #1e293b; color: #38bdf8;" onclick="toggleEyedropper()" title="Chấm bút hút màu trực tiếp trên ảnh">🖌️ Hút Màu</button>
+            <div style="background: #090f1d; border: 1.5px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; align-items: center;">
+              <img src="/uploads/decor/iridescent_fishbowl_transparent.png" style="width: 68px; height: 68px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
+              <div>
+                <div style="font-weight: 800; color: #38bdf8; font-size: 0.86rem;">Bể Cầu Pha Lê Cầu Vồng 8K</div>
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Khổ chuẩn 1:1, Nơ hồng, Ruy băng ánh sáng, Cổ bèo ngọc trai 3 lớp</div>
               </div>
             </div>
 
-            <div style="margin-bottom: 14px;">
-              <label class="form-label">
-                <span>Độ nhạy lọc màu (Tolerance):</span>
-                <b id="lblChromaTol" style="color: #38bdf8;">35</b>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
+                <input type="checkbox" id="chkFrontOverlay" checked onchange="toggleFrontOverlay(this.checked)" style="width: 17px; height: 17px; accent-color: #ec4899;">
+                🎀 Lớp phủ mặt trước (Nơ hồng, Cổ bèo, Bóng kính đè lên quà)
               </label>
-              <input type="range" id="chromaTolSlider" min="5" max="110" step="1" value="35" oninput="updateChromaTolerance(this.value)">
-            </div>
-
-            <div>
-              <label class="form-label">
-                <span>Làm mềm biên viền (Feather):</span>
-                <b id="lblChromaFeather" style="color: #fbbf24;">12</b>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
+                <input type="checkbox" id="chkHideDefault" checked onchange="state.hideDefaultJar = this.checked; redraw();" style="width: 17px; height: 17px; accent-color: #38bdf8;">
+                ✨ Ẩn hũ nét vẽ vector (Chỉ hiển thị hũ ảnh pha lê 8K)
               </label>
-              <input type="range" id="chromaFeatherSlider" min="0" max="40" step="1" value="12" oninput="updateChromaFeather(this.value)">
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 3: THƯ VIỆN STICKER & PHỤ KIỆN -->
-        <div id="paneStickers" style="display: none;">
-          <div class="panel-box" style="margin-bottom: 12px;">
-            <div class="panel-box-title">
-              <span>✨ Chọn Phụ Kiện Decor:</span>
-              <button class="btn btn-sm btn-primary" onclick="document.getElementById('customStickerUploadInput').click()">
-                + Tải Sticker Riêng
-              </button>
-              <input type="file" id="customStickerUploadInput" accept="image/png,image/svg+xml,image/webp" style="display: none;" onchange="handleCustomStickerUpload(this)">
             </div>
 
-            <div class="sticker-cat-tabs">
-              <button class="sticker-cat-btn active" onclick="filterStickers('chibi')">🧸 Búp Bê/Chibi</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('ribbon')">🎀 Nơ/Ruy Băng</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('badge')">🏷️ Bảng Tên/Chữ</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('flower')">🌸 Hoa & Lá</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('donuts')">🍩 Bánh/Kẹo</button>
-            </div>
-
-            <div class="sticker-grid" id="stickersContainer">
-              <!-- Render động stickers -->
-            </div>
-          </div>
-
-          <!-- TẠO CHỮ DECOR NHANH -->
-          <div class="panel-box">
-            <div class="panel-box-title">
-              <span>✍️ Tạo Chữ Nghệ Thuật (Bảng Tên Idol):</span>
-            </div>
-            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-              <input type="text" id="customTextNameInput" value="Amy Nọng" placeholder="Tên Idol (vd: Amy Nọng)">
-              <button class="btn btn-primary btn-sm" onclick="addTextBannerSticker()" style="white-space: nowrap;">
-                + Thêm
-              </button>
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">
-              Tự động tạo bảng tên mây phồng neon 3D có thể kéo thả lên miệng hoặc thân hũ!
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 4: NỚI RỘNG LỀ & KHUNG HÌNH (PADDING) -->
-        <div id="panePadding" style="display: none;">
-          <div class="panel-box" style="margin-bottom: 12px;">
-            <div class="panel-box-title">
-              <span>↔️ Nới Rộng Lề Canvas (Không Bị Cắt Phụ Kiện):</span>
-            </div>
-            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-              Khi gắn thêm búp bê, bóng bay, bảng tên ở trên miệng hũ hoặc ruy băng rủ ở đáy, nới rộng lề sẽ giúp phụ kiện <b>hiển thị trọn vẹn 100%</b> mà không bao giờ bị cắt biên!
-            </p>
-
-            <div style="margin-bottom: 14px;">
-              <label class="form-label">
-                <span>Nới Lề Trên (Top Padding):</span>
-                <b id="lblPadTop" style="color: #38bdf8;">70px</b>
-              </label>
-              <input type="range" id="padTopSlider" min="0" max="220" step="5" value="70" oninput="updateCustomPadding('top', this.value)">
-            </div>
-
-            <div style="margin-bottom: 14px;">
-              <label class="form-label">
-                <span>Nới Lề Dưới (Bottom Padding):</span>
-                <b id="lblPadBottom" style="color: #fbbf24;">50px</b>
-              </label>
-              <input type="range" id="padBottomSlider" min="0" max="200" step="5" value="50" oninput="updateCustomPadding('bottom', this.value)">
-            </div>
-
-            <div>
-              <label class="form-label">
-                <span>Nới Lề Hai Bên (Sides Padding):</span>
-                <b id="lblPadSides" style="color: #a855f7;">60px</b>
-              </label>
-              <input type="range" id="padSidesSlider" min="0" max="220" step="5" value="60" oninput="updateCustomPadding('sides', this.value)">
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 5: THƯ VIỆN MẪU HŨ ĐÃ LƯU (MY TEMPLATES) -->
-        <div id="paneLibrary" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">
-              📚 Mẫu Hũ Đã Lưu Của Bạn:
-            </span>
-            <button class="btn btn-sm" onclick="loadSavedTemplatesList()">
-              🔄 Làm Mới
+            <input type="file" id="baseImageFileInput" accept="image/png,image/webp" style="display: none;" onchange="handleCustomJarUpload(this)">
+            <button class="btn btn-sm" style="width: 100%; justify-content: center; padding: 9px;" onclick="document.getElementById('baseImageFileInput').click()">
+              📤 Tải Lên Mẫu Bình Hũ PNG Khác Của Bạn
             </button>
           </div>
 
-          <div id="templatesListContainer" style="display: flex; flex-direction: column; gap: 10px;">
-            <!-- Render động danh sách template -->
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>🎯 Tỷ Lệ & Tọa Độ Vật Lý:</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button class="btn btn-sm active" id="btnAspectSquare" onclick="setStudioAspect('square')" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;">
+                <span style="font-size: 1.3rem;">🔮</span>
+                <span style="font-weight: 800;">Khổ Vuông 1:1</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">Bể Cầu Pha Lê (Khuyên dùng)</span>
+              </button>
+              <button class="btn btn-sm" id="btnAspectHorizontal" onclick="setStudioAspect('horizontal')" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;">
+                <span style="font-size: 1.3rem;">🌊</span>
+                <span style="font-weight: 800;">Khổ Ngang 4:3</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">Bể rộng nằm ngang</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: DÁN STICKER & DECOR PNG -->
+        <div id="paneStickers" style="display: none;">
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>📤 Tải Sticker PNG Mới:</span>
+            </div>
+            <input type="file" id="customStickerUploadInput" accept="image/png,image/svg+xml,image/webp" style="display: none;" onchange="handleCustomStickerUpload(this)">
+            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px; font-weight: 800;" onclick="document.getElementById('customStickerUploadInput').click()">
+              ➕ Tải Thêm Sticker / Logo PNG Từ Máy
+            </button>
+            <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px; text-align: center;">
+              Hỗ trợ PNG trong suốt, logo shop, bảng tên idol, chibi, huy hiệu.
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>📚 Thư Viện Sticker Sẵn Có:</span>
+            </div>
+            <div class="sticker-cat-tabs">
+              <button class="sticker-cat-btn active" onclick="filterStickers('all')">Tất Cả</button>
+              <button class="sticker-cat-btn" onclick="filterStickers('badge')">🏷️ Logo/Bảng Tên</button>
+              <button class="sticker-cat-btn" onclick="filterStickers('chibi')">🧸 Chibi/Linh Vật</button>
+              <button class="sticker-cat-btn" onclick="filterStickers('ribbon')">🎀 Nơ/Ruy Băng</button>
+            </div>
+            <div class="sticker-grid" id="stickersContainer">
+              <!-- Render sticker catalog -->
+            </div>
+          </div>
+
+          <!-- STICKER ĐANG CHỌN ĐỂ ĐIỀU CHỈNH -->
+          <div class="panel-box" id="selectedStickerEditorBox" style="display: none; border-color: #38bdf8;">
+            <div class="panel-box-title" style="color: #38bdf8;">
+              <span id="selectedStickerTitle">Chỉnh Sửa Sticker:</span>
+              <button class="btn btn-sm btn-danger" onclick="deleteSelectedSticker()">🗑️ Xoá</button>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Kích thước (Scale):</span>
+                <b id="lblStickerScale" style="color: #38bdf8;">100%</b>
+              </label>
+              <input type="range" id="stickerScaleSlider" min="0.2" max="2.5" step="0.05" value="1.0" oninput="updateSelectedStickerParam('scale', this.value)">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Góc xoay (Rotation):</span>
+                <b id="lblStickerRot" style="color: #fbbf24;">0°</b>
+              </label>
+              <input type="range" id="stickerRotSlider" min="-180" max="180" step="2" value="0" oninput="updateSelectedStickerParam('rotation', this.value)">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <label class="form-label">
+                <span>Độ trong suốt (Opacity):</span>
+                <b id="lblStickerOpacity" style="color: #a855f7;">100%</b>
+              </label>
+              <input type="range" id="stickerOpacitySlider" min="0.1" max="1.0" step="0.05" value="1.0" oninput="updateSelectedStickerParam('opacity', this.value)">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <span class="form-label">Lớp hiển thị (Layer Depth):</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <button class="btn btn-sm active" id="btnLayerFront" onclick="updateSelectedStickerLayer('front')">
+                  Mặt Trước Hũ
+                </button>
+                <button class="btn btn-sm" id="btnLayerBehind" onclick="updateSelectedStickerLayer('behind_glass')">
+                  Dưới Lòng Kính
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm" style="flex: 1; justify-content: center;" onclick="duplicateSelectedSticker()">
+                📑 Nhân Đôi
+              </button>
+              <button class="btn btn-sm" style="flex: 1; justify-content: center;" onclick="centerSelectedSticker()">
+                🎯 Căn Giữa Đáy
+              </button>
+            </div>
+          </div>
+
+          <!-- DANH SÁCH STICKER ĐANG GẮN TRÊN HŨ -->
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>📋 Sticker Đang Gắn Trên Hũ:</span>
+              <span id="activeStickersCount" style="color: #38bdf8; font-size: 0.74rem;">0 sticker</span>
+            </div>
+            <div id="activeStickersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
+              <!-- Danh sách sticker -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: HIỆU ỨNG VỆT SÁNG & SAO LẤP LÁNH -->
+        <div id="paneShimmer" style="display: none;">
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>✨ Hiệu Ứng Lấp Lánh Viền (Realistic Shimmer):</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
+                <input type="checkbox" id="chkShimmerRim" checked onchange="toggleShimmerPreview(this.checked)" style="width: 17px; height: 17px; accent-color: #38bdf8;">
+                🌈 Chùm sáng sao chổi quét quanh vành miệng & đáy hũ
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
+                <input type="checkbox" id="chkShimmerStars" checked onchange="state.showSparkles = this.checked; redraw();" style="width: 17px; height: 17px; accent-color: #fbbf24;">
+                🌟 Ngôi sao 4 cánh lấp lánh trên nơ, ngọc trai & viền
+              </label>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <label class="form-label">
+                <span>Tốc độ quét sáng:</span>
+                <b id="lblShimmerSpeed" style="color: #38bdf8;">1.0x</b>
+              </label>
+              <input type="range" id="shimmerSpeedSlider" min="0.2" max="3.0" step="0.1" value="1.0" oninput="state.shimmerSpeed = Number(this.value); document.getElementById('lblShimmerSpeed').textContent = this.value + 'x';">
+            </div>
+
+            <div style="font-size: 0.72rem; color: #94a3b8; line-height: 1.5; background: #090f1d; padding: 10px; border-radius: 6px;">
+              💡 <b>Công nghệ 60fps Canvas Native:</b> Hiệu ứng sử dụng chùm gradient quang học và hạt photon sao 4 cánh chạy trực tiếp theo đường cong hình học của bình hũ, nhẹ nhàng 100% không tốn CPU trên OBS Studio.
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: CĂN CHỈNH KÍCH THƯỚC VÀ LỀ -->
+        <div id="panePadding" style="display: none;">
+          <div class="panel-box">
+            <div class="panel-box-title">
+              <span>📐 Nới Rộng Lề Canvas:</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Lề trên (Top Padding):</span>
+                <b id="lblPadTop" style="color: #38bdf8;">20px</b>
+              </label>
+              <input type="range" id="padTopSlider" min="0" max="150" step="5" value="20" oninput="updatePadding('top', this.value)">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">
+                <span>Lề dưới (Bottom Padding):</span>
+                <b id="lblPadBottom" style="color: #fbbf24;">20px</b>
+              </label>
+              <input type="range" id="padBottomSlider" min="0" max="150" step="5" value="20" oninput="updatePadding('bottom', this.value)">
+            </div>
+            <div>
+              <label class="form-label">
+                <span>Lề hai bên (Sides Padding):</span>
+                <b id="lblPadSides" style="color: #a855f7;">20px</b>
+              </label>
+              <input type="range" id="padSidesSlider" min="0" max="150" step="5" value="20" oninput="updatePadding('sides', this.value)">
+            </div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- WORKSPACE / STAGE -->
-    <div class="stage">
-      <div class="canvas-viewport" id="canvasViewport">
-        <div class="canvas-wrapper canvas-bg-checker" id="canvasWrapper">
-          <canvas id="stageCanvas"></canvas>
-        </div>
+    <!-- CANVAS STAGE (RIGHT) -->
+    <div class="canvas-stage bg-checker" id="stageArea">
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="stageCanvas"></canvas>
       </div>
 
       <!-- FLOATING CANVAS CONTROLS -->
@@ -758,58 +642,17 @@
         <button class="btn btn-sm" id="btnToggleBg" onclick="cycleCanvasBg()" title="Đổi màu nền xem trước">
           🏁 Nền Trong Suốt
         </button>
-        <div style="width: 1px; height: 18px; background: var(--border);"></div>
+        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.2);"></div>
         <button class="btn btn-sm" onclick="adjustZoom(-0.1)" title="Thu nhỏ">🔍 -</button>
         <span id="lblZoomLevel" style="font-size: 0.76rem; font-weight: 700; color: #38bdf8;">100%</span>
         <button class="btn btn-sm" onclick="adjustZoom(0.1)" title="Phóng to">🔍 +</button>
-        <div style="width: 1px; height: 18px; background: var(--border);"></div>
-        <button class="btn btn-sm" onclick="clearAllStickers()" title="Xoá tất cả sticker trên hũ">
-          🧹 Xoá Phụ Kiện
-        </button>
-      </div>
-
-      <!-- FLOATING STICKER TOOLBAR (KHI ĐANG CHỌN STICKER) -->
-      <div class="floating-sticker-menu" id="stickerFloatingMenu">
-        <span style="font-size: 0.74rem; font-weight: 800; color: #38bdf8;">Sticker:</span>
-        <button class="btn btn-sm" onclick="scaleSelectedSticker(1.1)">➕ To</button>
-        <button class="btn btn-sm" onclick="scaleSelectedSticker(0.9)">➖ Nhỏ</button>
-        <button class="btn btn-sm" onclick="rotateSelectedSticker(15)">↻ Xoay</button>
-        <button class="btn btn-sm" onclick="duplicateSelectedSticker()">📑 Nhân Đôi</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteSelectedSticker()">🗑️ Xoá</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- MODAL LƯU TEMPLATE -->
-  <div id="saveTemplateModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: #0f172a; border: 1px solid #38bdf8; border-radius: 14px; width: 420px; max-width: 90%; padding: 22px; box-shadow: 0 25px 50px rgba(0,0,0,0.8);">
-      <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-        <span>💾 Lưu Mẫu Hũ Vào Thư Viện</span>
-      </div>
-      <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 16px;">
-        Mẫu hũ sau khi lưu sẽ xuất hiện trong Thư Viện. Bạn có thể kích hoạt lên OBS, xoá bỏ, hoặc mở lại để tiếp tục chỉnh sửa bất kỳ lúc nào!
-      </p>
-
-      <div style="margin-bottom: 14px;">
-        <label class="form-label">Tên mẫu hũ:</label>
-        <input type="text" id="saveTemplateNameInput" value="Hũ Quà TikTok Custom" style="font-size: 0.88rem; font-weight: 700;">
-      </div>
-
-      <div style="margin-bottom: 18px;">
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #fbbf24; cursor: pointer;">
-          <input type="checkbox" id="saveTemplateApplyNowChk" checked style="width: 18px; height: 18px; accent-color: #f59e0b;">
-          Đồng thời áp dụng mẫu này lên OBS Studio ngay lập tức
-        </label>
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button class="btn" onclick="closeSaveTemplateModal()">Huỷ</button>
-        <button class="btn btn-primary" onclick="confirmSaveTemplate()">
-          Lưu Mẫu Hũ
+        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.2);"></div>
+        <button class="btn btn-sm btn-gold" onclick="quickApplyToObs()">
+          ⚡ Lưu & Áp Dụng OBS
         </button>
       </div>
     </div>
+
   </div>
 
   <!-- TOAST NOTIFICATION -->
@@ -826,36 +669,40 @@
     const ctx = canvas.getContext('2d');
 
     const state = {
-      aspect: 'vertical', // 'vertical' (4:5) | 'horizontal' (4:3) | 'square' (1:1)
-      baseW: 400,
-      baseH: 500,
-      padTop: 70,
-      padBottom: 50,
-      padLeft: 60,
-      padRight: 60,
+      aspect: 'square', // Bể Cầu Pha Lê 1:1 chuẩn
+      baseW: 480,
+      baseH: 480,
+      padTop: 20,
+      padBottom: 20,
+      padLeft: 20,
+      padRight: 20,
       showGuide: true,
       zoom: 1.0,
       bgMode: 'checker', // 'checker' | 'dark' | 'live'
       baseImg: null,
-      baseImgUrl: '',
-      chromaEnabled: false,
-      chromaKeyColor: '#00ff00',
-      chromaTolerance: 35,
-      chromaFeather: 12,
-      isEyedropperActive: false,
+      baseImgUrl: '/uploads/decor/iridescent_fishbowl_transparent.png',
+      frontOverlayImg: null,
+      frontOverlayUrl: '/uploads/decor/iridescent_fishbowl_front_overlay.png',
+      showFrontOverlay: true,
+      hideDefaultJar: true,
+      showShimmer: true,
+      showSparkles: true,
+      shimmerSpeed: 1.0,
       stickers: [],
       selectedStickerIdx: -1,
       isDraggingSticker: false,
-      dragOffset: { x: 0, y: 0 }
+      dragOffset: { x: 0, y: 0 },
+      simulatedGifts: [] // Dùng để test thả quà rơi trực tiếp trong Studio
     };
 
-    // DANH SÁCH STICKERS SẴN CÓ
+    // THƯ VIỆN STICKER CÓ SẴN (ĐẶC BIỆT: LOGO NT-STUDIO)
     const STICKER_LIBRARY = [
+      { id: 'nt_studio', cat: 'badge', name: 'Logo NT-Studio (Cọp Vàng)', src: '/uploads/decor/sticker_nt_studio.png' },
       { id: 'bunny', cat: 'chibi', name: 'Thỏ Yếm Xanh', src: '/uploads/decor/sticker_bunny.svg' },
       { id: 'chibi_elden', cat: 'chibi', name: 'Mascot Elden', src: '/uploads/decor/decor_chibi_mascot.svg' },
       { id: 'ribbon_2010', cat: 'ribbon', name: 'Nơ 20/10', src: '/uploads/decor/sticker_ribbon_2010.svg' },
       { id: 'ribbon_vip', cat: 'ribbon', name: 'Ruy Băng Vàng', src: '/uploads/decor/decor_vip_ribbon.svg' },
-      { id: 'banner_amy', cat: 'badge', name: 'Amy Nọng', src: '/uploads/decor/sticker_banner_cute.svg' },
+      { id: 'banner_amy', cat: 'badge', name: 'Amy Nọng Cute', src: '/uploads/decor/sticker_banner_cute.svg' },
       { id: 'badge_elden', cat: 'badge', name: 'Huy Hiệu Elden', src: '/uploads/decor/decor_eldenmedia_badge.svg' }
     ];
 
@@ -866,13 +713,10 @@
       if (state.aspect === 'horizontal') {
         state.baseW = 560;
         state.baseH = 380;
-      } else if (state.aspect === 'square') {
-        state.baseW = 460;
-        state.baseH = 460;
       } else {
-        // vertical
-        state.baseW = 400;
-        state.baseH = 500;
+        // square (1:1)
+        state.baseW = 480;
+        state.baseH = 480;
       }
 
       const totalW = state.baseW + state.padLeft + state.padRight;
@@ -896,56 +740,116 @@
       applyZoom();
     }
 
+    function cycleCanvasBg() {
+      const modes = ['checker', 'dark', 'live'];
+      const nextIdx = (modes.indexOf(state.bgMode) + 1) % modes.length;
+      state.bgMode = modes[nextIdx];
+      const area = document.getElementById('stageArea');
+      area.className = `canvas-stage bg-${state.bgMode}`;
+      const labels = { checker: '🏁 Nền Trong Suốt', dark: '⬛ Nền Tối', live: '🟣 Nền Live Stream' };
+      document.getElementById('btnToggleBg').textContent = labels[state.bgMode];
+    }
+
+    function toggleGuideOverlay() {
+      state.showGuide = !state.showGuide;
+      document.getElementById('btnToggleGuide').classList.toggle('active', state.showGuide);
+      redraw();
+    }
+
+    function toggleFrontOverlay(enabled) {
+      state.showFrontOverlay = enabled;
+      redraw();
+    }
+
+    function toggleShimmerPreview(val) {
+      if (typeof val === 'boolean') state.showShimmer = val;
+      else state.showShimmer = !state.showShimmer;
+      document.getElementById('btnToggleShimmerHeader').textContent = state.showShimmer ? '✨ Vệt Sáng Viền: BẬT' : '✨ Vệt Sáng Viền: TẮT';
+      document.getElementById('chkShimmerRim').checked = state.showShimmer;
+    }
+
+    function setStudioAspect(aspect) {
+      state.aspect = aspect;
+      document.getElementById('btnAspectSquare').classList.toggle('active', aspect === 'square');
+      document.getElementById('btnAspectHorizontal').classList.toggle('active', aspect === 'horizontal');
+      calculateCanvasDimensions();
+    }
+
+    function updatePadding(side, val) {
+      const num = Number(val);
+      if (side === 'top') { state.padTop = num; document.getElementById('lblPadTop').textContent = num + 'px'; }
+      if (side === 'bottom') { state.padBottom = num; document.getElementById('lblPadBottom').textContent = num + 'px'; }
+      if (side === 'sides') { state.padLeft = num; state.padRight = num; document.getElementById('lblPadSides').textContent = num + 'px'; }
+      calculateCanvasDimensions();
+    }
+
     // ==========================================
-    // VẼ CANVAS ĐA LỚP
+    // VẼ CANVAS ĐA LỚP CHUẨN 60FPS
     // ==========================================
-    function redraw(hideGuidesForExport = false) {
+    let studioAnimTime = 0;
+    let studioSparkles = [];
+
+    function redraw() {
       const totalW = canvas.width;
       const totalH = canvas.height;
-
       ctx.clearRect(0, 0, totalW, totalH);
 
-      // 1. Tọa độ của khối hũ gốc (Inner Jar Bounding Box)
       const jarX = state.padLeft;
       const jarY = state.padTop;
       const jarW = state.baseW;
       const jarH = state.baseH;
 
-      // 2. Vẽ ảnh hũ gốc (hoặc vẽ phôi hũ thủy tinh pha lê mặc định)
+      // 1. LAYER 1: MẶT SAU & THÂN BÌNH HŨ (BASE IMAGE)
       if (state.baseImg && state.baseImg.complete && state.baseImg.naturalWidth > 0) {
-        ctx.save();
         ctx.drawImage(state.baseImg, jarX, jarY, jarW, jarH);
-
-        // Áp dụng bộ lọc Chroma Key
-        if (state.chromaEnabled) {
-          const imgData = ctx.getImageData(jarX, jarY, jarW, jarH);
-          applyChromaKeyFilter(imgData);
-          ctx.putImageData(imgData, jarX, jarY);
-        }
-        ctx.restore();
-      } else {
-        // Tự động vẽ hũ thủy tinh pha lê trong vắt bo góc tròn nếu người dùng chưa tải ảnh riêng
-        drawProceduralJarInStudio(jarX, jarY, jarW, jarH);
       }
 
-      // 3. Vẽ các Sticker phụ kiện đã thêm
+      // 2. LAYER 2: STICKERS DƯỚI KÍNH (BEHIND_GLASS)
+      drawStickersByLayer('behind_glass');
+
+      // 3. LAYER 3: QUÀ MÔ PHỎNG RƠI BÊN TRONG (TEST GIFTS)
+      drawSimulatedGifts();
+
+      // 4. LAYER 4: MẶT TRƯỚC HŨ (NƠ HỒNG, CỔ BÈO, VỆT BÓNG PHA LÊ)
+      if (state.showFrontOverlay && state.frontOverlayImg && state.frontOverlayImg.complete && state.frontOverlayImg.naturalWidth > 0) {
+        ctx.drawImage(state.frontOverlayImg, jarX, jarY, jarW, jarH);
+      }
+
+      // 5. LAYER 5: STICKERS MẶT NGOÀI HŨ (FRONT)
+      drawStickersByLayer('front');
+
+      // 6. LAYER 6: VỆT SÁNG & SAO LẤP LÁNH VIỀN HŨ
+      if (state.showShimmer) {
+        drawStudioShimmer(jarX, jarY, jarW, jarH, studioAnimTime);
+      }
+
+      // 7. KHUNG HƯỚNG DẪN ĐỊNH VỊ (GUIDE)
+      if (state.showGuide) {
+        drawGuideFrame(jarX, jarY, jarW, jarH);
+      }
+    }
+
+    function drawStickersByLayer(targetLayer) {
       state.stickers.forEach((s, idx) => {
+        const layer = s.layer || 'front';
+        if (layer !== targetLayer) return;
+
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.rotation || 0);
+        ctx.globalAlpha = s.opacity !== undefined ? s.opacity : 1.0;
 
         const sw = s.w * (s.scale || 1.0);
         const sh = s.h * (s.scale || 1.0);
 
-        // Khung viền chọn (chỉ vẽ khi đang chỉnh sửa, không vẽ khi export)
-        if (idx === state.selectedStickerIdx && !hideGuidesForExport) {
+        // Khung chọn sticker
+        if (idx === state.selectedStickerIdx) {
           ctx.strokeStyle = '#38bdf8';
           ctx.lineWidth = 2.5;
           ctx.setLineDash([5, 4]);
           ctx.strokeRect(-sw / 2 - 4, -sh / 2 - 4, sw + 8, sh + 8);
           ctx.setLineDash([]);
 
-          // 4 nốt tay cầm co giãn ở 4 góc
           ctx.fillStyle = '#38bdf8';
           [[-sw/2-4, -sh/2-4], [sw/2+4, -sh/2-4], [-sw/2-4, sh/2+4], [sw/2+4, sh/2+4]].forEach(([hx, hy]) => {
             ctx.fillRect(hx - 4, hy - 4, 8, 8);
@@ -957,344 +861,188 @@
         }
         ctx.restore();
       });
-
-      // 4. Vẽ Khung Hướng Dẫn Định Vị (Guide Overlay - TỰ ĐỘNG ẨN KHI EXPORT)
-      if (state.showGuide && !hideGuidesForExport) {
-        drawGuideFrame(jarX, jarY, jarW, jarH);
-      }
     }
 
-    // Vẽ khung mẫu hướng dẫn hũ
-    
-    // Vẽ hũ thủy tinh pha lê trực tiếp trong Studio nếu chưa có ảnh
-    function drawProceduralJarInStudio(jx, jy, jw, jh) {
-      const cornerR = state.aspect === 'horizontal' ? 44 : 36;
-      const neckW = state.aspect === 'horizontal' ? jw * 0.78 : jw * 0.68;
-      const neckH = 46;
-      const neckX = jx + (jw - neckW) / 2;
-      const baseThick = state.aspect === 'horizontal' ? 26 : 32;
+    // Vẽ hiệu ứng vệt sáng & sao lấp lánh chạy quanh viền hũ
+    function drawStudioShimmer(jx, jy, jw, jh, time) {
+      const cx = jx + jw / 2;
+      const cy = jy + jh / 2;
+      const speed = state.shimmerSpeed || 1.0;
+
+      // Miệng hũ oval
+      const mouthX = cx;
+      const mouthY = cy - jh * 0.375;
+      const mouthRx = jw * 0.285;
+      const mouthRy = jh * 0.052;
+
+      const sweep = (time * 0.002 * speed) % (Math.PI * 2);
 
       ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
 
-      // Thân hũ thủy tinh gradient ánh xanh băng tuyết
-      const grad = ctx.createLinearGradient(jx, jy, jx + jw, jy);
-      grad.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
-      grad.addColorStop(0.15, 'rgba(224, 242, 254, 0.08)');
-      grad.addColorStop(0.85, 'rgba(224, 242, 254, 0.08)');
-      grad.addColorStop(1, 'rgba(56, 189, 248, 0.32)');
+      const headX = mouthX + Math.cos(sweep) * mouthRx;
+      const headY = mouthY + Math.sin(sweep) * mouthRy;
+      const trailAngle = sweep - 0.75;
 
-      ctx.fillStyle = grad;
+      const trailGrad = ctx.createLinearGradient(
+        headX, headY,
+        mouthX + Math.cos(trailAngle) * mouthRx,
+        mouthY + Math.sin(trailAngle) * mouthRy
+      );
+      trailGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+      trailGrad.addColorStop(0.3, 'rgba(167, 243, 208, 0.7)');
+      trailGrad.addColorStop(0.7, 'rgba(244, 114, 182, 0.35)');
+      trailGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.strokeStyle = trailGrad;
+      ctx.lineWidth = 3.6;
       ctx.beginPath();
-      ctx.moveTo(jx + cornerR, jy + jh);
-      ctx.lineTo(jx + jw - cornerR, jy + jh);
-      ctx.quadraticCurveTo(jx + jw, jy + jh, jx + jw, jy + jh - cornerR);
-      ctx.lineTo(jx + jw, jy + neckH + 22);
-      ctx.quadraticCurveTo(jx + jw, jy + neckH, neckX + neckW, jy + neckH);
-      ctx.lineTo(neckX + neckW, jy);
-      ctx.lineTo(neckX, jy);
-      ctx.lineTo(neckX, jy + neckH);
-      ctx.quadraticCurveTo(jx, jy + neckH, jx, jy + neckH + 22);
-      ctx.lineTo(jx, jy + jh - cornerR);
-      ctx.quadraticCurveTo(jx, jy + jh, jx + cornerR, jy + jh);
-      ctx.closePath();
-      ctx.fill();
-
-      // Đáy kính đúc dày
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.28)';
-      ctx.beginPath();
-      ctx.ellipse(jx + jw / 2, jy + jh - baseThick * 0.45, (jw - cornerR) / 2, baseThick * 0.35, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Vệt sáng loá phản chiếu bên trái
-      const lightGrad = ctx.createLinearGradient(jx + 10, jy, jx + 45, jy);
-      lightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
-      lightGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
-      ctx.fillStyle = lightGrad;
-      ctx.beginPath();
-      ctx.moveTo(jx + 12, jy + neckH + 26);
-      ctx.lineTo(jx + 28, jy + neckH + 26);
-      ctx.lineTo(jx + 26, jy + jh - cornerR - 6);
-      ctx.lineTo(jx + 12, jy + jh - cornerR);
-      ctx.closePath();
-      ctx.fill();
-
-      // Viền nét thủy tinh tổng thể
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.lineWidth = 2.5;
+      ctx.ellipse(mouthX, mouthY, mouthRx, mouthRy, 0, trailAngle, sweep, false);
       ctx.stroke();
 
-      // Cổ hũ & ren nắp
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.lineWidth = 3;
+      // Hào quang đầu chùm sáng
+      const flare = ctx.createRadialGradient(headX, headY, 0, headX, headY, 18);
+      flare.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      flare.addColorStop(0.4, 'rgba(253, 224, 71, 0.8)');
+      flare.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = flare;
       ctx.beginPath();
-      ctx.ellipse(jx + jw / 2, jy, neckW / 2, 7, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.arc(headX, headY, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawStudioStar(ctx, headX, headY, 14, 1.0, '#ffffff');
+
+      // Vệt sáng viền bụng dưới
+      const bellyY = cy + jh * 0.08;
+      const bellyR = (jw / 2) * 0.88;
+      const bellySweep = Math.PI * 0.18 + (Math.sin(time * 0.0014 * speed) * 0.5 + 0.5) * (Math.PI * 0.64);
+      const bX = cx + Math.cos(bellySweep) * bellyR;
+      const bY = bellyY + Math.sin(bellySweep) * bellyR;
+
+      const bFlare = ctx.createRadialGradient(bX, bY, 0, bX, bY, 16);
+      bFlare.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+      bFlare.addColorStop(0.4, 'rgba(125, 211, 252, 0.5)');
+      bFlare.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = bFlare;
+      ctx.beginPath();
+      ctx.arc(bX, bY, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sao nhấp nháy tĩnh trên Nơ & Ngọc trai
+      if (state.showSparkles) {
+        const bowPulse = Math.sin(time * 0.0032) * 0.5 + 0.5;
+        drawStudioStar(ctx, cx + jw * 0.34, cy - jh * 0.26, 12 + bowPulse * 7, 0.4 + bowPulse * 0.6, '#ffd1dc');
+
+        const pearlPulse = Math.sin(time * 0.004 + 1.5) * 0.5 + 0.5;
+        drawStudioStar(ctx, cx + jw * 0.31, cy - jh * 0.17, 10 + pearlPulse * 6, 0.35 + pearlPulse * 0.65, '#e0f2fe');
+      }
+
+      ctx.restore();
+    }
+
+    function drawStudioStar(ctx, x, y, size, alpha, color) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      ctx.fillStyle = color;
+
+      // Cánh dọc
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.quadraticCurveTo(size * 0.12, 0, 0, size);
+      ctx.quadraticCurveTo(-size * 0.12, 0, 0, -size);
+      ctx.fill();
+
+      // Cánh ngang
+      ctx.beginPath();
+      ctx.moveTo(-size, 0);
+      ctx.quadraticCurveTo(0, size * 0.12, size, 0);
+      ctx.quadraticCurveTo(0, -size * 0.12, -size, 0);
+      ctx.fill();
 
       ctx.restore();
     }
 
     function drawGuideFrame(jx, jy, jw, jh) {
-      const cornerR = state.aspect === 'horizontal' ? 44 : 36;
-      const neckW = state.aspect === 'horizontal' ? jw * 0.78 : jw * 0.68;
-      const neckH = 46;
-      const neckX = jx + (jw - neckW) / 2;
-      const baseThick = state.aspect === 'horizontal' ? 26 : 32;
-
       ctx.save();
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+      ctx.lineWidth = 2;
       ctx.setLineDash([6, 4]);
 
-      // Vẽ hình dáng thân hũ BO GÓC TRÒN MỀM MẠI (Không phải hình ô vuông sắc cạnh)
+      // Đường tròn bể hũ
+      const cx = jx + jw / 2;
+      const cy = jy + jh * 0.54;
+      const r = (jw / 2) * 0.88;
       ctx.beginPath();
-      ctx.moveTo(jx + cornerR, jy + jh);
-      ctx.lineTo(jx + jw - cornerR, jy + jh);
-      ctx.quadraticCurveTo(jx + jw, jy + jh, jx + jw, jy + jh - cornerR);
-      ctx.lineTo(jx + jw, jy + neckH + 22);
-      ctx.quadraticCurveTo(jx + jw, jy + neckH, neckX + neckW, jy + neckH);
-      ctx.lineTo(neckX + neckW, jy);
-      ctx.lineTo(neckX, jy);
-      ctx.lineTo(neckX, jy + neckH);
-      ctx.quadraticCurveTo(jx, jy + neckH, jx, jy + neckH + 22);
-      ctx.lineTo(jx, jy + jh - cornerR);
-      ctx.quadraticCurveTo(jx, jy + jh, jx + cornerR, jy + jh);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Miệng hũ (vạch vàng oval đánh dấu miệng đón quà)
+      // Miệng đón quà
       ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.setLineDash([]);
       ctx.beginPath();
-      ctx.ellipse(jx + jw / 2, jy, neckW / 2, 8, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Mức sàn đáy bên trong (đường kẻ đỏ đánh dấu đáy đỡ quà bên trong kính, cách đáy 30px)
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(jx + cornerR, jy + jh - baseThick);
-      ctx.lineTo(jx + jw - cornerR, jy + jh - baseThick);
+      ctx.ellipse(cx, jy + jh * 0.125, jw * 0.28, jh * 0.05, 0, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.restore();
     }
 
     // ==========================================
-    // THUẬT TOÁN XOÁ PHÔNG CHROMA KEY
+    // THẢ QUÀ THỬ NGHIỆM TRỰC TIẾP TRONG STUDIO
     // ==========================================
-    function hexToRgb(hex) {
-      const num = parseInt(hex.replace('#', ''), 16);
-      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    function dropSimulatedGift() {
+      const cx = canvas.width / 2;
+      const emojiList = ['🌹', '🍩', '👑', '🦁', '💖', '🎁'];
+      const em = emojiList[Math.floor(Math.random() * emojiList.length)];
+      state.simulatedGifts.push({
+        x: cx + (Math.random() - 0.5) * 40,
+        y: state.padTop - 20,
+        vy: 2.0,
+        targetY: canvas.height * 0.55 + Math.random() * 80,
+        size: 32,
+        emoji: em
+      });
+      showToast('🎁', `Đã thả thử món quà ${em} vào hũ!`);
     }
 
-    function applyChromaKeyFilter(imgData) {
-      const data = imgData.data;
-      const target = hexToRgb(state.chromaKeyColor);
-      const tol = state.chromaTolerance;
-      const feather = state.chromaFeather;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // Khoảng cách màu Euclid
-        const dist = Math.hypot(r - target.r, g - target.g, b - target.b);
-
-        if (dist < tol) {
-          data[i + 3] = 0; // trong suốt hoàn toàn
-        } else if (dist < tol + feather) {
-          const factor = (dist - tol) / feather;
-          data[i + 3] = Math.round(data[i + 3] * factor);
+    function drawSimulatedGifts() {
+      for (let i = state.simulatedGifts.length - 1; i >= 0; i--) {
+        const g = state.simulatedGifts[i];
+        if (g.y < g.targetY) {
+          g.y += g.vy;
+          g.vy += 0.35;
         }
+        ctx.save();
+        ctx.font = `${g.size}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(g.emoji, g.x, g.y);
+        ctx.restore();
       }
     }
 
     // ==========================================
-    // ĐIỀU HƯỚNG VÀ TƯƠNG TÁC GIAO DIỆN
+    // QUẢN LÝ STICKER & TẢI ẢNH PNG
     // ==========================================
-    function switchSidebarTab(tab) {
-      ['jar', 'chroma', 'stickers', 'padding', 'library'].forEach(t => {
-        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (btn) btn.classList.toggle('active', tab === t);
-        const pane = document.getElementById(`pane${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (pane) pane.style.display = tab === t ? 'block' : 'none';
-      });
-
-      if (tab === 'library') {
-        loadSavedTemplatesList();
-      }
-    }
-
-    function setAspectPreset(aspect) {
-      state.aspect = aspect;
-      document.getElementById('btnAspectVertical').classList.toggle('active', aspect === 'vertical');
-      document.getElementById('btnAspectHorizontal').classList.toggle('active', aspect === 'horizontal');
-      document.getElementById('btnAspectSquare').classList.toggle('active', aspect === 'square');
-
-      calculateCanvasDimensions();
-      showToast('📐', `Đã chuyển sang khổ ${aspect === 'horizontal' ? 'Ngang (4:3)' : (aspect === 'square' ? 'Vuông (1:1)' : 'Dọc (4:5)')}`);
-    }
-
-    function setPaddingPreset(top, bottom, sides) {
-      state.padTop = top;
-      state.padBottom = bottom;
-      state.padLeft = sides;
-      state.padRight = sides;
-
-      document.getElementById('padTopSlider').value = top;
-      document.getElementById('padBottomSlider').value = bottom;
-      document.getElementById('padSidesSlider').value = sides;
-
-      document.getElementById('lblPadTop').textContent = `${top}px`;
-      document.getElementById('lblPadBottom').textContent = `${bottom}px`;
-      document.getElementById('lblPadSides').textContent = `${sides}px`;
-
-      document.getElementById('btnPadCompact').classList.toggle('active', top === 0);
-      document.getElementById('btnPadNormal').classList.toggle('active', top === 70);
-      document.getElementById('btnPadWide').classList.toggle('active', top === 120);
-
-      calculateCanvasDimensions();
-    }
-
-    function updateCustomPadding(type, val) {
-      val = Number(val);
-      if (type === 'top') {
-        state.padTop = val;
-        document.getElementById('lblPadTop').textContent = `${val}px`;
-      } else if (type === 'bottom') {
-        state.padBottom = val;
-        document.getElementById('lblPadBottom').textContent = `${val}px`;
-      } else if (type === 'sides') {
-        state.padLeft = val;
-        state.padRight = val;
-        document.getElementById('lblPadSides').textContent = `${val}px`;
-      }
-      calculateCanvasDimensions();
-    }
-
-    function toggleGuideOverlay() {
-      state.showGuide = !state.showGuide;
-      document.getElementById('btnToggleGuide').classList.toggle('active', state.showGuide);
-      redraw();
-    }
-
-    function cycleCanvasBg() {
-      const wrapper = document.getElementById('canvasWrapper');
-      if (state.bgMode === 'checker') {
-        state.bgMode = 'dark';
-        wrapper.className = 'canvas-wrapper canvas-bg-dark';
-        document.getElementById('btnToggleBg').textContent = '⬛ Nền Tối';
-      } else if (state.bgMode === 'dark') {
-        state.bgMode = 'live';
-        wrapper.className = 'canvas-wrapper canvas-bg-live';
-        document.getElementById('btnToggleBg').textContent = '🔴 Nền Live Stream';
-      } else {
-        state.bgMode = 'checker';
-        wrapper.className = 'canvas-wrapper canvas-bg-checker';
-        document.getElementById('btnToggleBg').textContent = '🏁 Nền Trong Suốt';
-      }
-    }
-
-    // ==========================================
-    // QUẢN LÝ HŨ GỐC & CHROMA KEY
-    // ==========================================
-    function loadJarImage(url) {
-      state.baseImgUrl = url;
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        state.baseImg = img;
-        redraw();
-      };
-      img.src = url;
-    }
-
-    
-    function selectBasicJarType(aspect) {
-      document.getElementById('presetBtnVertical').classList.toggle('active', aspect === 'vertical');
-      document.getElementById('presetBtnHorizontal').classList.toggle('active', aspect === 'horizontal');
-      state.baseImg = null;
-      if (aspect === 'horizontal') {
-        setAspectPreset('horizontal');
-        loadJarImage('/uploads/decor/hu-qua-ngang-glass.svg');
-      } else {
-        setAspectPreset('vertical');
-        state.baseImgUrl = '';
-        state.baseImg = null;
-        redraw();
-      }
-    }
-
-    function loadJarPreset(url, aspect) {
-      if (aspect && aspect !== state.aspect) {
-        setAspectPreset(aspect);
-      }
-      loadJarImage(url);
-    }
-
-    function handleBaseImageUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        loadJarImage(e.target.result);
-        showToast('🖼️', `Đã nạp ảnh hũ: ${file.name}`);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function toggleChroma(enabled) {
-      state.chromaEnabled = enabled;
-      redraw();
-    }
-
-    function setChromaColor(color) {
-      state.chromaKeyColor = color;
-      ['Green', 'Black', 'White'].forEach(c => {
-        const btn = document.getElementById(`btnChroma${c}`);
-        if (btn) btn.classList.toggle('active', color.toLowerCase() === (c === 'Green' ? '#00ff00' : (c === 'Black' ? '#000000' : '#ffffff')));
-      });
-      redraw();
-    }
-
-    function updateChromaTolerance(val) {
-      state.chromaTolerance = Number(val);
-      document.getElementById('lblChromaTol').textContent = val;
-      redraw();
-    }
-
-    function updateChromaFeather(val) {
-      state.chromaFeather = Number(val);
-      document.getElementById('lblChromaFeather').textContent = val;
-      redraw();
-    }
-
-    function toggleEyedropper() {
-      state.isEyedropperActive = !state.isEyedropperActive;
-      canvas.style.cursor = state.isEyedropperActive ? 'cell' : 'crosshair';
-      document.getElementById('btnChromaEyedropper').classList.toggle('active', state.isEyedropperActive);
-      if (state.isEyedropperActive) {
-        showToast('🖌️', 'Bấm vào bất kỳ điểm màu nào trên ảnh hũ để chọn màu xoá phông!');
-      }
-    }
-
-    // ==========================================
-    // QUẢN LÝ STICKERS & KÉO THẢ TƯƠNG TÁC
-    // ==========================================
-    function filterStickers(category) {
+    function filterStickers(cat) {
       const container = document.getElementById('stickersContainer');
       container.innerHTML = '';
-      const list = STICKER_LIBRARY.filter(s => category === 'all' || s.cat === category);
 
-      list.forEach(s => {
-        const item = document.createElement('div');
-        item.className = 'sticker-item';
-        item.title = s.name;
-        item.innerHTML = `<img src="${s.src}">`;
-        item.onclick = () => addStickerToCanvas(s.src, s.name);
-        container.appendChild(item);
+      document.querySelectorAll('.sticker-cat-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(cat));
+      });
+
+      const list = cat === 'all' ? STICKER_LIBRARY : STICKER_LIBRARY.filter(s => s.cat === cat);
+      list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'sticker-item';
+        div.innerHTML = `
+          <img src="${item.src}">
+          <span>${item.name}</span>
+        `;
+        div.onclick = () => addStickerToCanvas(item.src, item.name);
+        container.appendChild(div);
       });
     }
 
@@ -1302,83 +1050,144 @@
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        const defaultW = Math.min(180, img.naturalWidth || 160);
-        const defaultH = ((img.naturalHeight || 160) / (img.naturalWidth || 160)) * defaultW;
+        const defaultW = Math.min(220, img.naturalWidth || 180);
+        const defaultH = ((img.naturalHeight || 180) / (img.naturalWidth || 180)) * defaultW;
 
         state.stickers.push({
-          id: Date.now(),
+          id: `stk_${Date.now()}`,
           name,
           src,
           img,
           x: canvas.width / 2,
-          y: state.padTop + 40,
+          y: canvas.height * 0.82,
           w: defaultW,
           h: defaultH,
-          scale: 1.0,
-          rotation: 0
+          scale: 0.85,
+          rotation: 0,
+          opacity: 1.0,
+          layer: 'front'
         });
 
         state.selectedStickerIdx = state.stickers.length - 1;
-        updateFloatingStickerMenu();
+        updateActiveStickersList();
+        updateSelectedStickerUI();
         redraw();
-        showToast('✨', `Đã thêm phụ kiện: ${name}`);
+        showToast('✨', `Đã dán phụ kiện: ${name}`);
       };
       img.src = src;
     }
 
-    function handleCustomStickerUpload(input) {
+    async function handleCustomStickerUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      showToast('⏳', `Đang tải sticker "${file.name}"...`);
+
+      const formData = new FormData();
+      formData.append('decor', file);
+
+      try {
+        const res = await fetch('/api/jar/upload-decor', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success && data.fileUrl) {
+          addStickerToCanvas(data.fileUrl, file.name.replace(/\.[^/.]+$/, ''));
+          showToast('✨', `Đã tải lên và dán sticker: ${file.name}`);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => addStickerToCanvas(e.target.result, file.name);
+          reader.readAsDataURL(file);
+        }
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (e) => addStickerToCanvas(e.target.result, file.name);
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleCustomJarUpload(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        addStickerToCanvas(e.target.result, file.name);
+        loadJarImage(e.target.result);
+        showToast('🖼️', `Đã nạp mẫu bình hũ mới: ${file.name}`);
       };
       reader.readAsDataURL(file);
     }
 
-    function addTextBannerSticker() {
-      const name = document.getElementById('customTextNameInput').value.trim() || 'Amy Nọng';
-      // Tạo sticker bằng SVG data URL
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="90" viewBox="0 0 280 90">
-        <rect x="15" y="10" width="250" height="70" rx="35" fill="#ffffff" stroke="#38bdf8" stroke-width="4"/>
-        <rect x="20" y="15" width="240" height="60" rx="30" fill="#e0f2fe" stroke="#bae6fd" stroke-width="2"/>
-        <text x="140" y="46" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#0284c7" text-anchor="middle">${name}</text>
-        <text x="140" y="64" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#f43f5e" text-anchor="middle">♥ CẢM ƠN BẠN ♥</text>
-      </svg>`;
-      const url = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-      addStickerToCanvas(url, `Bảng Tên ${name}`);
+    function updateActiveStickersList() {
+      const container = document.getElementById('activeStickersList');
+      container.innerHTML = '';
+      document.getElementById('activeStickersCount').textContent = `${state.stickers.length} sticker`;
+
+      state.stickers.forEach((s, idx) => {
+        const card = document.createElement('div');
+        card.className = `active-sticker-card ${idx === state.selectedStickerIdx ? 'selected' : ''}`;
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${s.src}" style="width: 28px; height: 28px; object-fit: contain;">
+              <span style="font-size: 0.76rem; font-weight: 700; color: #fff;">${s.name}</span>
+            </div>
+            <span style="font-size: 0.68rem; color: ${s.layer === 'front' ? '#38bdf8' : '#fbbf24'};">
+              ${s.layer === 'front' ? 'Mặt Ngoài' : 'Trong Kính'}
+            </span>
+          </div>
+        `;
+        card.onclick = () => {
+          state.selectedStickerIdx = idx;
+          updateActiveStickersList();
+          updateSelectedStickerUI();
+          redraw();
+        };
+        container.appendChild(card);
+      });
     }
 
-    function updateFloatingStickerMenu() {
-      const menu = document.getElementById('stickerFloatingMenu');
-      if (state.selectedStickerIdx >= 0 && state.selectedStickerIdx < state.stickers.length) {
-        menu.style.display = 'flex';
-      } else {
-        menu.style.display = 'none';
+    function updateSelectedStickerUI() {
+      const box = document.getElementById('selectedStickerEditorBox');
+      if (state.selectedStickerIdx < 0 || state.selectedStickerIdx >= state.stickers.length) {
+        box.style.display = 'none';
+        return;
       }
+      box.style.display = 'block';
+      const s = state.stickers[state.selectedStickerIdx];
+      document.getElementById('selectedStickerTitle').textContent = `Sửa: ${s.name}`;
+      document.getElementById('stickerScaleSlider').value = s.scale || 1.0;
+      document.getElementById('lblStickerScale').textContent = `${Math.round((s.scale || 1.0) * 100)}%`;
+      const deg = Math.round(((s.rotation || 0) * 180) / Math.PI);
+      document.getElementById('stickerRotSlider').value = deg;
+      document.getElementById('lblStickerRot').textContent = `${deg}°`;
+      document.getElementById('stickerOpacitySlider').value = s.opacity !== undefined ? s.opacity : 1.0;
+      document.getElementById('lblStickerOpacity').textContent = `${Math.round((s.opacity !== undefined ? s.opacity : 1.0) * 100)}%`;
+
+      document.getElementById('btnLayerFront').classList.toggle('active', (s.layer || 'front') === 'front');
+      document.getElementById('btnLayerBehind').classList.toggle('active', s.layer === 'behind_glass');
     }
 
-    function scaleSelectedSticker(factor) {
+    function updateSelectedStickerParam(key, val) {
       if (state.selectedStickerIdx < 0) return;
       const s = state.stickers[state.selectedStickerIdx];
-      s.scale = Math.max(0.3, Math.min(3.0, (s.scale || 1.0) * factor));
+      if (key === 'scale') {
+        s.scale = Number(val);
+        document.getElementById('lblStickerScale').textContent = `${Math.round(s.scale * 100)}%`;
+      } else if (key === 'rotation') {
+        s.rotation = (Number(val) * Math.PI) / 180;
+        document.getElementById('lblStickerRot').textContent = `${val}°`;
+      } else if (key === 'opacity') {
+        s.opacity = Number(val);
+        document.getElementById('lblStickerOpacity').textContent = `${Math.round(s.opacity * 100)}%`;
+      }
       redraw();
     }
 
-    function rotateSelectedSticker(deg) {
+    function updateSelectedStickerLayer(layer) {
       if (state.selectedStickerIdx < 0) return;
-      const s = state.stickers[state.selectedStickerIdx];
-      s.rotation = (s.rotation || 0) + (deg * Math.PI / 180);
-      redraw();
-    }
-
-    function duplicateSelectedSticker() {
-      if (state.selectedStickerIdx < 0) return;
-      const cur = state.stickers[state.selectedStickerIdx];
-      const dup = { ...cur, id: Date.now(), x: cur.x + 25, y: cur.y + 25 };
-      state.stickers.push(dup);
-      state.selectedStickerIdx = state.stickers.length - 1;
-      updateFloatingStickerMenu();
+      state.stickers[state.selectedStickerIdx].layer = layer;
+      updateActiveStickersList();
+      updateSelectedStickerUI();
       redraw();
     }
 
@@ -1386,20 +1195,32 @@
       if (state.selectedStickerIdx < 0) return;
       state.stickers.splice(state.selectedStickerIdx, 1);
       state.selectedStickerIdx = -1;
-      updateFloatingStickerMenu();
+      updateActiveStickersList();
+      updateSelectedStickerUI();
       redraw();
     }
 
-    function clearAllStickers() {
-      if (!confirm('Bạn có chắc muốn xoá tất cả các sticker phụ kiện trên hũ?')) return;
-      state.stickers = [];
-      state.selectedStickerIdx = -1;
-      updateFloatingStickerMenu();
+    function duplicateSelectedSticker() {
+      if (state.selectedStickerIdx < 0) return;
+      const cur = state.stickers[state.selectedStickerIdx];
+      const dup = { ...cur, id: `stk_${Date.now()}`, x: cur.x + 20, y: cur.y + 20 };
+      state.stickers.push(dup);
+      state.selectedStickerIdx = state.stickers.length - 1;
+      updateActiveStickersList();
+      updateSelectedStickerUI();
+      redraw();
+    }
+
+    function centerSelectedSticker() {
+      if (state.selectedStickerIdx < 0) return;
+      const s = state.stickers[state.selectedStickerIdx];
+      s.x = canvas.width / 2;
+      s.y = canvas.height * 0.84;
       redraw();
     }
 
     // ==========================================
-    // SỰ KIỆN CHUỘT / TOUCH TRÊN CANVAS
+    // SỰ KIỆN KÉO THẢ STICKER TRÊN CANVAS
     // ==========================================
     function getCanvasCoords(evt) {
       const rect = canvas.getBoundingClientRect();
@@ -1413,33 +1234,24 @@
 
     canvas.addEventListener('mousedown', (evt) => {
       const { x, y } = getCanvasCoords(evt);
-
-      // Nếu đang bật hút màu Eyedropper
-      if (state.isEyedropperActive) {
-        const p = ctx.getImageData(x, y, 1, 1).data;
-        const hex = '#' + ((1 << 24) + (p[0] << 16) + (p[1] << 8) + p[2]).toString(16).slice(1);
-        setChromaColor(hex);
-        toggleEyedropper();
-        showToast('🎨', `Đã lấy màu mẫu: ${hex}`);
-        return;
-      }
-
-      // Kiểm tra click trúng sticker nào (tính từ trên xuống dưới)
-      let foundIdx = -1;
       for (let i = state.stickers.length - 1; i >= 0; i--) {
         const s = state.stickers[i];
-        const sw = (s.w * (s.scale || 1.0)) / 2;
-        const sh = (s.h * (s.scale || 1.0)) / 2;
-        if (x >= s.x - sw && x <= s.x + sw && y >= s.y - sh && y <= s.y + sh) {
-          foundIdx = i;
+        const sw = s.w * (s.scale || 1.0);
+        const sh = s.h * (s.scale || 1.0);
+
+        if (x >= s.x - sw / 2 && x <= s.x + sw / 2 && y >= s.y - sh / 2 && y <= s.y + sh / 2) {
+          state.selectedStickerIdx = i;
+          state.isDraggingSticker = true;
           state.dragOffset = { x: x - s.x, y: y - s.y };
-          break;
+          updateActiveStickersList();
+          updateSelectedStickerUI();
+          redraw();
+          return;
         }
       }
-
-      state.selectedStickerIdx = foundIdx;
-      state.isDraggingSticker = (foundIdx !== -1);
-      updateFloatingStickerMenu();
+      state.selectedStickerIdx = -1;
+      updateActiveStickersList();
+      updateSelectedStickerUI();
       redraw();
     });
 
@@ -1456,299 +1268,93 @@
       state.isDraggingSticker = false;
     });
 
-    // Phím tắt bàn phím
-    window.addEventListener('keydown', (evt) => {
-      if (state.selectedStickerIdx >= 0) {
-        if (evt.key === 'Delete' || evt.key === 'Backspace') {
-          deleteSelectedSticker();
-        } else if (evt.key === 'ArrowUp') {
-          state.stickers[state.selectedStickerIdx].y -= 2; redraw();
-        } else if (evt.key === 'ArrowDown') {
-          state.stickers[state.selectedStickerIdx].y += 2; redraw();
-        } else if (evt.key === 'ArrowLeft') {
-          state.stickers[state.selectedStickerIdx].x -= 2; redraw();
-        } else if (evt.key === 'ArrowRight') {
-          state.stickers[state.selectedStickerIdx].x += 2; redraw();
+    // ==========================================
+    // ĐỒNG BỘ LÊN OBS STUDIO NGAY LẬP TỨC
+    // ==========================================
+    async function quickApplyToObs() {
+      showToast('⏳', 'Đang đồng bộ hũ và sticker lên OBS Studio...');
+      const totalW = canvas.width;
+      const totalH = canvas.height;
+
+      const normalizedStickers = state.stickers.map(s => ({
+        id: s.id,
+        name: s.name,
+        url: s.src,
+        x: Math.round((s.x / totalW) * 100),
+        y: Math.round((s.y / totalH) * 100),
+        scale: Number(s.scale || 1.0),
+        rotation: Math.round(((s.rotation || 0) * 180) / Math.PI),
+        opacity: s.opacity !== undefined ? Number(s.opacity) : 1.0,
+        layer: s.layer || 'front'
+      }));
+
+      const payload = {
+        style: 'fishbowl',
+        customJarImage: state.baseImgUrl,
+        frontOverlayImage: state.showFrontOverlay ? state.frontOverlayUrl : '',
+        hideDefaultJarOnCustom: state.hideDefaultJar,
+        jarAspect: state.aspect,
+        jarPadding: {
+          top: state.padTop,
+          bottom: state.padBottom,
+          left: state.padLeft,
+          right: state.padRight
+        },
+        stickers: normalizedStickers,
+        decorImage: normalizedStickers.length > 0 ? normalizedStickers[0].url : '',
+        shimmerRimEffect: state.showShimmer,
+        shimmerRimSpeed: state.shimmerSpeed,
+        shimmerSparkles: state.showSparkles
+      };
+
+      try {
+        const res = await fetch('/api/jar/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('⚡', 'ĐÃ KÍCH HOẠT LÊN OBS! Hũ quà và Sticker đã hiển thị ngay lập tức!');
+        } else {
+          alert('Lỗi lưu: ' + (data.error || 'Thao tác thất bại'));
         }
+      } catch (err) {
+        alert('Lỗi kết nối: ' + err.message);
       }
-    });
+    }
 
-    // ==========================================
-    // XUẤT ẢNH & LƯU TEMPLATE & ÁP DỤNG OBS
-    // ==========================================
-    function getCleanExportBlob() {
-      return new Promise((resolve) => {
-        // TẠM ẨN VIỀN CHỌN VÀ VIỀN KHUNG ĐỊNH VỊ
-        const prevSelected = state.selectedStickerIdx;
-        state.selectedStickerIdx = -1;
-        redraw(true); // hideGuidesForExport = true
-
-        canvas.toBlob((blob) => {
-          state.selectedStickerIdx = prevSelected;
-          redraw(false);
-          resolve(blob);
-        }, 'image/png');
+    function switchSidebarTab(tab) {
+      ['jar', 'stickers', 'shimmer', 'padding'].forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const pane = document.getElementById(`pane${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
       });
     }
 
-    function exportTransparentPng() {
-      getCleanExportBlob().then(blob => {
-        if (!blob) return alert('Lỗi tạo ảnh PNG');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.download = `hu_qua_transparent_${state.aspect}_${Date.now()}.png`;
-        a.href = url;
-        a.click();
-        showToast('📥', 'Đã tải ảnh PNG trong suốt thành công (không có viền kẻ)!');
-      });
+    function loadJarImage(url) {
+      state.baseImgUrl = url;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        state.baseImg = img;
+        redraw();
+      };
+      img.src = url;
     }
 
-    function openSaveTemplateModal() {
-      document.getElementById('saveTemplateModal').style.display = 'flex';
-      document.getElementById('saveTemplateNameInput').focus();
+    function loadFrontOverlay(url) {
+      state.frontOverlayUrl = url;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        state.frontOverlayImg = img;
+        redraw();
+      };
+      img.src = url;
     }
 
-    function closeSaveTemplateModal() {
-      document.getElementById('saveTemplateModal').style.display = 'none';
-    }
-
-    async function confirmSaveTemplate() {
-      const name = document.getElementById('saveTemplateNameInput').value.trim() || 'Hũ Quà Custom';
-      const applyNow = document.getElementById('saveTemplateApplyNowChk').checked;
-
-      closeSaveTemplateModal();
-      showToast('⏳', 'Đang lưu mẫu hũ vào thư viện...');
-
-      const blob = await getCleanExportBlob();
-      if (!blob) return alert('Lỗi xuất ảnh template');
-
-      const formData = new FormData();
-      formData.append('templateImage', blob, `tmpl_${Date.now()}.png`);
-      formData.append('name', name);
-      formData.append('aspect', state.aspect);
-      formData.append('canvasWidth', canvas.width);
-      formData.append('canvasHeight', canvas.height);
-      formData.append('padding', JSON.stringify({
-        top: state.padTop,
-        bottom: state.padBottom,
-        left: state.padLeft,
-        right: state.padRight
-      }));
-      formData.append('stateData', JSON.stringify({
-        baseImgUrl: state.baseImgUrl,
-        aspect: state.aspect,
-        padTop: state.padTop,
-        padBottom: state.padBottom,
-        padLeft: state.padLeft,
-        padRight: state.padRight,
-        chromaEnabled: state.chromaEnabled,
-        chromaKeyColor: state.chromaKeyColor,
-        chromaTolerance: state.chromaTolerance,
-        chromaFeather: state.chromaFeather,
-        stickers: state.stickers.map(s => ({
-          id: s.id,
-          name: s.name,
-          src: s.src,
-          x: s.x,
-          y: s.y,
-          w: s.w,
-          h: s.h,
-          scale: s.scale,
-          rotation: s.rotation
-        }))
-      }));
-      formData.append('applyNow', applyNow);
-
-      try {
-        const res = await fetch('/api/jar/save-template', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('🎉', `Đã lưu thành công mẫu "${name}"!`);
-          switchSidebarTab('library');
-        } else {
-          alert('Lỗi lưu template: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối server: ' + err.message);
-      }
-    }
-
-    async function applyDirectlyToOBS() {
-      showToast('⏳', 'Đang xuất và đồng bộ lên OBS Studio...');
-      const blob = await getCleanExportBlob();
-      if (!blob) return alert('Lỗi tạo ảnh PNG');
-
-      const formData = new FormData();
-      formData.append('templateImage', blob, `live_skin_${Date.now()}.png`);
-      formData.append('name', `Hũ Trực Tiếp (${state.aspect === 'horizontal' ? 'Ngang' : 'Dọc'})`);
-      formData.append('aspect', state.aspect);
-      formData.append('canvasWidth', canvas.width);
-      formData.append('canvasHeight', canvas.height);
-      formData.append('padding', JSON.stringify({
-        top: state.padTop,
-        bottom: state.padBottom,
-        left: state.padLeft,
-        right: state.padRight
-      }));
-      formData.append('applyNow', 'true');
-
-      try {
-        const res = await fetch('/api/jar/save-template', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('⚡', 'ĐÃ KÍCH HOẠT LÊN OBS! Khung hình trên Live đã được cập nhật!');
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      }
-    }
-
-    // ==========================================
-    // QUẢN LÝ THƯ VIỆN TEMPLATE ĐÃ LƯU (LIBRARY)
-    // ==========================================
-    async function loadSavedTemplatesList() {
-      const container = document.getElementById('templatesListContainer');
-      container.innerHTML = '<div style="color: #94a3b8; font-size: 0.78rem; text-align: center; padding: 20px;">Đang tải danh sách mẫu...</div>';
-
-      try {
-        const res = await fetch('/api/jar/templates');
-        const data = await res.json();
-        if (!data.success || !Array.isArray(data.templates) || data.templates.length === 0) {
-          container.innerHTML = '<div style="color: #64748b; font-size: 0.76rem; text-align: center; padding: 30px;">Chưa có mẫu nào được lưu. Hãy bấm nút "Lưu Vào Thư Viện" để tạo mẫu đầu tiên!</div>';
-          return;
-        }
-
-        container.innerHTML = '';
-        data.templates.forEach(t => {
-          const card = document.createElement('div');
-          card.className = `template-card ${t.isActive ? 'active' : ''}`;
-
-          card.innerHTML = `
-            <div class="template-preview-box">
-              <img src="${t.imageUrl || t.previewUrl}">
-            </div>
-            <div class="template-meta">
-              <span class="template-title" title="${t.name}">${t.name}</span>
-              <span class="template-badge ${t.isActive ? 'active-badge' : ''}">${t.isActive ? '⚡ Đang Phát' : (t.aspect === 'horizontal' ? '🖥️ Ngang' : '📱 Dọc')}</span>
-            </div>
-            <div class="template-actions">
-              <button class="btn btn-sm btn-gold" onclick="applyTemplateById('${t.id}')" title="Kích hoạt mẫu này lên OBS Studio">
-                ⚡ Dùng
-              </button>
-              <button class="btn btn-sm btn-primary" onclick="loadTemplateStateById('${t.id}')" title="Nạp lại vào bàn vẽ để chỉnh sửa tiếp">
-                ✏️ Sửa Tiếp
-              </button>
-              <button class="btn btn-sm btn-danger" onclick="deleteTemplateById('${t.id}')" title="Xoá mẫu này khỏi thư viện">
-                ✕
-              </button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-      } catch (err) {
-        container.innerHTML = `<div style="color: #ef4444; font-size: 0.76rem;">Lỗi tải thư viện: ${err.message}</div>`;
-      }
-    }
-
-    async function applyTemplateById(id) {
-      showToast('⏳', 'Đang chuyển mẫu hũ trên OBS...');
-      try {
-        const res = await fetch(`/api/jar/apply-template/${id}`, { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          showToast('🎉', 'Đã kích hoạt mẫu hũ lên OBS thành công!');
-          loadSavedTemplatesList();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      }
-    }
-
-    async function deleteTemplateById(id) {
-      if (!confirm('Bạn có chắc chắn muốn xoá mẫu hũ này khỏi thư viện?')) return;
-      try {
-        const res = await fetch(`/api/jar/template/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          showToast('🗑️', 'Đã xoá mẫu hũ khỏi thư viện');
-          loadSavedTemplatesList();
-        } else {
-          alert('Lỗi: ' + data.error);
-        }
-      } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
-      }
-    }
-
-    async function loadTemplateStateById(id) {
-      showToast('⏳', 'Đang nạp lại mẫu vào bàn vẽ...');
-      try {
-        const res = await fetch('/api/jar/templates');
-        const data = await res.json();
-        const t = (data.templates || []).find(x => x.id === id);
-        if (!t) return alert('Không tìm thấy template');
-
-        const sd = t.stateData || {};
-        if (t.aspect) setAspectPreset(t.aspect);
-
-        const pad = t.padding || sd.padding || { top: 70, bottom: 50, left: 60, right: 60 };
-        setPaddingPreset(pad.top || 0, pad.bottom || 0, pad.left || 0);
-
-        if (sd.chromaEnabled !== undefined) {
-          state.chromaEnabled = sd.chromaEnabled;
-          document.getElementById('chromaEnabledChk').checked = sd.chromaEnabled;
-        }
-        if (sd.chromaKeyColor) setChromaColor(sd.chromaKeyColor);
-        if (sd.chromaTolerance) updateChromaTolerance(sd.chromaTolerance);
-        if (sd.chromaFeather) updateChromaFeather(sd.chromaFeather);
-
-        // Nạp base image
-        const imgUrl = sd.baseImgUrl || t.imageUrl;
-        loadJarImage(imgUrl);
-
-        // Nạp lại các stickers
-        state.stickers = [];
-        if (Array.isArray(sd.stickers)) {
-          sd.stickers.forEach(s => {
-            const simg = new Image();
-            simg.crossOrigin = 'anonymous';
-            simg.onload = () => redraw();
-            simg.src = s.src;
-            state.stickers.push({
-              id: s.id || Date.now(),
-              name: s.name || 'Sticker',
-              src: s.src,
-              img: simg,
-              x: s.x,
-              y: s.y,
-              w: s.w,
-              h: s.h,
-              scale: s.scale || 1.0,
-              rotation: s.rotation || 0
-            });
-          });
-        }
-
-        switchSidebarTab('stickers');
-        showToast('🎨', `Đã nạp lại mẫu: "${t.name}". Bạn có thể tiếp tục chỉnh sửa!`);
-      } catch (err) {
-        alert('Lỗi nạp template: ' + err.message);
-      }
-    }
-
-    // ==========================================
-    // TOAST THÔNG BÁO
-    // ==========================================
     let toastTimer = null;
     function showToast(icon, text) {
       const toast = document.getElementById('toastMsg');
@@ -1759,12 +1365,78 @@
       toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
-    // ==========================================
-    // KHỞI ĐỘNG BAN ĐẦU
-    // ==========================================
-    calculateCanvasDimensions();
-    loadJarImage(state.baseImgUrl);
-    filterStickers('chibi');
+    // ANIMATION LOOP 60FPS TRONG STUDIO
+    function studioLoop(time) {
+      studioAnimTime = time;
+      if (state.showShimmer || state.simulatedGifts.length > 0) {
+        redraw();
+      }
+      requestAnimationFrame(studioLoop);
+    }
+
+    // KHỞI ĐỘNG BAN ĐẦU: NẠP CẤU HÌNH TRỰC TIẾP TỪ SERVER
+    async function initStudio() {
+      try {
+        const res = await fetch('/api/jar/config');
+        const data = await res.json();
+        const cfg = data.config || {};
+        if (cfg.customJarImage) state.baseImgUrl = cfg.customJarImage;
+        if (cfg.frontOverlayImage) state.frontOverlayUrl = cfg.frontOverlayImage;
+        if (cfg.jarAspect) state.aspect = cfg.jarAspect;
+        if (cfg.jarPadding) {
+          state.padTop = Number(cfg.jarPadding.top) || 20;
+          state.padBottom = Number(cfg.jarPadding.bottom) || 20;
+          state.padLeft = Number(cfg.jarPadding.left) || 20;
+          state.padRight = Number(cfg.jarPadding.right) || 20;
+        }
+        if (cfg.shimmerRimEffect !== undefined) state.showShimmer = cfg.shimmerRimEffect;
+        if (cfg.shimmerRimSpeed !== undefined) state.shimmerSpeed = Number(cfg.shimmerRimSpeed);
+
+        calculateCanvasDimensions();
+        loadJarImage(state.baseImgUrl);
+        loadFrontOverlay(state.frontOverlayUrl);
+
+        // Nạp mảng stickers
+        if (Array.isArray(cfg.stickers) && cfg.stickers.length > 0) {
+          state.stickers = [];
+          cfg.stickers.forEach(s => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => redraw();
+            img.src = s.url;
+            state.stickers.push({
+              id: s.id || `stk_${Date.now()}`,
+              name: s.name || 'Sticker',
+              src: s.url,
+              img,
+              x: (s.x / 100) * canvas.width,
+              y: (s.y / 100) * canvas.height,
+              w: 220,
+              h: 100,
+              scale: s.scale || 0.85,
+              rotation: ((s.rotation || 0) * Math.PI) / 180,
+              opacity: s.opacity !== undefined ? s.opacity : 1.0,
+              layer: s.layer || 'front'
+            });
+          });
+        } else {
+          // Mặc định gắn sticker Logo NT-Studio ở đáy hũ
+          addStickerToCanvas('/uploads/decor/sticker_nt_studio.png', 'Logo NT-Studio (Cọp Vàng)');
+        }
+      } catch (err) {
+        console.warn('Fallback default:', err);
+        calculateCanvasDimensions();
+        loadJarImage(state.baseImgUrl);
+        loadFrontOverlay(state.frontOverlayUrl);
+        addStickerToCanvas('/uploads/decor/sticker_nt_studio.png', 'Logo NT-Studio (Cọp Vàng)');
+      }
+
+      filterStickers('all');
+      updateActiveStickersList();
+      requestAnimationFrame(studioLoop);
+    }
+
+    initStudio();
   </script>
 </body>
 </html>
