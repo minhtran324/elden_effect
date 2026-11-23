@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Portable runtime binaries (Node.js portable binary is in Releases)
+**/runtime/
+runtime/
+
+# Compressed archives & large binary installers
+*.zip
+*.exe
+*.rar
+*.7z
+*.tar.gz
+
+# User uploaded media & heavy video effects
+elden-live-effect-studio/public/uploads/videos/*
+!elden-live-effect-studio/public/uploads/videos/.gitkeep
+elden-live-effect-studio/public/uploads/audio/*
+!elden-live-effect-studio/public/uploads/audio/.gitkeep
+
+# Temporary update folders
+**/temp_update/
+temp_update/
+
+# Scratch & Reverse Engineering dump directories
+cuoi-lien-tay/
+extracted_ggtt/
+rea/
+tools/
+.agents/
+
+# Logs and OS metadata
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,88 @@
+[
+  {
+    "id": "rule_banh_vong",
+    "name": "Bánh Vòng Ngẫu Nhiên",
+    "enabled": true,
+    "ruleType": "specific_gift",
+    "giftName": "Bánh vòng",
+    "minCoins": 30,
+    "successRate": 80,
+    "missMessage": "Tiếc quá, xịt rồi! Chúc bạn may mắn lần sau 💨",
+    "videoPool": [
+      {
+        "id": "eff_1",
+        "name": "1chon_Edited.webm",
+        "file": "/uploads/videos/1chon_Edited.webm",
+        "weight": 17
+      },
+      {
+        "id": "eff_3",
+        "name": "3chon_Edited.webm",
+        "file": "/uploads/videos/3chon_Edited.webm",
+        "weight": 17
+      },
+      {
+        "id": "eff_4",
+        "name": "4chon_Edited.webm",
+        "file": "/uploads/videos/4chon_Edited.webm",
+        "weight": 17
+      },
+      {
+        "id": "eff_8",
+        "name": "8chon_Edited.webm",
+        "file": "/uploads/videos/8chon_Edited.webm",
+        "weight": 17
+      },
+      {
+        "id": "eff_11",
+        "name": "11 Chọn - Hiệu Ứng 11",
+        "file": "/uploads/videos/11chon_MOV_1794665135256.mov",
+        "weight": 17
+      },
+      {
+        "id": "v_1795003349576",
+        "name": "8chon_Edited11111.webm",
+        "file": "/uploads/videos/8chon_Edited11111.webm",
+        "weight": 17
+      }
+    ],
+    "giftId": "5879",
+    "iconUrl": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4e7ad6bdf0a1d860c538f38026d4e812~tplv-obj.webp"
+  },
+  {
+    "id": "rule_tha_tim",
+    "name": "Thả Tim Cho Tôi",
+    "enabled": false,
+    "ruleType": "specific_gift",
+    "giftName": "Thả Tim Cho Tôi",
+    "minCoins": 1,
+    "successRate": 100,
+    "missMessage": "Hụt rồi!",
+    "videoPool": [
+      {
+        "id": "eff_tim_1",
+        "name": "Cảm Ơn Thả Tim",
+        "file": "/uploads/videos/sample_bienhinh.mp4",
+        "weight": 100
+      }
+    ]
+  },
+  {
+    "id": "rule_vip_100",
+    "name": "Quà Khủng >= 100 Xu",
+    "enabled": false,
+    "ruleType": "min_coins",
+    "giftName": "",
+    "minCoins": 100,
+    "successRate": 100,
+    "missMessage": "Xịt!",
+    "videoPool": [
+      {
+        "id": "eff_vip",
+        "name": "Đại Gia Tặng Quà",
+        "file": "/uploads/videos/sample_bienhinh.mp4",
+        "weight": 100
+      }
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <style>
+      .guide-line { stroke: #38bdf8; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+      .mouth-line { stroke: #f59e0b; stroke-width: 3; fill: none; }
+      .label-text { font-family: -apple-system, Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #f8fafc; }
+      .sub-text { font-family: -apple-system, Arial, sans-serif; font-size: 11px; fill: #94a3b8; }
+    </style>
+  </defs>
+  <!-- Khung bao ngoài chuẩn hũ ngang -->
+  <rect x="2" y="2" width="596" height="446" rx="14" fill="#0b111e" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Vạch đáy hũ -->
+  <line x1="40" y1="410" x2="560" y2="410" stroke="#ef4444" stroke-width="3"/>
+  <text x="300" y="428" text-anchor="middle" class="label-text" fill="#ef4444">▼ ĐÁY HŨ NGANG (FLOOR LEVEL Y = 410px) ▼</text>
+
+  <!-- Thân hũ ngang (Bể / Hũ rộng) -->
+  <rect x="50" y="80" width="500" height="320" rx="36" class="guide-line"/>
+  <text x="300" y="240" text-anchor="middle" class="label-text">THÂN HŨ NGANG (WIDE BODY: 500 x 320 px)</text>
+  <text x="300" y="260" text-anchor="middle" class="sub-text">Tỷ lệ 4:3 siêu rộng - Sức chứa quà lớn, không che khuất Idol</text>
+
+  <!-- Miệng hũ ngang -->
+  <rect x="80" y="40" width="440" height="40" rx="12" class="mouth-line"/>
+  <text x="300" y="65" text-anchor="middle" class="label-text" fill="#fbbf24">▲ MIỆNG HŨ RỘNG (MOUTH WIDTH: 440px) ▲</text>
+
+  <!-- Trục giữa đối xứng -->
+  <line x1="300" y1="20" x2="300" y2="430" stroke="#334155" stroke-dasharray="3 3"/>
+  <text x="300" y="20" text-anchor="middle" class="sub-text">TRỤC ĐỐI XỨNG CHÍNH GIỮA (CENTER X = 300px)</text>
+</svg>

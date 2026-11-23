@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>🏺 Hũ Quà Rơi Vật Lý TikTok - LiveEffect Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent !important; /* OBS Browser Source transparent */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    #stage-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    canvas#physics-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* HUD: MỤC TIÊU & TÍCH LUỸ XU */
+    #goal-hud {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    .goal-pill {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(251, 191, 36, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(251, 191, 36, 0.25);
+      border-radius: 999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+    }
+    .goal-icon {
+      font-size: 1.4rem;
+      animation: floatIcon 2s ease-in-out infinite;
+    }
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .goal-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #f1f5f9;
+      text-transform: uppercase;
+    }
+    .goal-counter {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #fbbf24;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+    .goal-bar-wrap {
+      width: 280px;
+      height: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .goal-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #10b981);
+      box-shadow: 0 0 8px #fbbf24;
+      border-radius: 999px;
+      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* TOAST THÔNG BÁO QUÀ RƠI */
+    #toast-container {
+      position: absolute;
+      top: 85px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 101;
+      pointer-events: none;
+    }
+    .gift-toast {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      padding: 6px 16px 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      animation: toastIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-15px) scale(0.85); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-out {
+      animation: toastOut 0.35s ease forwards !important;
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-10px) scale(0.9); }
+    }
+    .toast-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #fbbf24;
+      object-fit: cover;
+      background: #1e293b;
+    }
+    .toast-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .toast-name {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .toast-gift {
+      color: #fbbf24;
+      font-weight: 800;
+    }
+
+    /* FLASH TRẮNG KHI VỠ HŨ */
+    #screen-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      transition: opacity 0.1s ease;
+    }
+
+    /* BANNER CHÚC MỪNG HOÀN THÀNH MỤC TIÊU */
+    #celebration-banner {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #celebration-banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .banner-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff;
+      font-size: 2rem;
+      font-weight: 900;
+      padding: 12px 36px;
+      border-radius: 999px;
+      box-shadow: 0 10px 40px rgba(245, 158, 11, 0.6), 0 0 20px #fff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      border: 3px solid #fff;
+    }
+    .banner-sub {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      background: rgba(15, 23, 42, 0.85);
+      padding: 6px 20px;
+      border-radius: 999px;
+    }
+  </style>
+
+  <!-- Nạp thư viện Matter.js chuẩn offline & Socket.io -->
+  <script src="/vendor/matter.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <div id="stage-container">
+    <canvas id="physics-canvas"></canvas>
+
+    <!-- MỤC TIÊU TIẾN TRÌNH HŨ -->
+    <div id="goal-hud">
+      <div class="goal-pill">
+        <span class="goal-icon">🏺</span>
+        <div>
+          <span class="goal-title" id="hudGoalTitle">Mục Tiêu Đầy Hũ</span>
+          <span style="margin: 0 6px; opacity: 0.5;">|</span>
+          <span class="goal-counter" id="hudGoalCounter">0 / 500 Xu</span>
+        </div>
+      </div>
+      <div class="goal-bar-wrap">
+        <div class="goal-bar-fill" id="hudGoalFill"></div>
+      </div>
+    </div>
+
+    <!-- TOAST QUÀ VỪA RƠI -->
+    <div id="toast-container"></div>
+
+    <!-- FLASH TRẮNG KHI VỠ -->
+    <div id="screen-flash"></div>
+
+    <!-- BANNER NỔ HŨ HOÀN THÀNH MỤC TIÊU -->
+    <div id="celebration-banner">
+      <div class="banner-badge">💥 HŨ ĐÃ ĐẦY & NỔ TUNG! 💥</div>
+      <div class="banner-sub">Cảm ơn tất cả các Idol & Đại Gia đã ủng hộ! 💖</div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. WEB AUDIO API - TỔNG HỢP ÂM THANH CHÂN THỰC (ZERO DEPENDENCIES)
+    // ==========================================
+    const AudioEngine = {
+      ctx: null,
+      enabled: true,
+      volume: 0.7,
+
+      init() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        } catch (_) {}
+      },
+
+      ensureCtx() {
+        if (!this.ctx) this.init();
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      },
+
+      // Tiếng va chạm lách cách kính trong trẻo khi quà rơi vào hũ
+      playClink(pitch = 1.0) {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          const baseFreq = 1800 * pitch + (Math.random() * 400 - 200);
+          osc.frequency.setValueAtTime(baseFreq, now);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.4, now + 0.12);
+
+          gain.gain.setValueAtTime(0.25 * this.volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } catch (_) {}
+      },
+
+      // Tiếng kính nứt rắc rắc sắc bén
+      playCrack() {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          const bufferSize = this.ctx.sampleRate * 0.15;
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+          }
+
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'highpass';
+          filter.frequency.setValueAtTime(2500, now);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.6 * this.volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          noise.start(now);
+        } catch (_) {}
+      },
+
+      // Tiếng rung lắc hũ trầm ồn
+      playShake() {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.linearRampToValueAtTime(70, now + 0.35);
+
+          gain.gain.setValueAtTime(0.5 * this.volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.36);
+        } catch (_) {}
+      },
+
+      // Tiếng vỡ kính nổ tung hoành tráng
+      playShatter() {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          // 1. Noise blast
+          const bufferSize = this.ctx.sampleRate * 0.8;
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+          }
+
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1800, now);
+          filter.Q.setValueAtTime(1.2, now);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.85 * this.volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.8);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          noise.start(now);
+
+          // 2. Sub bass boom
+          const boom = this.ctx.createOscillator();
+          const boomGain = this.ctx.createGain();
+          boom.type = 'sine';
+          boom.frequency.setValueAtTime(110, now);
+          boom.frequency.exponentialRampToValueAtTime(30, now + 0.6);
+
+          boomGain.gain.setValueAtTime(0.8 * this.volume, now);
+          boomGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+          boom.connect(boomGain);
+          boomGain.connect(this.ctx.destination);
+
+          boom.start(now);
+          boom.stop(now + 0.65);
+        } catch (_) {}
+      },
+
+      // Tiếng xả hũ / dốc ngược (Whoosh)
+      playWhoosh() {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.5);
+
+          gain.gain.setValueAtTime(0.4 * this.volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.51);
+        } catch (_) {}
+      },
+
+      // Hợp âm chúc mừng Fanfare (C5, E5, G5, C6)
+      playFanfare() {
+        if (!this.enabled) return;
+        this.ensureCtx();
+        if (!this.ctx) return;
+
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          try {
+            const now = this.ctx.currentTime + idx * 0.12;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.35 * this.volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.65);
+          } catch (_) {}
+        });
+      }
+    };
+
+    // ==========================================
+    // 2. KHỞI TẠO MATTER.JS & CẤU HÌNH HŨ
+    // ==========================================
+    const { Engine, World, Bodies, Body, Composite, Vector, Events } = Matter;
+
+    const canvas = document.getElementById('physics-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      rebuildScreenBoundaries();
+      rebuildJarBodies();
+    });
+
+    const engine = Engine.create({
+      enableSleeping: true
+    });
+    engine.world.gravity.y = 1.0;
+
+    // Cấu hình hũ mặc định
+    let jarConfig = {
+      enabled: true,
+      style: 'mason',
+      customJarImage: '',
+      hideDefaultJarOnCustom: true,
+      decorImage: '',
+      decorText: '',
+      decorPosition: 'center',
+      decorScale: 1.0,
+      decorOpacity: 0.95,
+      jarPosX: 50,
+      jarPosY: 82,
+      jarScale: 1.0,
+      dropOrigin: 'top',
+      dropMode: 'straight', // 'straight' | 'shower'
+      dropSpread: 0.2,
+      fallSpeed: 1.0,
+      gravity: 1.0,
+      shakeThreshold: 50,
+      enableFloorAccumulation: true,
+      giftCapacity: 600,
+      giftScaleGlobal: 1.0,
+      giftSizeSmall: 15,
+      giftSizeMedium: 24,
+      giftSizeLarge: 35,
+      giftSizeVIP: 52,
+      glowEffect: true,
+      sparkleEffect: true,
+      goalEnabled: true,
+      goalTargetCoins: 500,
+      currentCoins: 0,
+      bounciness: 0.35,
+      soundEnabled: true,
+      soundVolume: 0.7,
+      autoBurstOnGoal: true,
+      autoResetSeconds: 5
+    };
+
+    // Trạng thái tương tác
+    let jarState = {
+      currentCoins: 0,
+      crackLevel: 0, // 0: lành lặn, 1: nứt nhẹ, 2: nứt mạng nhện, 3: nứt nghiêm trọng
+      isBurst: false,
+      isFlipped: false,
+      flipAngle: 0, // góc xoay radian của hũ
+      shakeTrauma: 0, // độ rung lắc hiện tại (0 -> 1)
+      shakeTime: 0
+    };
+
+    // Bộ nhớ cache ảnh để vẽ sprite mượt mà 60fps
+    const imageCache = {};
+    function preloadImage(url) {
+      if (!url) return null;
+      if (imageCache[url]) return imageCache[url];
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = url;
+      imageCache[url] = img;
+      return img;
+    }
+
+    // Danh sách các hạt mảnh kính, pháo hoa & bụi sáng
+    let glassShards = [];
+    let confettiParticles = [];
+    let sparkleParticles = [];
+
+    function spawnSparkleDust(x, y, coins) {
+      const num = coins >= 100 ? 10 : 4;
+      const colors = ['#fef08a', '#facc15', '#38bdf8', '#ffffff'];
+      for (let i = 0; i < num; i++) {
+        sparkleParticles.push({
+          x: x + (Math.random() - 0.5) * 24,
+          y: y + (Math.random() - 0.5) * 24,
+          vx: (Math.random() - 0.5) * 2.2,
+          vy: - (0.5 + Math.random() * 2),
+          size: 2 + Math.random() * 3.5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1.0,
+          decay: 0.02 + Math.random() * 0.02
+        });
+      }
+    }
+
+    // ==========================================
+    // 3. XÂY DỰNG HÌNH HỌC VẬT LÝ CỦA HŨ (COLLISION WALLS)
+    // ==========================================
+    let jarWalls = [];
+    let jarGeometry = {
+      cx: 0,
+      cy: 0,
+      w: 360,
+      h: 490,
+      neckW: 240,
+      neckH: 60,
+      wallThickness: 22
+    };
+
+    function calculateJarGeometry() {
+      const scale = jarConfig.jarScale || 1.0;
+      const posX = typeof jarConfig.jarPosX === 'number' ? jarConfig.jarPosX : 50;
+      const posY = typeof jarConfig.jarPosY === 'number' ? jarConfig.jarPosY : 82;
+      const aspect = jarConfig.jarAspect || 'vertical';
+
+      let baseW, baseH, neckW, neckH;
+      if (aspect === 'horizontal') {
+        // KHỔ NGANG (Horizontal Wide Jar / Bể Hũ Rộng)
+        baseW = Math.min(560, width * 0.85);
+        baseH = Math.min(380, height * 0.45);
+        neckW = baseW * 0.78 * scale;
+        neckH = 42 * scale;
+      } else {
+        // KHỔ DỌC (Tall Mason Jar chuẩn)
+        baseW = Math.min(380, width * 0.75);
+        baseH = Math.min(500, height * 0.55);
+        neckW = baseW * 0.68 * scale;
+        neckH = 55 * scale;
+      }
+
+      const w = baseW * scale;
+      const h = baseH * scale;
+      const wallThickness = 20 * scale;
+
+      // Tọa độ tâm (cx, cy) theo % do người dùng kéo chỉnh
+      const cx = (width * posX) / 100;
+      const cy = (height * posY) / 100 - (h * 0.42);
+
+      jarGeometry = {
+        cx,
+        cy,
+        w,
+        h,
+        neckW,
+        neckH,
+        wallThickness,
+        aspect
+      };
+    }
+
+    
+    // Tường bao đáy màn hình & 2 biên trái phải để quà tràn hũ rơi xuống đất chồng chất
+    let screenBoundaries = [];
+    function rebuildScreenBoundaries() {
+      if (screenBoundaries.length > 0) {
+        World.remove(engine.world, screenBoundaries);
+        screenBoundaries = [];
+      }
+      if (jarConfig.enableFloorAccumulation !== false) {
+        // Đáy sàn màn hình ở y = height
+        const floor = Bodies.rectangle(width / 2, height + 15, width * 3, 30, {
+          isStatic: true,
+          friction: 0.85,
+          restitution: 0.15,
+          label: 'screen_floor'
+        });
+        // Tường bên trái màn hình
+        const leftWall = Bodies.rectangle(-15, height / 2, 30, height * 4, {
+          isStatic: true,
+          friction: 0.2,
+          restitution: 0.2,
+          label: 'screen_wall'
+        });
+        // Tường bên phải màn hình
+        const rightWall = Bodies.rectangle(width + 15, height / 2, 30, height * 4, {
+          isStatic: true,
+          friction: 0.2,
+          restitution: 0.2,
+          label: 'screen_wall'
+        });
+        screenBoundaries = [floor, leftWall, rightWall];
+        World.add(engine.world, screenBoundaries);
+      }
+    }
+
+    function rebuildJarBodies() {
+      // Xoá các tường cũ nếu có
+      if (jarWalls.length > 0) {
+        World.remove(engine.world, jarWalls);
+        jarWalls = [];
+      }
+
+      if (jarState.isBurst) return;
+
+      calculateJarGeometry();
+      const { cx, cy, w, h, neckW, neckH, wallThickness, aspect } = jarGeometry;
+      const halfW = w / 2;
+      const halfH = h / 2;
+      const halfNeckW = neckW / 2;
+      const scale = jarConfig.jarScale || 1.0;
+
+      // 1. Thông số bo góc và sàn đáy hũ
+      // cornerR: bán kính bo tròn góc đáy (36px cho dọc, 44px cho ngang)
+      const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
+      // baseThick: độ dày đế kính đáy (32px để quà nằm trọn vẹn bên trong lòng kính, không chạm mép đáy ngoài)
+      const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
+      const innerFloorY = cy + halfH - baseThick;
+
+      // 2. Sàn đáy phẳng chính giữa (Central Bottom Floor)
+      // Độ rộng đáy bằng chiều rộng trừ đi 2 góc bo tròn, cộng thêm overlap 16px để bịt kín
+      const centralBottomW = Math.max(60, w - 2 * cornerR + 16);
+      const bottom = Bodies.rectangle(cx, innerFloorY + wallThickness / 2, centralBottomW, wallThickness, {
+        isStatic: true,
+        friction: 0.85,
+        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
+        label: 'jar_wall'
+      });
+
+      // 3. Bo góc tròn đáy bên trái (Bottom-Left Curved Chamfer 45°)
+      // Nối tiếp liền mạch từ mép sàn lên thành tường trái, dài hơn để overlap chống lọt quà
+      const chamferLen = cornerR * 1.6;
+      const blX = cx - halfW + cornerR * 0.48;
+      const blY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
+      const bottomLeftCorner = Bodies.rectangle(blX, blY, chamferLen, wallThickness, {
+        isStatic: true,
+        angle: Math.PI / 4, // Góc nghiêng 45 độ bo tròn mềm mại
+        friction: 0.85,
+        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
+        label: 'jar_wall'
+      });
+
+      // 4. Bo góc tròn đáy bên phải (Bottom-Right Curved Chamfer -45°)
+      const brX = cx + halfW - cornerR * 0.48;
+      const brY = innerFloorY - cornerR * 0.48 + wallThickness / 2;
+      const bottomRightCorner = Bodies.rectangle(brX, brY, chamferLen, wallThickness, {
+        isStatic: true,
+        angle: -Math.PI / 4, // Góc nghiêng -45 độ bo tròn mềm mại
+        friction: 0.85,
+        restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.2),
+        label: 'jar_wall'
+      });
+
+      // 5. Tường trái thân hũ (Kéo dài từ mép vát bo tròn lên tận vai cổ hũ, overlap kín khít)
+      const wallTopY = cy - halfH + neckH;
+      const wallBottomY = innerFloorY - cornerR * 0.8;
+      const wallH = (wallBottomY - wallTopY) + 20;
+      const wallCenterY = (wallTopY + wallBottomY) / 2;
+
+      const leftWall = Bodies.rectangle(cx - halfW + wallThickness / 2, wallCenterY, wallThickness, wallH, {
+        isStatic: true,
+        friction: 0.2,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      // 6. Tường phải thân hũ
+      const rightWall = Bodies.rectangle(cx + halfW - wallThickness / 2, wallCenterY, wallThickness, wallH, {
+        isStatic: true,
+        friction: 0.2,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      // 7. Vai trái uốn cong vào cổ hũ
+      const shoulderW = halfW - halfNeckW;
+      const leftShoulder = Bodies.rectangle(cx - halfNeckW - shoulderW / 2 + 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
+        isStatic: true,
+        angle: 0.36,
+        friction: 0.15,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      // 8. Vai phải uốn cong vào cổ hũ
+      const rightShoulder = Bodies.rectangle(cx + halfNeckW + shoulderW / 2 - 4, cy - halfH + neckH + 8, shoulderW + 24, wallThickness, {
+        isStatic: true,
+        angle: -0.36,
+        friction: 0.15,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      // 9. Cổ & Miệng bên trái
+      const leftLip = Bodies.rectangle(cx - halfNeckW + wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
+        isStatic: true,
+        friction: 0.1,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      // 10. Cổ & Miệng bên phải
+      const rightLip = Bodies.rectangle(cx + halfNeckW - wallThickness / 2, cy - halfH + neckH / 2, wallThickness, neckH + 16, {
+        isStatic: true,
+        friction: 0.1,
+        restitution: Number(jarConfig.bounciness) || 0.35,
+        label: 'jar_wall'
+      });
+
+      jarWalls = [
+        bottom,
+        bottomLeftCorner,
+        bottomRightCorner,
+        leftWall,
+        rightWall,
+        leftShoulder,
+        rightShoulder,
+        leftLip,
+        rightLip
+      ];
+      World.add(engine.world, jarWalls);
+    }
+
+    rebuildScreenBoundaries();
+    rebuildJarBodies();
+     // ==========================================
+    // 4. QUẢN LÝ QUÀ TẶNG & THẢ QUÀ VẬT LÝ (GIFT PHYSICS BODY)
+    // ==========================================
+    let giftBodies = [];
+    // Tính bán kính hiển thị và va chạm theo xu & cài đặt kích thước
+    function getGiftRadius(coins, giftId) {
+      const global = Number(jarConfig.giftScaleGlobal) || 1.0;
+      let baseR = 18;
+      if (coins <= 9) {
+        baseR = Number(jarConfig.giftSizeSmall) || 15;
+      } else if (coins <= 99) {
+        baseR = Number(jarConfig.giftSizeMedium) || 24;
+      } else if (coins <= 999) {
+        baseR = Number(jarConfig.giftSizeLarge) || 35;
+      } else {
+        baseR = Number(jarConfig.giftSizeVIP) || 52;
+      }
+      return Math.max(8, Math.round(baseR * global));
+    }
+
+    // Co giãn kích thước tất cả các quà ĐÃ RƠI TRONG HŨ ngay lập tức theo thời gian thực
+    function resizeActiveGiftBodies() {
+      giftBodies.forEach(b => {
+        if (!b || !b.giftData) return;
+        const targetR = getGiftRadius(b.giftData.coins, b.giftData.giftId);
+        const curR = b.giftData.radius || b.circleRadius || 18;
+        if (Math.abs(targetR - curR) > 0.5) {
+          const scaleFactor = targetR / curR;
+          Body.scale(b, scaleFactor, scaleFactor);
+          b.giftData.radius = targetR;
+          b.circleRadius = targetR;
+        }
+      });
+    }
+
+
+    function dropGift(data) {
+      if (!jarConfig.enabled) return;
+
+      const { cx, cy, h, neckW } = jarGeometry;
+      const coins = Number(data.coins) || 1;
+      const count = Math.min(Number(data.count) || 1, 50);
+
+      const radius = getGiftRadius(coins, data.giftId);
+      const dropOrigin = jarConfig.dropOrigin || 'top';
+      const dropMode = jarConfig.dropMode || 'straight';
+      const fallSpeed = Number(jarConfig.fallSpeed) || 1.0;
+      const gravity = Number(jarConfig.gravity) || 1.0;
+      engine.world.gravity.y = gravity * fallSpeed;
+
+      const maxCapacity = Number(jarConfig.giftCapacity) || 600;
+
+      // Tiền tải icon
+      if (data.iconUrl) preloadImage(data.iconUrl);
+
+      // Tốc độ so le giữa các quà: rơi thẳng lần lượt hoặc mưa tản nhẹ
+      const intervalMs = dropMode === 'straight'
+        ? Math.max(35, Math.round(60 / fallSpeed))
+        : Math.max(25, Math.round(40 / fallSpeed));
+
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          if (jarState.isBurst) return;
+
+          // Xoá bớt quà cũ nếu vượt quá giới hạn tối đa
+          if (giftBodies.length >= maxCapacity) {
+            const oldest = giftBodies.shift();
+            World.remove(engine.world, oldest);
+          }
+
+          // Tính toán vị trí spawnY theo dropOrigin
+          let spawnY = -40;
+          if (dropOrigin === 'middle') {
+            spawnY = Math.min(cy - h / 2 - 50, height * 0.38) + (Math.random() - 0.5) * 30;
+          } else if (dropOrigin === 'mouth') {
+            spawnY = cy - h / 2 - 35 - Math.random() * 15;
+          } else {
+            spawnY = -40 - Math.random() * 25;
+          }
+
+          // Vị trí rơi ngang spawnX và vận tốc ngang vx
+          let spawnX = cx;
+          let vx = 0;
+
+          if (dropMode === 'straight') {
+            // RƠI THẲNG LẦN LƯỢT: spawn ngay giữa miệng hũ, không văng ngang
+            spawnX = cx + (Math.random() - 0.5) * 8;
+            vx = 0;
+          } else {
+            // MƯA TẢN NHẸ
+            const spread = jarConfig.dropSpread !== undefined ? jarConfig.dropSpread : 0.4;
+            spawnX = cx + (Math.random() - 0.5) * (neckW * spread);
+            vx = (cx - spawnX) * 0.035 + (Math.random() - 0.5) * 1.5;
+          }
+
+          const body = Bodies.circle(spawnX, spawnY, radius, {
+            restitution: Math.min(Number(jarConfig.bounciness) || 0.35, 0.25),
+            friction: 0.75, // ma sát cao để hoa hồng dễ chồng chất lên nhau
+            frictionAir: 0.015,
+            density: 0.0025 * (coins >= 100 ? 2.5 : 1.0),
+            angle: (Math.random() - 0.5) * 0.5,
+            label: 'gift_item'
+          });
+
+          // Gán thông tin hiển thị
+          body.giftData = {
+            giftId: data.giftId,
+            giftName: data.giftName,
+            coins: data.coins,
+            iconUrl: data.iconUrl,
+            sender: data.sender,
+            avatar: data.avatar,
+            radius,
+            createdTime: Date.now()
+          };
+
+          const baseVy = dropOrigin === 'top' ? (5.5 + Math.random() * 3) : (dropOrigin === 'middle' ? 4 + Math.random() * 2 : 2 + Math.random() * 2);
+          const vy = baseVy * fallSpeed;
+
+          Body.setVelocity(body, { x: vx, y: vy });
+
+          World.add(engine.world, body);
+          giftBodies.push(body);
+
+          // Tạo vệt bụi sáng lấp lánh (Sparkle dust)
+          if (jarConfig.sparkleEffect !== false) {
+            spawnSparkleDust(spawnX, spawnY, coins);
+          }
+
+          // Phát âm thanh va chạm lách cách
+          AudioEngine.playClink(radius > 30 ? 0.7 : 1.2);
+
+        }, i * intervalMs);
+      }
+
+      // Cập nhật mục tiêu và hiển thị thông báo toast
+      updateGoal(coins * (Number(data.count) || 1));
+      showGiftToast(data);
+
+      // Nếu quà to >= shakeThreshold, tự động kích hoạt rung hũ kịch tính!
+      const shakeThresh = Number(jarConfig.shakeThreshold) || 50;
+      if (coins >= shakeThresh) {
+        triggerAction({ action: 'shake', intensity: Math.min(2.0, 1 + coins / 500) });
+      }
+    }
+
+    // ==========================================
+    // 5. HIỆU ỨNG TƯƠNG TÁC (SHAKE, CRACK, FLIP, BURST, CLEAR)
+    // ==========================================
+    function triggerAction(payload) {
+      const action = payload.action;
+      const intensity = payload.intensity || 1.0;
+
+      switch (action) {
+        case 'shake':
+          // 1. Rung lắc hũ + Nảy quà bên trong
+          jarState.shakeTrauma = Math.min(1.0, jarState.shakeTrauma + 0.6 * intensity);
+          AudioEngine.playShake();
+
+          // Tác động lực đẩy nảy tất cả các quà trong hũ
+          giftBodies.forEach(b => {
+            Body.setVelocity(b, {
+              x: b.velocity.x + (Math.random() - 0.5) * 8 * intensity,
+              y: - (5 + Math.random() * 9 * intensity)
+            });
+          });
+          break;
+
+        case 'crack':
+          // 2. Nứt hũ (tăng từng cấp độ 1 -> 2 -> 3)
+          jarState.crackLevel = Math.min(3, jarState.crackLevel + 1);
+          AudioEngine.playCrack();
+          jarState.shakeTrauma = Math.max(jarState.shakeTrauma, 0.4);
+
+          // Tạo chút bụi kính bắn ra
+          spawnGlassDust();
+          break;
+
+        case 'flip':
+          // 3. Lật hũ (Xả toàn bộ quà dốc ngược 180 độ)
+          if (jarState.isFlipped) return;
+          flipJarAndDump();
+          break;
+
+        case 'burst':
+          // 4. Nổ tung / Vỡ hũ tan tành
+          burstJarExplode();
+          break;
+
+        case 'clear':
+          // 5. Dọn sạch quà
+          clearAllGifts();
+          break;
+
+        case 'reset':
+          // 6. Reset mục tiêu và vết nứt
+          resetJarGoal();
+          break;
+      }
+    }
+
+    // --- HIỆU ỨNG LẬT HŨ (XẢ QUÀ) ---
+    function flipJarAndDump() {
+      jarState.isFlipped = true;
+      AudioEngine.playWhoosh();
+
+      // Xoá các tường vật lý hiện tại
+      if (jarWalls.length > 0) {
+        World.remove(engine.world, jarWalls);
+        jarWalls = [];
+      }
+
+      // Đẩy quà trút ngược xuống sàn
+      giftBodies.forEach(b => {
+        Body.setVelocity(b, {
+          x: (Math.random() - 0.5) * 8,
+          y: 6 + Math.random() * 8
+        });
+      });
+
+      // Animate xoay hũ 180 độ
+      let start = null;
+      const dur = 1000;
+
+      function animFlip(ts) {
+        if (!start) start = ts;
+        const progress = Math.min(1, (ts - start) / dur);
+        // Easing cubic
+        const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        jarState.flipAngle = ease * Math.PI;
+
+        if (progress < 1) {
+          requestAnimationFrame(animFlip);
+        } else {
+          // Chờ quà đổ hết ra ngoài trong 2.5s rồi lật thẳng lại
+          setTimeout(() => {
+            animateJarBackUpright();
+          }, 2500);
+        }
+      }
+      requestAnimationFrame(animFlip);
+    }
+
+    function animateJarBackUpright() {
+      let start = null;
+      const dur = 900;
+      const fromAngle = jarState.flipAngle;
+
+      function animUp(ts) {
+        if (!start) start = ts;
+        const progress = Math.min(1, (ts - start) / dur);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        jarState.flipAngle = fromAngle + ease * (Math.PI * 2 - fromAngle);
+
+        if (progress < 1) {
+          requestAnimationFrame(animUp);
+        } else {
+          jarState.flipAngle = 0;
+          jarState.isFlipped = false;
+          // Xoá sạch các quà đã rơi ra ngoài
+          giftBodies.forEach(b => World.remove(engine.world, b));
+          giftBodies = [];
+          rebuildJarBodies();
+        }
+      }
+      requestAnimationFrame(animUp);
+    }
+
+    // --- HIỆU ỨNG NỔ TUNG HŨ (BURST / EXPLODE) ---
+    function burstJarExplode() {
+      if (jarState.isBurst) return;
+      jarState.isBurst = true;
+
+      AudioEngine.playShatter();
+      AudioEngine.playFanfare();
+
+      // Flash trắng màn hình kịch tính
+      const flash = document.getElementById('screen-flash');
+      flash.style.opacity = '0.9';
+      setTimeout(() => { flash.style.opacity = '0'; }, 220);
+
+      // Hiện banner chúc mừng
+      const banner = document.getElementById('celebration-banner');
+      banner.classList.add('show');
+      setTimeout(() => { banner.classList.remove('show'); }, 4000);
+
+      // Tháo bỏ hoàn toàn tường hũ
+      if (jarWalls.length > 0) {
+        World.remove(engine.world, jarWalls);
+        jarWalls = [];
+      }
+
+      const { cx, cy } = jarGeometry;
+
+      // 1. Nổ tung quà văng tứ phía
+      giftBodies.forEach(b => {
+        const dx = b.position.x - cx;
+        const dy = b.position.y - cy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const speed = 14 + Math.random() * 16;
+        Body.setVelocity(b, {
+          x: (dx / dist) * speed,
+          y: (dy / dist) * speed - 8
+        });
+        Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.4);
+      });
+
+      // 2. Tạo 90 mảnh kính vỡ bay lấp lánh
+      glassShards = [];
+      for (let i = 0; i < 90; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 6 + Math.random() * 22;
+        glassShards.push({
+          x: cx + (Math.random() - 0.5) * 200,
+          y: cy + (Math.random() - 0.5) * 300,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd - 6,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.35,
+          size: 8 + Math.random() * 26,
+          alpha: 1.0,
+          points: [
+            { x: 0, y: - (8 + Math.random() * 14) },
+            { x: 6 + Math.random() * 14, y: 0 },
+            { x: 0, y: 8 + Math.random() * 14 },
+            { x: - (6 + Math.random() * 14), y: 2 }
+          ]
+        });
+      }
+
+      // 3. Tạo 160 hạt pháo hoa rực rỡ
+      confettiParticles = [];
+      const colors = ['#f59e0b', '#ef4444', '#10b981', '#38bdf8', '#a855f7', '#fbbf24', '#ffffff'];
+      for (let i = 0; i < 160; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 5 + Math.random() * 20;
+        confettiParticles.push({
+          x: cx,
+          y: cy - 40,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd - 10,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.4,
+          w: 6 + Math.random() * 8,
+          h: 10 + Math.random() * 14,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1.0
+        });
+      }
+
+      // Tự động hồi sinh hũ sau số giây cấu hình
+      const resetSec = jarConfig.autoResetSeconds || 5;
+      setTimeout(() => {
+        respawnJar();
+      }, resetSec * 1000);
+    }
+
+    function spawnGlassDust() {
+      const { cx, cy } = jarGeometry;
+      for (let i = 0; i < 30; i++) {
+        glassShards.push({
+          x: cx + (Math.random() - 0.5) * 160,
+          y: cy + (Math.random() - 0.5) * 220,
+          vx: (Math.random() - 0.5) * 4,
+          vy: - (1 + Math.random() * 4),
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.2,
+          size: 4 + Math.random() * 8,
+          alpha: 0.9,
+          points: [
+            { x: 0, y: -4 },
+            { x: 4, y: 0 },
+            { x: 0, y: 4 },
+            { x: -4, y: 0 }
+          ]
+        });
+      }
+    }
+
+    function respawnJar() {
+      // Dọn sạch quà cũ và hạt
+      giftBodies.forEach(b => World.remove(engine.world, b));
+      giftBodies = [];
+      glassShards = [];
+      confettiParticles = [];
+
+      jarState.isBurst = false;
+      jarState.crackLevel = 0;
+      jarState.isFlipped = false;
+      jarState.flipAngle = 0;
+      jarState.currentCoins = 0;
+
+      rebuildJarBodies();
+      updateGoal(0, true);
+
+      // Hiệu ứng hồi sinh nảy nhẹ
+      jarState.shakeTrauma = 0.5;
+      AudioEngine.playFanfare();
+    }
+
+    function clearAllGifts() {
+      giftBodies.forEach(b => World.remove(engine.world, b));
+      giftBodies = [];
+      jarState.currentCoins = 0;
+      jarState.crackLevel = 0;
+      updateGoal(0, true);
+    }
+
+    function resetJarGoal() {
+      jarState.currentCoins = 0;
+      jarState.crackLevel = 0;
+      updateGoal(0, true);
+    }
+
+    // ==========================================
+    // 6. TIẾN TRÌNH MỤC TIÊU & TỰ ĐỘNG NỨT/NỔ
+    // ==========================================
+    function updateGoal(addedCoins = 0, isReset = false) {
+      if (isReset) {
+        jarState.currentCoins = 0;
+      } else {
+        jarState.currentCoins += addedCoins;
+      }
+
+      const target = jarConfig.goalTargetCoins || 500;
+      const curr = jarState.currentCoins;
+      const pct = Math.min(100, Math.round((curr / target) * 100));
+
+      const hud = document.getElementById('goal-hud');
+      if (!jarConfig.goalEnabled) {
+        hud.style.display = 'none';
+        return;
+      }
+      hud.style.display = 'flex';
+
+      document.getElementById('hudGoalCounter').textContent = `${curr.toLocaleString()} / ${target.toLocaleString()} Xu`;
+      document.getElementById('hudGoalFill').style.width = `${pct}%`;
+
+      // Tự động tăng vết nứt theo tiến trình
+      if (!jarState.isBurst) {
+        if (pct >= 90 && jarState.crackLevel < 3) {
+          jarState.crackLevel = 3;
+          AudioEngine.playCrack();
+        } else if (pct >= 60 && jarState.crackLevel < 2) {
+          jarState.crackLevel = 2;
+          AudioEngine.playCrack();
+        } else if (pct >= 30 && jarState.crackLevel < 1) {
+          jarState.crackLevel = 1;
+          AudioEngine.playCrack();
+        }
+
+        // Đạt 100% mục tiêu -> Tự động nổ hũ!
+        if (curr >= target && jarConfig.autoBurstOnGoal) {
+          setTimeout(() => {
+            if (!jarState.isBurst) burstJarExplode();
+          }, 300);
+        }
+      }
+    }
+
+    function showGiftToast(data) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'gift-toast';
+
+      const avatarSrc = data.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="16" fill="%23334155"/></svg>';
+      const count = Number(data.count) || 1;
+      const giftName = data.giftName || 'Món Quà';
+      const sender = data.sender || 'Người Xem';
+
+      toast.innerHTML = `
+        <img class="toast-avatar" src="${avatarSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\'><circle cx=\\'16\\' cy=\\'16\\' r=\\'16\\' fill=\\'%23334155\\'/></svg>'">
+        <div class="toast-text">
+          <span class="toast-name">${sender}</span> tặng <span class="toast-gift">${count > 1 ? count + 'x ' : ''}${giftName}</span>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('toast-out');
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+
+    // ==========================================
+    // 7. RENDER VẼ HŨ & HIỆU ỨNG ĐỒ HOẠ (CANVAS 60FPS)
+    // ==========================================
+
+    // Vết nứt thủy tinh vẽ động
+    function drawCracks(ctx, cx, cy, w, h, level) {
+      if (level <= 0) return;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 2.0;
+      ctx.shadowColor = 'rgba(186, 230, 253, 0.9)';
+      ctx.shadowBlur = 6;
+
+      ctx.beginPath();
+      // Nhánh chính 1
+      ctx.moveTo(cx - 30, cy + 20);
+      ctx.lineTo(cx - 10, cy - 40);
+      ctx.lineTo(cx + 40, cy - 60);
+      ctx.lineTo(cx + 60, cy - 110);
+
+      if (level >= 2) {
+        // Nhánh phụ mạng nhện
+        ctx.moveTo(cx - 10, cy - 40);
+        ctx.lineTo(cx - 65, cy - 50);
+        ctx.lineTo(cx - 95, cy - 20);
+
+        ctx.moveTo(cx + 40, cy - 60);
+        ctx.lineTo(cx + 75, cy - 40);
+        ctx.lineTo(cx + 105, cy - 70);
+
+        ctx.moveTo(cx - 30, cy + 20);
+        ctx.lineTo(cx - 50, cy + 80);
+        ctx.lineTo(cx - 30, cy + 130);
+      }
+
+      if (level >= 3) {
+        // Nhánh vết nứt nghiêm trọng toàn thân
+        ctx.moveTo(cx - 50, cy + 80);
+        ctx.lineTo(cx + 20, cy + 100);
+        ctx.lineTo(cx + 80, cy + 150);
+
+        ctx.moveTo(cx + 60, cy - 110);
+        ctx.lineTo(cx + 30, cy - 150);
+        ctx.lineTo(cx - 20, cy - 170);
+
+        ctx.lineWidth = 3.0;
+        ctx.shadowBlur = 12;
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Hào quang neon phát sáng nhẹ xung quanh hũ
+    function drawAuraGlow(ctx, geom) {
+      if (jarConfig.glowEffect === false) return;
+      const { cx, cy, w } = geom;
+      ctx.save();
+      const pulse = 0.12 + 0.05 * Math.sin(Date.now() * 0.0035);
+      const rad = w * 0.75;
+      const grad = ctx.createRadialGradient(cx, cy, rad * 0.2, cx, cy, rad);
+      grad.addColorStop(0, `rgba(251, 191, 36, ${pulse * 1.3})`);
+      grad.addColorStop(0.5, `rgba(56, 189, 248, ${pulse * 0.7})`);
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Vẽ hình dáng hũ theo các phong cách (kể cả ảnh mẫu tùy chọn)
+    function drawJarBackground(ctx, geom, style) {
+      const { cx, cy, w, h, neckW, neckH, aspect } = geom;
+      const halfW = w / 2;
+      const halfH = h / 2;
+      const halfNeckW = neckW / 2;
+      const scale = jarConfig.jarScale || 1.0;
+      const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
+      const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
+
+      ctx.save();
+
+      // Kiểm tra xem có dùng hũ ảnh AI / tự chọn không
+      const isCustom = style === 'custom_image' || (jarConfig.hideDefaultJarOnCustom && jarConfig.customJarImage);
+      if (isCustom && jarConfig.customJarImage) {
+        const customImg = preloadImage(jarConfig.customJarImage);
+        if (customImg && customImg.complete && customImg.naturalWidth > 0) {
+          const pad = jarConfig.jarPadding || { top: 0, bottom: 0, left: 0, right: 0 };
+          const pTop = Number(pad.top) || 0;
+          const pBottom = Number(pad.bottom) || 0;
+          const pLeft = Number(pad.left) || 0;
+          const pRight = Number(pad.right) || 0;
+
+          const drawW = w + (pLeft + pRight) * scale;
+          const drawH = h + (pTop + pBottom) * scale;
+          const drawX = cx - halfW - pLeft * scale;
+          const drawY = cy - halfH - pTop * scale;
+
+          ctx.drawImage(customImg, drawX, drawY, drawW, drawH);
+          ctx.restore();
+          return;
+        }
+      }
+
+      // Nếu chọn ẩn hũ vector mặc định khi có ảnh riêng
+      if (jarConfig.hideDefaultJarOnCustom && style === 'custom_image') {
+        ctx.restore();
+        return;
+      }
+
+      // Vẽ hũ thủy tinh pha lê bo góc tròn mềm mại chuẩn 60fps
+      const grad = ctx.createLinearGradient(cx - halfW, cy, cx + halfW, cy);
+      if (style === 'diamond') {
+        grad.addColorStop(0, 'rgba(168, 85, 247, 0.28)');
+        grad.addColorStop(0.15, 'rgba(216, 180, 254, 0.08)');
+        grad.addColorStop(0.85, 'rgba(216, 180, 254, 0.08)');
+        grad.addColorStop(1, 'rgba(168, 85, 247, 0.32)');
+      } else {
+        // Ánh xanh lơ băng tuyết pha lê cực trong
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
+        grad.addColorStop(0.15, 'rgba(224, 242, 254, 0.06)');
+        grad.addColorStop(0.85, 'rgba(224, 242, 254, 0.06)');
+        grad.addColorStop(1, 'rgba(56, 189, 248, 0.30)');
+      }
+
+      ctx.fillStyle = grad;
+
+      // Đường viền bo tròn đáy hũ & uốn lượn vai hũ
+      ctx.beginPath();
+      // Đáy phẳng chính giữa
+      ctx.moveTo(cx - halfW + cornerR, cy + halfH);
+      ctx.lineTo(cx + halfW - cornerR, cy + halfH);
+      // Góc đáy phải bo tròn mềm mại
+      ctx.quadraticCurveTo(cx + halfW, cy + halfH, cx + halfW, cy + halfH - cornerR);
+      // Thành tường phải
+      ctx.lineTo(cx + halfW, cy - halfH + neckH + 24);
+      // Vai phải uốn cong vào cổ hũ
+      ctx.quadraticCurveTo(cx + halfW, cy - halfH + neckH, cx + halfNeckW, cy - halfH + neckH);
+      // Cổ hũ phải
+      ctx.lineTo(cx + halfNeckW, cy - halfH);
+      // Miệng hở trên cùng
+      ctx.lineTo(cx - halfNeckW, cy - halfH);
+      // Cổ hũ trái
+      ctx.lineTo(cx - halfNeckW, cy - halfH + neckH);
+      // Vai trái uốn cong
+      ctx.quadraticCurveTo(cx - halfW, cy - halfH + neckH, cx - halfW, cy - halfH + neckH + 24);
+      // Thành tường trái
+      ctx.lineTo(cx - halfW, cy + halfH - cornerR);
+      // Góc đáy trái bo tròn mềm mại
+      ctx.quadraticCurveTo(cx - halfW, cy + halfH, cx - halfW + cornerR, cy + halfH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Đáy kính đúc nguyên khối dày dặn (quà nằm gọn bên trên lớp đế này)
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.24)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + halfH - baseThick * 0.45, halfW - cornerR * 0.4, baseThick * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawJarForegroundHighlights(ctx, geom, style) {
+      const isCustom = style === 'custom_image' || (jarConfig.hideDefaultJarOnCustom && jarConfig.customJarImage);
+      if (isCustom) return;
+
+      const { cx, cy, w, h, neckW, neckH, aspect } = geom;
+      const halfW = w / 2;
+      const halfH = h / 2;
+      const halfNeckW = neckW / 2;
+      const scale = jarConfig.jarScale || 1.0;
+      const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
+
+      ctx.save();
+
+      // 1. Vạch sáng phản chiếu dọc viền bo cong bên trái
+      const lightGrad = ctx.createLinearGradient(cx - halfW + 10, cy, cx - halfW + 48, cy);
+      lightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+      lightGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
+      lightGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
+      ctx.fillStyle = lightGrad;
+      ctx.beginPath();
+      ctx.moveTo(cx - halfW + 14, cy - halfH + neckH + 28);
+      ctx.lineTo(cx - halfW + 32, cy - halfH + neckH + 28);
+      ctx.lineTo(cx - halfW + 30, cy + halfH - cornerR - 10);
+      ctx.quadraticCurveTo(cx - halfW + 18, cy + halfH - 12, cx - halfW + cornerR, cy + halfH - 14);
+      ctx.lineTo(cx - halfW + 14, cy + halfH - cornerR);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. Viền loá sáng mỏng thanh thoát dọc cạnh phải
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx + halfW - 14, cy - halfH + neckH + 30);
+      ctx.lineTo(cx + halfW - 14, cy + halfH - cornerR);
+      ctx.stroke();
+
+      // 3. Đường nét viền kính mềm mại theo đúng hình dáng hũ bo góc
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - halfW + cornerR, cy + halfH);
+      ctx.lineTo(cx + halfW - cornerR, cy + halfH);
+      ctx.quadraticCurveTo(cx + halfW, cy + halfH, cx + halfW, cy + halfH - cornerR);
+      ctx.lineTo(cx + halfW, cy - halfH + neckH + 24);
+      ctx.quadraticCurveTo(cx + halfW, cy - halfH + neckH, cx + halfNeckW, cy - halfH + neckH);
+      ctx.lineTo(cx + halfNeckW, cy - halfH);
+      ctx.lineTo(cx - halfNeckW, cy - halfH);
+      ctx.lineTo(cx - halfNeckW, cy - halfH + neckH);
+      ctx.quadraticCurveTo(cx - halfW, cy - halfH + neckH, cx - halfW, cy - halfH + neckH + 24);
+      ctx.lineTo(cx - halfW, cy + halfH - cornerR);
+      ctx.quadraticCurveTo(cx - halfW, cy + halfH, cx - halfW + cornerR, cy + halfH);
+      ctx.stroke();
+
+      // 4. Ren xoắn cổ hũ và vành miệng bo tròn
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - halfH + 4, halfNeckW + 4, 8, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+function drawDecor(ctx, geom) {
+      if (!jarConfig.decorImage) return;
+
+      const img = preloadImage(jarConfig.decorImage);
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+
+      const { cx, cy, h } = geom;
+      const scale = jarConfig.decorScale || 1.0;
+      const opacity = jarConfig.decorOpacity !== undefined ? jarConfig.decorOpacity : 0.95;
+
+      let targetY = cy;
+      if (jarConfig.decorPosition === 'top') targetY = cy - h * 0.28;
+      else if (jarConfig.decorPosition === 'bottom') targetY = cy + h * 0.28;
+      else if (jarConfig.decorPosition === 'neck') targetY = cy - h * 0.42;
+
+      const targetW = 220 * scale;
+      const targetH = (img.naturalHeight / img.naturalWidth) * targetW;
+
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(img, cx - targetW / 2, targetY - targetH / 2, targetW, targetH);
+      ctx.restore();
+    }
+
+    // Vẽ một hạt quà vật lý (Gift Sprite)
+    function drawGiftBody(ctx, b) {
+      const { x, y } = b.position;
+      const r = b.giftData?.radius || b.circleRadius || 18;
+      const angle = b.angle;
+      const data = b.giftData || {};
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+
+      // Đổ bóng nhẹ dưới quà
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+
+      let img = null;
+      if (data.iconUrl) {
+        img = preloadImage(data.iconUrl);
+      }
+
+      if (img && img.complete && img.naturalWidth > 0) {
+        // Cắt hình tròn vẽ ảnh icon TikTok chính thức
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, -r, -r, r * 2, r * 2);
+
+        // Vành viền bóng nhẹ quanh icon
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      } else {
+        // Fallback: Vẽ huy hiệu bo tròn kèm emoji thông minh
+        const coins = data.coins || 1;
+        let bgGrad = ctx.createLinearGradient(-r, -r, r, r);
+        if (coins === 1) {
+          bgGrad.addColorStop(0, '#f43f5e'); bgGrad.addColorStop(1, '#e11d48');
+        } else if (coins <= 9) {
+          bgGrad.addColorStop(0, '#ec4899'); bgGrad.addColorStop(1, '#be185d');
+        } else if (coins <= 99) {
+          bgGrad.addColorStop(0, '#f59e0b'); bgGrad.addColorStop(1, '#d97706');
+        } else if (coins <= 999) {
+          bgGrad.addColorStop(0, '#8b5cf6'); bgGrad.addColorStop(1, '#6d28d9');
+        } else {
+          bgGrad.addColorStop(0, '#ef4444'); bgGrad.addColorStop(1, '#b91c1c');
+        }
+
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Biểu tượng Emoji
+        let emoji = '🎁';
+        const name = (data.giftName || '').toLowerCase();
+        if (name.includes('hồng') || name.includes('rose')) emoji = '🌹';
+        else if (name.includes('bánh vòng') || name.includes('donut')) emoji = '🍩';
+        else if (name.includes('sư tử') || name.includes('lion')) emoji = '🦁';
+        else if (name.includes('vũ trụ') || name.includes('universe')) emoji = '🌌';
+        else if (coins === 1) emoji = '🌹';
+        else if (coins === 30) emoji = '🍩';
+
+        ctx.font = `${Math.round(r * 1.1)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 0, 1);
+      }
+
+      ctx.restore();
+    }
+
+    // ==========================================
+    // 8. MAIN ANIMATION LOOP (60FPS OBS RENDERING)
+    // ==========================================
+    let lastTime = performance.now();
+
+    function renderLoop(time) {
+      const dt = Math.min(33, time - lastTime);
+      lastTime = time;
+
+      // 1. Cập nhật vật lý Matter.js
+      Engine.update(engine, dt);
+
+      // 2. Xoá canvas trong suốt
+      ctx.clearRect(0, 0, width, height);
+
+      // 3. Tính toán Trauma rung lắc hũ
+      let shakeOffsetX = 0;
+      let shakeOffsetY = 0;
+      let shakeRot = 0;
+
+      if (jarState.shakeTrauma > 0) {
+        jarState.shakeTime += 0.35;
+        const trauma2 = jarState.shakeTrauma * jarState.shakeTrauma;
+        shakeOffsetX = Math.sin(jarState.shakeTime * 1.4) * 18 * trauma2;
+        shakeOffsetY = Math.cos(jarState.shakeTime * 1.7) * 12 * trauma2;
+        shakeRot = Math.sin(jarState.shakeTime * 1.2) * 0.05 * trauma2;
+
+        // Giảm dần trauma
+        jarState.shakeTrauma = Math.max(0, jarState.shakeTrauma - 0.015);
+      }
+
+      ctx.save();
+      // Áp dụng rung lắc & lật hũ (Flip)
+      const { cx, cy } = jarGeometry;
+      ctx.translate(cx + shakeOffsetX, cy + shakeOffsetY);
+      ctx.rotate(jarState.flipAngle + shakeRot);
+      ctx.translate(-cx, -cy);
+
+      // --- LAYER 0: HÀO QUANG NEON (AURA GLOW) ---
+      if (!jarState.isBurst) {
+        drawAuraGlow(ctx, jarGeometry);
+      }
+
+      // --- LAYER 1: MẶT SAU & THÂN THỦY TINH TRONG SUỐT ---
+      if (!jarState.isBurst) {
+        drawJarBackground(ctx, jarGeometry, jarConfig.style);
+      }
+
+      // --- LAYER 2: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
+      giftBodies.forEach(b => drawGiftBody(ctx, b));
+
+      // --- LAYER 3: HÌNH ẢNH DECOR XOÁ PHÔNG (PNG/STICKER/LOGO) ---
+      if (!jarState.isBurst) {
+        drawDecor(ctx, jarGeometry);
+      }
+
+      // --- LAYER 4: MẶT TRƯỚC PHẢN CHIẾU ÁNH SÁNG & VIỀN REN (FOREGROUND) ---
+      if (!jarState.isBurst) {
+        drawJarForegroundHighlights(ctx, jarGeometry, jarConfig.style);
+      }
+
+      // --- LAYER 5: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
+      if (!jarState.isBurst && jarState.crackLevel > 0) {
+        drawCracks(ctx, jarGeometry.cx, jarGeometry.cy, jarGeometry.w, jarGeometry.h, jarState.crackLevel);
+      }
+
+      ctx.restore();
+
+      // --- LAYER 6: CÁC MẢNH KÍNH VỠ VÀ PHÁO HOA KHI NỔ TUNG ---
+      if (glassShards.length > 0) {
+        ctx.save();
+        for (let i = glassShards.length - 1; i >= 0; i--) {
+          const s = glassShards[i];
+          s.x += s.vx;
+          s.y += s.vy;
+          s.vy += 0.35; // trọng lực rơi
+          s.rot += s.vrot;
+          s.alpha -= 0.005;
+
+          if (s.alpha <= 0 || s.y > height + 50) {
+            glassShards.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.rotate(s.rot);
+          ctx.fillStyle = `rgba(224, 242, 254, ${s.alpha * 0.75})`;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${s.alpha * 0.95})`;
+          ctx.lineWidth = 1.5;
+
+          ctx.beginPath();
+          ctx.moveTo(s.points[0].x, s.points[0].y);
+          for (let p = 1; p < s.points.length; p++) {
+            ctx.lineTo(s.points[p].x, s.points[p].y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // Pháo hoa giấy bay
+      if (confettiParticles.length > 0) {
+        ctx.save();
+        for (let i = confettiParticles.length - 1; i >= 0; i--) {
+          const p = confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.28;
+          p.rot += p.vrot;
+          p.alpha -= 0.006;
+
+          if (p.alpha <= 0 || p.y > height + 50) {
+            confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // --- LAYER 7: BỤI SÁNG LẤP LÁNH KHI QUÀ RƠI (SPARKLE DUST) ---
+      if (sparkleParticles.length > 0) {
+        ctx.save();
+        for (let i = sparkleParticles.length - 1; i >= 0; i--) {
+          const sp = sparkleParticles[i];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.alpha -= sp.decay;
+
+          if (sp.alpha <= 0) {
+            sparkleParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = sp.alpha;
+          ctx.fillStyle = sp.color;
+          ctx.shadowColor = sp.color;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    // ==========================================
+    // 9. KẾT NỐI WEBSOCKET NHẬN SỰ KIỆN TỪ SERVER
+    // ==========================================
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('⚡ [JAR] Đã kết nối Socket.IO thành công!');
+      // Yêu cầu nạp cấu hình hũ mới nhất
+      fetch('/api/jar/config')
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.config) {
+            jarConfig = { ...jarConfig, ...res.config };
+            AudioEngine.enabled = jarConfig.soundEnabled !== false;
+            AudioEngine.volume = jarConfig.soundVolume || 0.7;
+            updateGoal(0, false);
+          }
+        }).catch(() => {});
+    });
+
+    // Nhận quà rơi vào hũ
+    socket.on('jar_drop_gift', (data) => {
+      console.log('🎁 [JAR DROP]', data);
+      dropGift(data);
+    });
+
+    // Nhận hành động tương tác (Lắc, Nứt, Lật, Nổ, Dọn)
+    socket.on('jar_action', (data) => {
+      console.log('⚡ [JAR ACTION]', data);
+      triggerAction(data);
+    });
+
+    // Cập nhật cấu hình
+    socket.on('jar_config_updated', (newCfg) => {
+      jarConfig = { ...jarConfig, ...newCfg };
+      AudioEngine.enabled = jarConfig.soundEnabled !== false;
+      AudioEngine.volume = jarConfig.soundVolume || 0.7;
+      engine.world.gravity.y = (Number(jarConfig.gravity) || 1.0) * (Number(jarConfig.fallSpeed) || 1.0);
+      updateGoal(0, false);
+      rebuildJarBodies();
+      rebuildScreenBoundaries();
+      resizeActiveGiftBodies();
+    });
+
+    // Kích hoạt âm thanh khi người dùng click vào trang
+    window.addEventListener('click', () => AudioEngine.ensureCtx());
+  </script>
+</body>
+</html>

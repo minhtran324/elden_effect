@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="glassGradH" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="15%" stop-color="#e0f2fe" stop-opacity="0.12"/>
+      <stop offset="85%" stop-color="#e0f2fe" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.38"/>
+    </linearGradient>
+    <linearGradient id="specularH" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+    <filter id="neonGlowH" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Hào quang phát sáng viền hũ ngang -->
+  <rect x="44" y="74" width="512" height="332" rx="42" fill="none" stroke="#38bdf8" stroke-width="4" opacity="0.4" filter="url(#neonGlowH)"/>
+
+  <!-- Thân hũ thủy tinh ngang -->
+  <rect x="48" y="78" width="504" height="324" rx="38" fill="url(#glassGradH)" stroke="#e0f2fe" stroke-width="3.5"/>
+
+  <!-- Đáy kính dày chịu lực -->
+  <ellipse cx="300" cy="392" rx="230" ry="14" fill="#0284c7" opacity="0.25"/>
+
+  <!-- Vạch phản chiếu ánh sáng bên trái -->
+  <path d="M 68 110 Q 72 240 70 360" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 82 130 Q 84 240 83 340" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- Cổ & Miệng hũ rộng ngang -->
+  <rect x="76" y="34" width="448" height="46" rx="14" fill="url(#glassGradH)" stroke="#ffffff" stroke-width="3"/>
+  <!-- Ren xoắn nắp hũ -->
+  <line x1="88" y1="48" x2="512" y2="48" stroke="#ffffff" stroke-width="3" opacity="0.75"/>
+  <line x1="88" y1="62" x2="512" y2="62" stroke="#ffffff" stroke-width="3" opacity="0.75"/>
+
+  <!-- Viền sáng miệng hũ -->
+  <ellipse cx="300" cy="34" rx="226" ry="10" fill="none" stroke="#ffffff" stroke-width="3.5" opacity="0.9"/>
+</svg>

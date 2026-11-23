@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OBS Live Overlay · LiveEffect Studio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Video Player Full Màn Hình (Chỉ chạy video thuần, không có chữ hay khung viền) */
+    #videoContainer {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 100;
+      background: transparent;
+      justify-content: center;
+      align-items: center;
+    }
+    #effectVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      background: transparent;
+    }
+    #effectCanvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: transparent;
+    }
+
+    /* Banner Thông Báo XỊT - Tinh gọn, chỉ hiện tên người xịt + icon */
+    #missBanner {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%) scale(0.85);
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid #ef4444;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 35px rgba(239, 68, 68, 0.45);
+      border-radius: 999px;
+      padding: 10px 24px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      z-index: 150;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #missBanner.show {
+      display: flex;
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+    .miss-icon {
+      font-size: 1.6rem;
+      animation: puff 0.6s ease;
+    }
+    .miss-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fca5a5;
+      max-width: 380px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .miss-badge {
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    @keyframes puff {
+      0% { transform: scale(0.5) rotate(-20deg); }
+      50% { transform: scale(1.3) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- Audio nhạc nền tuỳ chọn (Streamer có thể phát nhạc nền ngay tại đây để tự ngắt) -->
+  <audio id="bgmAudio" loop></audio>
+
+  <!-- Container Trình Chiếu Video Hiệu Ứng (Không chứa bất kỳ chữ hay banner nào) -->
+  <div id="videoContainer">
+    <video id="effectVideo" playsinline preload="auto"></video>
+    <canvas id="effectCanvas" width="720" height="1280"></canvas>
+  </div>
+
+  <!-- Thông Báo XỊT: Chỉ hiện khi xịt, tinh gọn tên người xịt -->
+  <div id="missBanner">
+    <span class="miss-icon">💨</span>
+    <span id="missName" class="miss-name">Người Xem</span>
+    <span class="miss-badge">XỊT!</span>
+  </div>
+
+  <script>
+    const socket = io();
+
+    const videoContainer = document.getElementById('videoContainer');
+    const effectVideo = document.getElementById('effectVideo');
+    const effectCanvas = document.getElementById('effectCanvas');
+    const bgmAudio = document.getElementById('bgmAudio');
+    const missBanner = document.getElementById('missBanner');
+    const missName = document.getElementById('missName');
+
+    // Engine WebGL Chroma Key Renderer (Khử sạch phông xanh/khoảng trống trong suốt, 0% CPU)
+    let gl = null;
+    let webglProgram = null;
+    let texture = null;
+    let animFrameId = null;
+
+    function initWebGL() {
+      if (gl) return true;
+      try {
+        gl = effectCanvas.getContext('webgl', { premultipliedAlpha: true, alpha: true });
+        if (!gl) return false;
+
+        const vsSource = `
+          attribute vec2 a_position;
+          attribute vec2 a_texCoord;
+          varying vec2 v_texCoord;
+          void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+            v_texCoord = a_texCoord;
+          }
+        `;
+
+        // Shader thông minh: Giữ kênh Alpha gốc của WebM + Khử sạch phông xanh (#00FF00) & khử ám xanh viền (Despill)
+        const fsSource = `
+          precision mediump float;
+          uniform sampler2D u_image;
+          varying vec2 v_texCoord;
+          void main() {
+            vec4 col = texture2D(u_image, v_texCoord);
+            if (col.a < 0.05) {
+              discard;
+            }
+            float maxRB = max(col.r, col.b);
+            float diff = col.g - maxRB;
+            if (diff > 0.14 && col.g > 0.28) {
+              discard;
+            }
+            float alpha = col.a;
+            if (diff > 0.05 && col.g > 0.25) {
+              alpha *= smoothstep(0.14, 0.05, diff);
+              col.g = min(col.g, maxRB + 0.05);
+            }
+            if (alpha < 0.03) {
+              discard;
+            }
+            gl_FragColor = vec4(col.rgb * alpha, alpha);
+          }
+        `;
+
+        function createShader(type, src) {
+          const s = gl.createShader(type);
+          gl.shaderSource(s, src);
+          gl.compileShader(s);
+          return s;
+        }
+
+        const vs = createShader(gl.VERTEX_SHADER, vsSource);
+        const fs = createShader(gl.FRAGMENT_SHADER, fsSource);
+        webglProgram = gl.createProgram();
+        gl.attachShader(webglProgram, vs);
+        gl.attachShader(webglProgram, fs);
+        gl.linkProgram(webglProgram);
+        gl.useProgram(webglProgram);
+
+        // Quad positions
+        const posBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          -1, -1,
+           1, -1,
+          -1,  1,
+          -1,  1,
+           1, -1,
+           1,  1
+        ]), gl.STATIC_DRAW);
+
+        const posLoc = gl.getAttribLocation(webglProgram, 'a_position');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+        // Tex coords (Y flipped for video)
+        const texBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          0, 1,
+          1, 1,
+          0, 0,
+          0, 0,
+          1, 1,
+          1, 0
+        ]), gl.STATIC_DRAW);
+
+        const texLoc = gl.getAttribLocation(webglProgram, 'a_texCoord');
+        gl.enableVertexAttribArray(texLoc);
+        gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
+
+        texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        return true;
+      } catch (e) {
+        console.warn('WebGL init failed, fallback to native video:', e);
+        return false;
+      }
+    }
+
+    // Hàng đợi sự kiện (FIFO Queue)
+    const eventQueue = [];
+    let isProcessing = false;
+    const COOLDOWN_BETWEEN_EFFECTS_MS = 1500; // Khoảng cách nghỉ giữa 2 lần quà
+
+    // Tạo âm thanh Synth tự động (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, type, duration, delay = 0) {
+      setTimeout(() => {
+        try {
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (_) {}
+      }, delay);
+    }
+
+    // Âm thanh báo XỊT (tụt mood hài hước)
+    function playFailSound() {
+      playTone(380, 'sawtooth', 0.22, 0);
+      playTone(300, 'sawtooth', 0.25, 160);
+      playTone(220, 'sawtooth', 0.35, 340);
+      playTone(150, 'sawtooth', 0.50, 540);
+    }
+
+    // Lắng nghe sự kiện từ Server
+    socket.on('trigger_effect', (data) => {
+      eventQueue.push(data);
+      processQueue();
+    });
+
+    async function processQueue() {
+      if (isProcessing || eventQueue.length === 0) return;
+      isProcessing = true;
+
+      try {
+        const event = eventQueue.shift();
+
+        if (event.result === 'miss') {
+          // XỬ LÝ TRƯỜNG HỢP: XỊT
+          await handleMissEvent(event);
+        } else {
+          // XỬ LÝ TRƯỜNG HỢP: TRÚNG HIỆU ỨNG (Chỉ phát video thuần, không hiện chữ)
+          await handleHitEvent(event);
+        }
+
+        // Khoảng cách nghỉ an toàn trước khi chạy tiếp
+        await new Promise(r => setTimeout(r, COOLDOWN_BETWEEN_EFFECTS_MS));
+      } catch (err) {
+        console.error('Lỗi xử lý hàng đợi hiệu ứng:', err);
+      } finally {
+        isProcessing = false;
+        if (eventQueue.length > 0) {
+          processQueue();
+        }
+      }
+    }
+
+    // Xử lý khi Xịt: Chỉ hiện tên người xịt và phát âm thanh
+    async function handleMissEvent(item) {
+      playFailSound();
+
+      missName.innerText = item.sender || 'Người Xem';
+      missBanner.classList.add('show');
+
+      // Hiện thông báo trong 2.2 giây rồi biến mất
+      await new Promise(r => setTimeout(r, 2200));
+      missBanner.classList.remove('show');
+    }
+
+    // Xử lý khi Trúng: Chỉ phát video thuần, không có bất kỳ chữ nào
+    async function handleHitEvent(item) {
+      // 1. Tạm dừng nhạc nền nếu có
+      if (!bgmAudio.paused) {
+        bgmAudio.pause();
+      }
+
+      const videoUrl = item.videoUrl || '';
+
+      // Luôn sử dụng WebGL Chroma Key + Alpha Renderer cho tất cả định dạng (.webm, .mp4, .mov):
+      // Vừa giữ trọn vẹn kênh Alpha gốc của WebM, vừa khử sạch 100% phông xanh còn sót lại từ video edit!
+      const useWebGL = initWebGL();
+
+      if (useWebGL) {
+        effectVideo.style.display = 'none';
+        effectCanvas.style.display = 'block';
+      } else {
+        effectVideo.style.display = 'block';
+        effectCanvas.style.display = 'none';
+      }
+
+      videoContainer.style.display = 'flex';
+      effectVideo.src = videoUrl;
+      effectVideo.currentTime = 0;
+      effectVideo.volume = 1.0;
+
+      // Vòng lặp render WebGL khử phông xanh thời gian thực
+      function renderLoop() {
+        if (!effectVideo.paused && !effectVideo.ended) {
+          if (useWebGL && effectVideo.readyState >= 2) {
+            if (effectVideo.videoWidth && (effectCanvas.width !== effectVideo.videoWidth || effectCanvas.height !== effectVideo.videoHeight)) {
+              effectCanvas.width = effectVideo.videoWidth;
+              effectCanvas.height = effectVideo.videoHeight;
+              gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            }
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, effectVideo);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+          }
+          animFrameId = requestAnimationFrame(renderLoop);
+        }
+      }
+
+      let playSucceeded = false;
+      try {
+        await effectVideo.play();
+        playSucceeded = true;
+        if (useWebGL) {
+          animFrameId = requestAnimationFrame(renderLoop);
+        }
+      } catch (err) {
+        console.warn('Lỗi tự động phát video:', err);
+      }
+
+      // 3. Chờ video chạy hết thời lượng (chỉ chờ khi phát thành công)
+      if (playSucceeded) {
+        await new Promise(resolve => {
+          let isDone = false;
+          const finish = () => {
+            if (!isDone) {
+              isDone = true;
+              effectVideo.removeEventListener('ended', finish);
+              effectVideo.removeEventListener('error', finish);
+              resolve();
+            }
+          };
+          effectVideo.addEventListener('ended', finish);
+          effectVideo.addEventListener('error', finish);
+          // Timeout dự phòng tối đa 60 giây nếu video bị lỗi
+          setTimeout(finish, 60000);
+        });
+      }
+
+      // 4. Dừng render, làm sạch canvas và khôi phục nhạc nền
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      if (useWebGL && gl) {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      }
+      effectVideo.pause();
+      effectVideo.removeAttribute('src');
+      effectVideo.load();
+      videoContainer.style.display = 'none';
+
+      // Khôi phục nhạc nền (fade in)
+      if (bgmAudio.src) {
+        bgmAudio.volume = 0.1;
+        bgmAudio.play().catch(() => {});
+        let v = 0.1;
+        const fadeInterval = setInterval(() => {
+          v = Math.min(1.0, v + 0.15);
+          bgmAudio.volume = v;
+          if (v >= 1.0) clearInterval(fadeInterval);
+        }, 100);
+      }
+    }
+  </script>
+</body>
+</html>

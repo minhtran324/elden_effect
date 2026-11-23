@@ -1,0 +1,28 @@
+================================================================================
+   🎬 LIVEEFFECT STUDIO PRO - TRÌNH ĐIỀU KHIỂN & HŨ QUÀ TIKTOK LIVE 60FPS
+   BẢN PORTABLE 1-CLICK (KHÔNG CẦN CÀI ĐẶT NODE.JS HOẶC PHẦN MỀM PHỤ TRỢ)
+================================================================================
+
+1. CÁCH KHỞI ĐỘNG ỨNG DỤNG:
+   👉 Bấm đúp chuột vào file: [ KhoiDong_Studio.bat ]
+   - Ứng dụng sẽ tự động chạy máy chủ nền bằng Node.js Portable có sẵn trong thư mục.
+   - Trình duyệt web sẽ tự động mở trang Quản Trị: http://localhost:3000/admin.html
+   - (Tùy chọn) Bấm đúp vào [ Tao_Shortcut_Desktop.vbs ] để tạo biểu tượng mở nhanh ngay trên màn hình Desktop của bạn.
+
+2. CÁCH DÁN LINK VÀO OBS STUDIO:
+   - Link Hiệu Ứng Video Quà Tặng: http://localhost:3000/overlay.html (Kích thước: 1080 x 1920)
+   - Link Hũ Quà Rơi Vật Lý:       http://localhost:3000/jar.html     (Kích thước: 1080 x 1920)
+   * Lưu ý trong OBS: Tích chọn "Shutdown source when not visible" và "Refresh browser when scene becomes active".
+
+3. CÁCH CẬP NHẬT KHI CÓ PHIÊN BẢN MỚI (NÂNG CẤP):
+   - Mở trang Quản trị, bấm vào nút màu xanh lá: [ ⚡ CẬP NHẬT ] ở góc trên bên phải.
+   - Cách 1 (Tiện lợi nhất): Kéo thả file bản vá [.zip] nhận từ lập trình viên vào ô cập nhật -> Bấm "Nâng Cấp Ngay".
+   - Cách 2 (Online): Điền tên GitHub Repo vào ô và bấm "Kiểm Tra" -> Bấm "Nâng Cấp Tự Động".
+   🛡️ CAM KẾT: Toàn bộ Video đã tải lên, sticker hũ và cài đặt tỉ lệ xu của bạn được bảo vệ 100%, không bao giờ bị mất!
+
+4. CÁCH TẮT ỨNG DỤNG SAU KHI LIVE XONG:
+   👉 Bấm đúp chuột vào file: [ Tat_Studio.bat ] để đóng toàn bộ máy chủ một cách an toàn.
+
+================================================================================
+Chúc bạn có những buổi Livestream bùng nổ quà tặng và tương tác triệu view! 🎉
+================================================================================

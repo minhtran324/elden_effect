@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LiveEffect Pro NLE Studio · Dựng Video & Nhạc TikTok Live Đa Layer 60 FPS</title>
+  <style>
+    :root {
+      --bg-darkest: #060911;
+      --bg-panel: #0c1220;
+      --bg-card: #121a2c;
+      --border: #1b2840;
+      --border-light: #243554;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --video-clip-bg: #0369a1;
+      --video-clip-border: #38bdf8;
+      --audio-clip-bg: #4f46e5;
+      --audio-clip-border: #818cf8;
+      --intro-clip-bg: #b45309;
+      --intro-clip-border: #fcd34d;
+      --blank-clip-bg: #0f172a;
+      --blank-clip-border: #64748b;
+      --green-clip-bg: #047857;
+      --green-clip-border: #34d399;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg-darkest);
+      color: var(--text);
+      font-family: var(--font);
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* HEADER */
+    header {
+      background: #090e1a;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 50px;
+      flex-shrink: 0;
+      z-index: 40;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .badge-pro {
+      background: linear-gradient(135deg, #0284c7, #818cf8);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .fps-badge {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: #fff;
+      background: #1e293b;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #2b3b55; border-color: #3b5073; }
+    .btn-primary { background: #0284c7; }
+    .btn-primary:hover { background: #0369a1; }
+    .btn-success { background: #15803d; }
+    .btn-success:hover { background: #166534; }
+    .btn-warning { background: #b45309; }
+    .btn-warning:hover { background: #92400e; }
+    .btn-danger { background: #b91c1c; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-sm { padding: 4px 7px; font-size: 0.74rem; border-radius: 4px; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* WORKSPACE (RESPONSIVE GRID) */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @media (max-width: 992px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+      }
+      .inspector-panel {
+        max-height: 220px;
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+    }
+
+    /* CENTER STAGE (CANVAS PREVIEW) */
+    .stage-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #04070d;
+      position: relative;
+      overflow: hidden;
+      padding: 8px;
+      min-height: 0;
+    }
+
+    .canvas-container {
+      position: relative;
+      max-height: calc(100% - 16px);
+      aspect-ratio: 9/16;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.85);
+      border: 1px solid var(--border);
+    }
+
+    /* Checkered pattern for transparent video preview */
+    .canvas-checkered-bg {
+      background-image: 
+        linear-gradient(45deg, #131b2c 25%, transparent 25%), 
+        linear-gradient(-45deg, #131b2c 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #131b2c 75%), 
+        linear-gradient(-45deg, transparent 75%, #131b2c 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #090e1a;
+    }
+
+    #previewCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .stage-hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(9, 14, 26, 0.85);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #38bdf8;
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* RIGHT INSPECTOR PANEL */
+    .inspector-panel {
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .card-box-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-row { margin-bottom: 8px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    input[type="text"], input[type="number"], select {
+      background: #080d18;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    /* BOTTOM TIMELINE AREA (RESPONSIVE) */
+    .timeline-wrapper {
+      height: 270px;
+      background: #090e1c;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    @media (max-height: 700px) {
+      .timeline-wrapper { height: 230px; }
+    }
+
+    /* Timeline Toolbar */
+    .timeline-toolbar {
+      height: 40px;
+      background: #0d1424;
+      border-bottom: 1px solid var(--border);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-wrap: nowrap;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .timecode-badge {
+      font-family: monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: #060913;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    /* Timeline Scroll Area */
+    .timeline-viewport {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: auto;
+      position: relative;
+      background: #060913;
+    }
+
+    .timeline-content {
+      position: relative;
+      min-width: 100%;
+      min-height: 100%;
+      padding-bottom: 24px;
+    }
+
+    /* Time Ruler */
+    .timeline-ruler {
+      height: 22px;
+      border-bottom: 1px solid #1a253a;
+      position: relative;
+      background: #090f1f;
+      cursor: pointer;
+    }
+    .ruler-tick {
+      position: absolute;
+      bottom: 0;
+      height: 8px;
+      border-left: 1px solid #2b3952;
+      font-size: 9px;
+      font-family: monospace;
+      color: #64748b;
+      padding-left: 3px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .ruler-tick.major {
+      height: 14px;
+      border-color: #64748b;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    /* Playhead Needle */
+    .playhead-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #ef4444;
+      z-index: 50;
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+    .playhead-handle {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 16px;
+      background: #ef4444;
+      clip-path: polygon(0 0, 100% 0, 100% 65%, 50% 100%, 0 65%);
+      cursor: ew-resize;
+      pointer-events: auto;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+    }
+
+    /* Track Lanes & Headers */
+    .layers-container {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-top: 3px;
+    }
+
+    .layer-row {
+      display: flex;
+      height: 48px;
+      position: relative;
+    }
+
+    .layer-label-col {
+      width: 90px;
+      flex-shrink: 0;
+      background: #0c1324;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      z-index: 20;
+      position: sticky;
+      left: 0;
+    }
+    .label-video { color: #38bdf8; border-left: 3px solid #0284c7; }
+    .label-audio { color: #a5b4fc; border-left: 3px solid #6366f1; }
+
+    .layer-track-lane {
+      flex: 1;
+      height: 100%;
+      background: #080d1a;
+      border-bottom: 1px solid #141c2c;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Clip Items on Tracks */
+    .timeline-clip {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: grab;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      border: 1px solid transparent;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .timeline-clip:active { cursor: grabbing; }
+    .timeline-clip:hover { filter: brightness(1.15); }
+    .timeline-clip.selected {
+      border: 2px solid #fff !important;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
+      z-index: 25;
+    }
+
+    /* Resize Trim Handles on clip edges */
+    .clip-trim-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      cursor: ew-resize;
+      background: rgba(255,255,255,0.25);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .timeline-clip:hover .clip-trim-handle { opacity: 1; }
+    .clip-trim-left { left: 0; border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+    .clip-trim-right { right: 0; border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+
+    /* Clip Types Styling */
+    .clip-video {
+      background: linear-gradient(135deg, #0369a1, #0284c7);
+      color: #e0f2fe;
+      border-color: #38bdf8;
+    }
+    .clip-audio {
+      background: linear-gradient(135deg, #4338ca, #6366f1);
+      color: #ede9fe;
+      border-color: #818cf8;
+    }
+    .clip-audio-intro {
+      background: linear-gradient(135deg, #b45309, #f59e0b);
+      color: #fffbeb;
+      border-color: #fcd34d;
+    }
+    .clip-blank-green {
+      background: linear-gradient(135deg, #047857, #10b981);
+      color: #ecfdf5;
+      border-color: #34d399;
+    }
+    .clip-blank-transparent {
+      background: repeating-linear-gradient(45deg, #182236, #182236 8px, #263550 8px, #263550 16px);
+      color: #cbd5e1;
+      border-color: #64748b;
+    }
+
+    /* CONTEXT MENU (CHUỘT PHẢI) */
+    .context-menu {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      background: #0f172a;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      padding: 5px 0;
+      min-width: 200px;
+    }
+    .context-menu.open { display: block; }
+    .context-item {
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-item:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+    .context-divider {
+      height: 1px;
+      background: #1e293b;
+      margin: 4px 0;
+    }
+
+    /* MODAL EXPORT & PROGRESS */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      transition: width 0.15s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <a href="/admin.html" class="btn btn-sm" style="text-decoration: none;">← Về Trang Cấu Hình</a>
+      <span>✂️ LiveEffect NLE Studio</span>
+      <span class="badge-pro">Multi-Layer</span>
+      <span class="fps-badge" id="sourceFpsBadge">FPS: 30</span>
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+      <!-- Chọn video từ thư viện có sẵn -->
+      <select id="selectLibraryVideo" onchange="loadSelectedLibraryVideo(this.value)" style="max-width: 180px;">
+        <option value="">-- Chọn video trong Studio --</option>
+      </select>
+
+      <input type="file" id="localVideoFile" accept="video/*" style="display: none;" onchange="handleLocalFileSelect(this.files[0])">
+      <button class="btn btn-sm" onclick="document.getElementById('localVideoFile').click()">📤 Mở Video Mới</button>
+
+      <!-- Nút mở Modal xuất video chuẩn FPS -->
+      <button class="btn btn-sm btn-success" onclick="openExportModal()">🚀 Xuất & Lưu Vào Studio</button>
+    </div>
+  </header>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+    <!-- KHUNG XEM TRƯỚC (CANVAS STAGE) -->
+    <div class="stage-area">
+      <div class="canvas-container canvas-checkered-bg" id="canvasWrapper">
+        <canvas id="previewCanvas" width="720" height="1280"></canvas>
+      </div>
+      <div class="stage-hud" id="stageHudInfo">🎬 Sẵn sàng biên tập...</div>
+
+      <!-- Hidden video element for decoding -->
+      <video id="hiddenSourceVideo" playsinline preload="auto" style="display: none;"></video>
+    </div>
+
+    <!-- BẢNG ĐIỀU KHIỂN & THUỘC TÍNH (INSPECTOR) -->
+    <div class="inspector-panel">
+
+      <!-- HƯỚNG DẪN THAO TÁC IDOL -->
+      <div class="card-box" style="border-color: #0284c7; background: rgba(2, 132, 199, 0.08);">
+        <div class="card-box-title" style="color: #38bdf8;">
+          <span>💡 Dựng Nhạc Chờ Idol Chuẩn</span>
+        </div>
+        <div style="font-size: 0.74rem; color: #bae6fd; line-height: 1.4;">
+          1. <b>Kéo lùi video:</b> Giữ chuột vào clip Video và <b>kéo sang phải</b> (ví dụ bắt đầu từ 3.5s).<br>
+          2. Khoảng trống phía trước (0s - 3.5s) sẽ <b>tự động là Trong Suốt</b> (OBS chỉ phát nhạc, camera hiện idol tạo dáng).<br>
+          3. <b>Nhân đôi dạo đầu:</b> Chọn clip nhạc intro $\rightarrow$ Chuột phải $\rightarrow$ <b>Nhân đôi</b> để nối tiếp nhạc dạo.<br>
+          4. <b>Cắt giữa bài:</b> Kéo kim $\rightarrow$ Bấm <b>✂️ Cắt</b> $\rightarrow$ Kéo đoạn sau dãn ra để tạo khoảng trống camera idol nhảy theo!
+        </div>
+      </div>
+
+      <!-- THUỘC TÍNH CLIP ĐANG CHỌN -->
+      <div class="card-box" id="clipInspectorCard">
+        <div class="card-box-title">
+          <span id="selectedClipTitle">📌 Thuộc Tính Clip Chọn</span>
+          <span id="selectedClipTypeBadge" style="font-size: 0.68rem; background: #1e293b; padding: 2px 5px; border-radius: 4px;">Chưa chọn</span>
+        </div>
+
+        <div id="clipInspectorContent" style="display: none;">
+          <div class="form-row">
+            <div class="form-label"><span>Tên đoạn clip:</span></div>
+            <input type="text" id="propClipName" onchange="updateSelectedClipProp('name', this.value)">
+          </div>
+
+          <div class="form-row" id="videoTypeRow">
+            <div class="form-label"><span>Kiểu hình ảnh:</span></div>
+            <select id="propVideoType" onchange="updateSelectedClipProp('type', this.value)">
+              <option value="video">🎬 Video Hiệu Ứng Gốc</option>
+              <option value="blank_transparent">📷 Trong Suốt (Hiện Camera Idol)</option>
+              <option value="blank_green">🟩 Phông Xanh (#00FF00 Chroma Key)</option>
+            </select>
+          </div>
+
+          <!-- Kiểu Biến Hình / Mờ Dần -->
+          <div class="form-row" id="videoFxStyleRow">
+            <div class="form-label"><span>Hiệu ứng Chuyển Cảnh:</span></div>
+            <select id="propVideoFxStyle" onchange="updateSelectedClipProp('fxStyle', this.value)">
+              <option value="smooth_fade" selected>🌊 Mờ Dần Mượt Mà (Cubic Smooth - Mặc định)</option>
+              <option value="magic_transform">🌟 Biến Hình Ảo Diệu (Zoom Flash & Glow)</option>
+              <option value="flash_glow">⚡ Chớp Sáng Rực Rỡ (Flash Flare)</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" class="form-row">
+            <div>
+              <div class="form-label"><span>Bắt đầu (s):</span></div>
+              <input type="number" id="propClipStart" step="0.1" min="0" onchange="updateSelectedClipProp('startTime', Number(this.value))">
+            </div>
+            <div>
+              <div class="form-label"><span>Độ dài (s):</span></div>
+              <input type="number" id="propClipDuration" step="0.1" min="0.2" onchange="updateSelectedClipProp('duration', Number(this.value))">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" class="form-row">
+            <div>
+              <div class="form-label"><span id="lblPropFadeIn">Fade In (s):</span></div>
+              <input type="number" id="propClipFadeIn" step="0.1" min="0" max="5" onchange="updateSelectedClipProp('fadeIn', Number(this.value))">
+            </div>
+            <div>
+              <div class="form-label"><span id="lblPropFadeOut">Fade Out (s):</span></div>
+              <input type="number" id="propClipFadeOut" step="0.1" min="0" max="5" onchange="updateSelectedClipProp('fadeOut', Number(this.value))">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 6px; margin-top: 8px;">
+            <button class="btn btn-sm btn-primary" style="flex: 1;" onclick="duplicateSelectedClip()">📋 Nhân Đôi</button>
+            <button class="btn btn-sm btn-danger" style="flex: 1;" onclick="deleteSelectedClip()">🗑️ Xóa Clip</button>
+          </div>
+        </div>
+
+        <div id="noClipSelectedMsg" style="color: #64748b; font-size: 0.78rem; text-align: center; padding: 14px 0;">
+          Nhấn vào một đoạn clip trên Timeline để chỉnh sửa hoặc nhấp chuột phải.
+        </div>
+      </div>
+
+      <!-- QUẢN LÝ LAYER -->
+      <div class="card-box">
+        <div class="card-box-title">
+          <span>📑 Quản Lý Layer</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-sm" style="flex: 1;" onclick="addNewVideoLayer()">+ Thêm Layer Video</button>
+          <button class="btn btn-sm" style="flex: 1;" onclick="addNewAudioLayer()">+ Thêm Layer Nhạc</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM TIMELINE -->
+  <div class="timeline-wrapper">
+    <!-- Toolbar -->
+    <div class="timeline-toolbar">
+      <div class="toolbar-group">
+        <button class="btn btn-primary btn-sm" id="btnPlayPause" onclick="togglePlay()">▶ Phát</button>
+        <button class="btn btn-sm" onclick="seekTo(0)">⏮ Về đầu</button>
+        <div class="timecode-badge">
+          <span id="currentTimecode">00:00.0</span> / <span id="totalTimecode">00:00.0</span>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <!-- Nút Hoàn Tác (Undo / Redo) -->
+        <button class="btn btn-sm" id="btnUndo" title="Hoàn tác thao tác vừa làm (Ctrl+Z)" onclick="undo()">↩️ Hoàn tác</button>
+        <button class="btn btn-sm" id="btnRedo" title="Làm lại (Ctrl+Y)" onclick="redo()">↪️ Làm lại</button>
+
+        <div style="width: 1px; height: 16px; background: var(--border); margin: 0 2px;"></div>
+
+        <!-- Split Buttons -->
+        <button class="btn btn-sm btn-primary" title="Cắt clip đang chọn tại vị trí kim thời gian" onclick="splitSelectedClipAtPlayhead()">
+          ✂️ Cắt Clip
+        </button>
+        <button class="btn btn-sm btn-primary" title="Cắt tất cả các layer tại vị trí kim" onclick="splitAllLayersAtPlayhead()">
+          ✂️ Cắt Tất Cả
+        </button>
+        <button class="btn btn-sm btn-danger" title="Xóa clip đang chọn" onclick="deleteSelectedClip()">
+          🗑️ Xóa
+        </button>
+      </div>
+
+      <div class="toolbar-group">
+        <span style="font-size: 0.72rem; color: #94a3b8;">Zoom:</span>
+        <input type="range" id="timelineZoom" min="20" max="150" value="60" oninput="updateTimelineZoom(this.value)" style="width: 70px; accent-color: #38bdf8;">
+      </div>
+    </div>
+
+    <!-- Scrollable Tracks Viewport -->
+    <div class="timeline-viewport" id="timelineViewport">
+      <div class="timeline-content" id="timelineContent">
+        <!-- Ruler -->
+        <div class="timeline-ruler" id="timelineRuler" onclick="handleRulerClick(event)"></div>
+
+        <!-- Playhead Needle -->
+        <div class="playhead-line" id="playheadLine">
+          <div class="playhead-handle" id="playheadHandle"></div>
+        </div>
+
+        <!-- Dynamic Multi-Layer Container -->
+        <div class="layers-container" id="layersContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEXT MENU (CHUỘT PHẢI) -->
+  <div class="context-menu" id="clipContextMenu">
+    <div class="context-item" onclick="contextAction('split')">✂️ Cắt tại vị trí kim thời gian</div>
+    <div class="context-item" onclick="contextAction('duplicate')">📋 Nhân đôi clip này</div>
+    <div class="context-divider"></div>
+    <div class="context-item" id="ctxToggleTransparent" onclick="contextAction('toggle_transparent')">📷 Đổi thành Trong Suốt (Hiện Camera)</div>
+    <div class="context-item" id="ctxToggleVideo" onclick="contextAction('toggle_video')">🎬 Đổi thành Video thường</div>
+    <div class="context-item" id="ctxToggleGreen" onclick="contextAction('toggle_green')">🟩 Đổi thành Phông Xanh (#00FF00)</div>
+    <div class="context-divider"></div>
+    <div class="context-item" onclick="contextAction('move_layer_up')">⬆️ Chuyển lên Layer trên</div>
+    <div class="context-item" onclick="contextAction('move_layer_down')">⬇️ Chuyển xuống Layer dưới</div>
+    <div class="context-divider"></div>
+    <div class="context-item" style="color: #f87171;" onclick="contextAction('delete')">🗑️ Xóa clip này</div>
+  </div>
+
+  <!-- MODAL 1: CẤU HÌNH XUẤT VIDEO (NHẬP TÊN & CHỌN FPS) -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal-card">
+      <div style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>🚀 Xuất & Lưu Video Vào Studio</span>
+        <button class="btn btn-sm" onclick="closeExportModal()">✕</button>
+      </div>
+
+      <!-- Tên Video (YÊU CẦU BẮT BUỘC) -->
+      <div class="form-row">
+        <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
+          🏷️ Tên video hiệu ứng (Để hiển thị trong Studio):
+        </label>
+        <input type="text" id="exportVideoNameInput" placeholder="Ví dụ: Bánh Vòng Dance Idol 60fps" style="font-size: 0.9rem; padding: 8px 10px; font-weight: 600;">
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">Tên này sẽ xuất hiện trong danh sách chọn video của quy tắc quà.</div>
+      </div>
+
+      <!-- Lựa chọn Kiểu Chuyển Cảnh / Hiệu Ứng khi xuất -->
+      <div class="form-row" style="margin-top: 12px;">
+        <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
+          ✨ Hiệu ứng chuyển cảnh Video khi xuất:
+        </label>
+        <select id="exportTransitionStyleSelect" style="font-size: 0.88rem; padding: 7px 10px; font-weight: 600;">
+          <option value="smooth_fade" selected>🌊 Mờ Dần Mượt Mà (Cubic Smooth - Mặc định)</option>
+          <option value="magic_transform">🌟 Biến Hình Ảo Diệu (Zoom Flash & Glow)</option>
+          <option value="flash_glow">⚡ Chớp Sáng Rực Rỡ (Flash Flare)</option>
+          <option value="as_timeline">🎯 Giữ theo từng clip trên timeline</option>
+        </select>
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">
+          Chọn "Mờ Dần Mượt Mà" để video và nhạc xuất hiện êm ái, hoặc "Biến Hình Ảo Diệu" để có hiệu ứng zoom lóe sáng.
+        </div>
+      </div>
+
+      <!-- Lựa chọn FPS (Khớp video gốc hoặc 60fps mượt mà) -->
+      <div class="form-row" style="margin-top: 12px;">
+        <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
+          🎯 Tốc độ khung hình (FPS) xuất ra:
+        </label>
+        <select id="exportFpsSelect" style="font-size: 0.88rem; padding: 7px 10px; font-weight: 600;">
+          <option value="original" selected>✅ Khớp chính xác video gốc (<span id="optOriginalFpsText">30</span> FPS)</option>
+          <option value="60">🚀 60 FPS (Mượt mà tối đa chuẩn TikTok Live)</option>
+          <option value="30">⚡ 30 FPS (Tiêu chuẩn)</option>
+        </select>
+        <div style="font-size: 0.72rem; color: #34d399; margin-top: 3px;">
+          💡 Khung hình được đồng bộ bằng GPU và chuẩn hóa qua FFmpeg 6.1 để không bị giật lag!
+        </div>
+      </div>
+
+      <!-- Nút hành động -->
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px;">
+        <button class="btn btn-sm" onclick="closeExportModal()">Hủy</button>
+        <button class="btn btn-sm btn-success" style="font-weight: 700; padding: 8px 16px;" onclick="confirmStartRender()">
+          🚀 Bắt Đầu Xuất Video
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TIẾN TRÌNH RENDER VÀ XUẤT VIDEO -->
+  <div class="modal-backdrop" id="renderOverlay">
+    <div class="modal-card" style="text-align: center;">
+      <div style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">🎬 Đang Xuất Video Mượt Mà...</div>
+      <div style="color: #94a3b8; font-size: 0.82rem;" id="renderStatusText">Đang ghi hình GPU và đồng bộ âm thanh...</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="renderProgressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================================
+    // ENGINE NLE TIMELINE CHUYÊN NGHIỆP HỖ TRỢ KÉO THẢ & MULTI-LAYER
+    // ========================================================
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const hiddenVideo = document.getElementById('hiddenSourceVideo');
+
+    let currentLoadedSourceUrl = '';
+    let currentLoadedSourceName = '';
+    let detectedSourceFps = 30;
+
+    // Cấu trúc Project Multi-Layer NLE
+    let project = {
+      duration: 10,
+      pxPerSec: 60,
+      currentTime: 0,
+      selectedClipId: null,
+      contextClipId: null,
+      videoLayers: [
+        { id: 'v_layer_1', name: 'V1', clips: [] }
+      ],
+      audioLayers: [
+        { id: 'a_layer_1', name: 'A1', clips: [] }
+      ]
+    };
+
+    // Hệ thống Hoàn tác (Undo / Redo)
+    let undoStack = [];
+    let redoStack = [];
+
+    function pushUndoState() {
+      const state = JSON.stringify({
+        videoLayers: project.videoLayers,
+        audioLayers: project.audioLayers,
+        duration: project.duration
+      });
+      undoStack.push(state);
+      if (undoStack.length > 30) undoStack.shift();
+      redoStack = [];
+      updateUndoRedoBtnState();
+    }
+
+    function undo() {
+      if (undoStack.length === 0) return;
+      const currentState = JSON.stringify({
+        videoLayers: project.videoLayers,
+        audioLayers: project.audioLayers,
+        duration: project.duration
+      });
+      redoStack.push(currentState);
+
+      const prevState = JSON.parse(undoStack.pop());
+      project.videoLayers = prevState.videoLayers;
+      project.audioLayers = prevState.audioLayers;
+      project.duration = prevState.duration;
+
+      recalcProjectDuration();
+      renderTimeline();
+      drawFrameAt(project.currentTime);
+      updateUndoRedoBtnState();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      const currentState = JSON.stringify({
+        videoLayers: project.videoLayers,
+        audioLayers: project.audioLayers,
+        duration: project.duration
+      });
+      undoStack.push(currentState);
+
+      const nextState = JSON.parse(redoStack.pop());
+      project.videoLayers = nextState.videoLayers;
+      project.audioLayers = nextState.audioLayers;
+      project.duration = nextState.duration;
+
+      recalcProjectDuration();
+      renderTimeline();
+      drawFrameAt(project.currentTime);
+      updateUndoRedoBtnState();
+    }
+
+    function updateUndoRedoBtnState() {
+      document.getElementById('btnUndo').disabled = undoStack.length === 0;
+      document.getElementById('btnRedo').disabled = redoStack.length === 0;
+    }
+
+    let isPlaying = false;
+    let animFrameId = null;
+    let lastPlayTick = 0;
+
+    // Web Audio Engine
+    let audioCtx = null;
+    let rawAudioBuffer = null;
+    let activeAudioSources = [];
+
+    // Khởi tạo
+    async function init() {
+      await fetchAvailableVideos();
+      setupKeyboard();
+      setupPlayheadDragging();
+      setupTimelineClipDragAndDrop();
+      setupContextMenu();
+
+      // Mở trình editor ở trạng thái sạch sẽ ban đầu (không để mẫu sẵn)
+      drawEmptyStage();
+      renderTimeline();
+    }
+
+    // Lấy danh sách video từ server
+    async function fetchAvailableVideos() {
+      try {
+        const res = await fetch('/api/videos');
+        const data = await res.json();
+        if (data.success) {
+          const select = document.getElementById('selectLibraryVideo');
+          select.innerHTML = '<option value="">-- Chọn video trong Studio --</option>' +
+            data.videos.map(v => `<option value="${v.url}">${v.name}</option>`).join('');
+        }
+      } catch (_) {}
+    }
+
+    function loadSelectedLibraryVideo(url) {
+      if (!url) return;
+      const select = document.getElementById('selectLibraryVideo');
+      const name = select.options[select.selectedIndex].text;
+      loadSourceUrl(url, name);
+    }
+
+    function handleLocalFileSelect(file) {
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      loadSourceUrl(url, file.name);
+    }
+
+    // Nạp Video và thăm dò FPS
+    async function loadSourceUrl(url, name) {
+      currentLoadedSourceUrl = url;
+      currentLoadedSourceName = name;
+      document.getElementById('stageHudInfo').innerText = `Đang nạp: ${name}...`;
+
+      // 1. Thăm dò FPS từ server bằng FFmpeg
+      try {
+        const probeRes = await fetch(`/api/probe-video?url=${encodeURIComponent(url)}`);
+        const probeData = await probeRes.json();
+        if (probeData.success && probeData.info) {
+          detectedSourceFps = probeData.info.roundedFps || 30;
+          document.getElementById('sourceFpsBadge').innerText = `FPS Gốc: ${detectedSourceFps}`;
+          document.getElementById('optOriginalFpsText').innerText = detectedSourceFps;
+        }
+      } catch (_) {}
+
+      hiddenVideo.src = url;
+      hiddenVideo.load();
+
+      hiddenVideo.onloadedmetadata = async () => {
+        const dur = hiddenVideo.duration || 10;
+        project.duration = dur;
+        project.currentTime = 0;
+
+        pushUndoState();
+
+        // Tạo clip trên Video Layer 1 (V1)
+        project.videoLayers = [
+          {
+            id: 'v_layer_1',
+            name: 'V1',
+            clips: [
+              {
+                id: 'v_clip_1',
+                trackType: 'video',
+                name: name.replace(/\.[^/.]+$/, ''),
+                type: 'video',
+                fxStyle: 'smooth_fade',
+                startTime: 0,
+                duration: dur,
+                sourceStartTime: 0,
+                fadeIn: 0.5,
+                fadeOut: 0.8
+              }
+            ]
+          }
+        ];
+
+        // Trích xuất âm thanh sang Web Audio
+        await extractAudioData(url);
+
+        // Tạo clip trên Audio Layer 1 (A1)
+        project.audioLayers = [
+          {
+            id: 'a_layer_1',
+            name: 'A1',
+            clips: [
+              {
+                id: 'a_clip_1',
+                trackType: 'audio',
+                name: 'Nhạc (' + name.replace(/\.[^/.]+$/, '') + ')',
+                type: 'audio',
+                startTime: 0,
+                duration: dur,
+                sourceStartTime: 0,
+                volume: 1.0,
+                fadeIn: 0.5,
+                fadeOut: 0.8
+              }
+            ]
+          }
+        ];
+
+        selectClip('v_clip_1');
+        recalcProjectDuration();
+        renderTimeline();
+        drawFrameAt(0);
+        document.getElementById('stageHudInfo').innerText = `Sẵn sàng: ${name} (${dur.toFixed(1)}s)`;
+      };
+    }
+
+    async function extractAudioData(url) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const res = await fetch(url);
+        const arrayBuf = await res.arrayBuffer();
+        rawAudioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+      } catch (err) {
+        console.warn('Lỗi giải mã audio:', err);
+      }
+    }
+
+    // ========================================================
+    // QUẢN LÝ LAYERS (THÊM / XÓA LAYER)
+    // ========================================================
+    function addNewVideoLayer() {
+      pushUndoState();
+      const count = project.videoLayers.length + 1;
+      project.videoLayers.push({
+        id: 'v_layer_' + Date.now(),
+        name: 'V' + count,
+        clips: []
+      });
+      renderTimeline();
+    }
+
+    function addNewAudioLayer() {
+      pushUndoState();
+      const count = project.audioLayers.length + 1;
+      project.audioLayers.push({
+        id: 'a_layer_' + Date.now(),
+        name: 'A' + count,
+        clips: []
+      });
+      renderTimeline();
+    }
+
+    function removeEmptyLayer(type, layerId) {
+      pushUndoState();
+      if (type === 'video') {
+        if (project.videoLayers.length <= 1) return;
+        project.videoLayers = project.videoLayers.filter(l => l.id !== layerId);
+      } else {
+        if (project.audioLayers.length <= 1) return;
+        project.audioLayers = project.audioLayers.filter(l => l.id !== layerId);
+      }
+      recalcProjectDuration();
+      renderTimeline();
+    }
+
+    // ========================================================
+    // TÍNH TOÁN LẠI TỔNG THỜI LƯỢNG (VIDEO SẼ DÀI HƠN KHI KÉO)
+    // ========================================================
+    function recalcProjectDuration() {
+      let maxEnd = 3;
+
+      project.videoLayers.forEach(layer => {
+        layer.clips.forEach(c => {
+          maxEnd = Math.max(maxEnd, c.startTime + c.duration);
+        });
+      });
+
+      project.audioLayers.forEach(layer => {
+        layer.clips.forEach(c => {
+          maxEnd = Math.max(maxEnd, c.startTime + c.duration);
+        });
+      });
+
+      project.duration = maxEnd;
+      document.getElementById('totalTimecode').innerText = formatTime(project.duration);
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = (sec % 60).toFixed(1);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(4, '0')}`;
+    }
+
+    // ========================================================
+    // RENDER TIMELINE MULTI-LAYER & CÁC CLIPS
+    // ========================================================
+    function renderTimeline() {
+      const content = document.getElementById('timelineContent');
+      const totalWidth = Math.max(1200, (project.duration + 4) * project.pxPerSec);
+      content.style.width = `${totalWidth}px`;
+
+      // 1. Render Ruler
+      const ruler = document.getElementById('timelineRuler');
+      ruler.innerHTML = '';
+      const totalSec = Math.ceil(project.duration) + 4;
+
+      for (let s = 0; s <= totalSec; s++) {
+        const left = 90 + s * project.pxPerSec;
+        const tick = document.createElement('div');
+        tick.className = `ruler-tick ${s % 5 === 0 ? 'major' : ''}`;
+        tick.style.left = `${left}px`;
+        if (s % 5 === 0 || s % 2 === 0) {
+          tick.innerText = `${s}s`;
+        }
+        ruler.appendChild(tick);
+      }
+
+      // 2. Render Layers
+      const layersContainer = document.getElementById('layersContainer');
+      layersContainer.innerHTML = '';
+
+      project.videoLayers.forEach((layer, lIdx) => {
+        const row = createLayerRowElement('video', layer, lIdx);
+        layersContainer.appendChild(row);
+      });
+
+      project.audioLayers.forEach((layer, lIdx) => {
+        const row = createLayerRowElement('audio', layer, lIdx);
+        layersContainer.appendChild(row);
+      });
+
+      updatePlayheadPosition();
+      updateInspector();
+    }
+
+    function createLayerRowElement(type, layer, lIdx) {
+      const row = document.createElement('div');
+      row.className = 'layer-row';
+      row.dataset.layerId = layer.id;
+      row.dataset.trackType = type;
+
+      const labelCol = document.createElement('div');
+      labelCol.className = `layer-label-col label-${type}`;
+      labelCol.innerHTML = `
+        <span>${type === 'video' ? '🎬' : '🎵'} ${layer.name}</span>
+        ${layer.clips.length === 0 ? `<button class="btn btn-sm" style="padding: 1px 4px; font-size: 9px;" onclick="removeEmptyLayer('${type}', '${layer.id}')">✕</button>` : ''}
+      `;
+      row.appendChild(labelCol);
+
+      const trackLane = document.createElement('div');
+      trackLane.className = 'layer-track-lane';
+      trackLane.dataset.layerId = layer.id;
+      trackLane.dataset.trackType = type;
+
+      layer.clips.forEach(clip => {
+        const clipEl = document.createElement('div');
+        const isSelected = clip.id === project.selectedClipId;
+
+        let typeClass = 'clip-video';
+        let icon = '🎬';
+        if (type === 'audio') {
+          typeClass = clip.type === 'audio_intro' ? 'clip-audio-intro' : 'clip-audio';
+          icon = '🎵';
+        } else {
+          if (clip.type === 'blank_transparent') {
+            typeClass = 'clip-blank-transparent';
+            icon = '📷';
+          } else if (clip.type === 'blank_green') {
+            typeClass = 'clip-blank-green';
+            icon = '🟩';
+          }
+        }
+
+        clipEl.className = `timeline-clip ${typeClass} ${isSelected ? 'selected' : ''}`;
+        clipEl.id = 'dom_' + clip.id;
+        clipEl.dataset.clipId = clip.id;
+        clipEl.dataset.layerId = layer.id;
+        clipEl.dataset.trackType = type;
+
+        clipEl.style.left = `${clip.startTime * project.pxPerSec}px`;
+        clipEl.style.width = `${Math.max(20, clip.duration * project.pxPerSec)}px`;
+
+        clipEl.innerHTML = `
+          <div class="clip-trim-handle clip-trim-left" data-handle="left"></div>
+          <span style="pointer-events: none; padding: 0 4px;">${icon} ${escapeHtml(clip.name)} (${clip.duration.toFixed(1)}s)</span>
+          <div class="clip-trim-handle clip-trim-right" data-handle="right"></div>
+        `;
+
+        clipEl.onclick = (e) => {
+          e.stopPropagation();
+          selectClip(clip.id);
+        };
+
+        clipEl.oncontextmenu = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openContextMenu(e, clip.id);
+        };
+
+        trackLane.appendChild(clipEl);
+      });
+
+      row.appendChild(trackLane);
+      return row;
+    }
+
+    function updatePlayheadPosition() {
+      const line = document.getElementById('playheadLine');
+      const left = 90 + project.currentTime * project.pxPerSec;
+      line.style.left = `${left}px`;
+      document.getElementById('currentTimecode').innerText = formatTime(project.currentTime);
+    }
+
+    // ========================================================
+    // TƯƠNG TÁC KÉO THẢ CLIP (DRAG & DROP HORIZONTALLY / VERTICALLY)
+    // ========================================================
+    function setupTimelineClipDragAndDrop() {
+      let isDragging = false;
+      let dragMode = 'move';
+      let activeClip = null;
+      let initialMouseX = 0;
+      let initialClipStartTime = 0;
+      let initialClipDuration = 0;
+      let initialClipSourceStart = 0;
+
+      window.addEventListener('mousedown', (e) => {
+        const handle = e.target.closest('.clip-trim-handle');
+        const clipEl = e.target.closest('.timeline-clip');
+
+        if (!clipEl) return;
+
+        const clipId = clipEl.dataset.clipId;
+        activeClip = findClipById(clipId);
+        if (!activeClip) return;
+
+        selectClip(clipId);
+        isDragging = true;
+        initialMouseX = e.clientX;
+        initialClipStartTime = activeClip.startTime;
+        initialClipDuration = activeClip.duration;
+        initialClipSourceStart = activeClip.sourceStartTime || 0;
+
+        if (handle) {
+          dragMode = handle.dataset.handle === 'left' ? 'trim-left' : 'trim-right';
+        } else {
+          dragMode = 'move';
+        }
+
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging || !activeClip) return;
+
+        const deltaPx = e.clientX - initialMouseX;
+        const deltaSec = deltaPx / project.pxPerSec;
+
+        if (dragMode === 'move') {
+          let newStart = Math.max(0, initialClipStartTime + deltaSec);
+
+          if (Math.abs(newStart) < 0.15) newStart = 0;
+          if (Math.abs(newStart - project.currentTime) < 0.15) newStart = project.currentTime;
+
+          activeClip.startTime = newStart;
+
+          const dom = document.getElementById('dom_' + activeClip.id);
+          if (dom) dom.style.left = `${newStart * project.pxPerSec}px`;
+
+          recalcProjectDuration();
+          document.getElementById('totalTimecode').innerText = formatTime(project.duration);
+          drawFrameAt(project.currentTime);
+          updateInspector();
+        } else if (dragMode === 'trim-right') {
+          let newDur = Math.max(0.3, initialClipDuration + deltaSec);
+          activeClip.duration = newDur;
+
+          const dom = document.getElementById('dom_' + activeClip.id);
+          if (dom) dom.style.width = `${newDur * project.pxPerSec}px`;
+
+          recalcProjectDuration();
+          document.getElementById('totalTimecode').innerText = formatTime(project.duration);
+          drawFrameAt(project.currentTime);
+          updateInspector();
+        } else if (dragMode === 'trim-left') {
+          let newStart = Math.max(0, initialClipStartTime + deltaSec);
+          let newDur = Math.max(0.3, initialClipDuration - deltaSec);
+          let changeSec = newStart - initialClipStartTime;
+
+          activeClip.startTime = newStart;
+          activeClip.duration = newDur;
+          activeClip.sourceStartTime = Math.max(0, initialClipSourceStart + changeSec);
+
+          const dom = document.getElementById('dom_' + activeClip.id);
+          if (dom) {
+            dom.style.left = `${newStart * project.pxPerSec}px`;
+            dom.style.width = `${newDur * project.pxPerSec}px`;
+          }
+
+          recalcProjectDuration();
+          document.getElementById('totalTimecode').innerText = formatTime(project.duration);
+          drawFrameAt(project.currentTime);
+          updateInspector();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          // Quy tắc nghiêm ngặt: Giải quyết không đè chồng trên tất cả các layer
+          project.videoLayers.forEach(enforceNoOverlapOnLayer);
+          project.audioLayers.forEach(enforceNoOverlapOnLayer);
+          pushUndoState();
+          recalcProjectDuration();
+          renderTimeline();
+          drawFrameAt(project.currentTime);
+          updateInspector();
+        }
+      });
+    }
+
+    // QUY TẮC BẢO ĐẢM KHÔNG ĐÈ CHỒNG (NO-OVERLAP STRICT TIMELINE):
+    // Các clip trên cùng 1 layer (video hoặc nhạc) KHÔNG BAO GIỜ được đè chồng lên nhau.
+    // Nếu kéo đè chồng sẽ tự động nhảy ra sau và nằm sát clip trước (prev.startTime + prev.duration).
+    function enforceNoOverlapOnLayer(layer) {
+      if (!layer || !layer.clips || layer.clips.length <= 1) return;
+      layer.clips.sort((a, b) => a.startTime - b.startTime);
+
+      for (let i = 1; i < layer.clips.length; i++) {
+        const prev = layer.clips[i - 1];
+        const cur = layer.clips[i];
+        const prevEnd = prev.startTime + prev.duration;
+        if (cur.startTime < prevEnd) {
+          cur.startTime = prevEnd;
+        }
+      }
+    }
+
+    function handleRulerClick(e) {
+      const rect = document.getElementById('timelineRuler').getBoundingClientRect();
+      const clickX = e.clientX - rect.left - 90;
+      seekTo(Math.max(0, clickX / project.pxPerSec));
+    }
+
+    function setupPlayheadDragging() {
+      const handle = document.getElementById('playheadHandle');
+      let isDragging = false;
+
+      handle.onmousedown = (e) => {
+        isDragging = true;
+        e.preventDefault();
+      };
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = document.getElementById('timelineContent').getBoundingClientRect();
+        const clickX = e.clientX - rect.left - 90;
+        seekTo(Math.max(0, clickX / project.pxPerSec));
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+    }
+
+    function updateTimelineZoom(val) {
+      project.pxPerSec = Number(val);
+      renderTimeline();
+    }
+
+    // ========================================================
+    // SELECT CLIP & INSPECTOR PROPERTIES
+    // ========================================================
+    function selectClip(clipId) {
+      project.selectedClipId = clipId;
+      renderTimeline();
+      updateInspector();
+    }
+
+    function findClipById(clipId) {
+      for (const l of project.videoLayers) {
+        const found = l.clips.find(c => c.id === clipId);
+        if (found) return found;
+      }
+      for (const l of project.audioLayers) {
+        const found = l.clips.find(c => c.id === clipId);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    function updateInspector() {
+      const clip = findClipById(project.selectedClipId);
+      const content = document.getElementById('clipInspectorContent');
+      const emptyMsg = document.getElementById('noClipSelectedMsg');
+      const title = document.getElementById('selectedClipTitle');
+      const badge = document.getElementById('selectedClipTypeBadge');
+
+      if (!clip) {
+        content.style.display = 'none';
+        emptyMsg.style.display = 'block';
+        title.innerText = '📌 Thuộc Tính Clip';
+        badge.innerText = 'Chưa chọn';
+        return;
+      }
+
+      content.style.display = 'block';
+      emptyMsg.style.display = 'none';
+      title.innerText = clip.name;
+      badge.innerText = clip.trackType.toUpperCase();
+
+      document.getElementById('propClipName').value = clip.name;
+      document.getElementById('propClipStart').value = clip.startTime.toFixed(2);
+      document.getElementById('propClipDuration').value = clip.duration.toFixed(2);
+      document.getElementById('propClipFadeIn').value = clip.fadeIn || 0;
+      document.getElementById('propClipFadeOut').value = clip.fadeOut || 0;
+
+      const isVideo = clip.trackType === 'video';
+      const videoRow = document.getElementById('videoTypeRow');
+      const fxRow = document.getElementById('videoFxStyleRow');
+      const lblFadeIn = document.getElementById('lblPropFadeIn');
+      const lblFadeOut = document.getElementById('lblPropFadeOut');
+
+      if (isVideo) {
+        videoRow.style.display = 'block';
+        if (fxRow) fxRow.style.display = 'block';
+        document.getElementById('propVideoType').value = clip.type || 'video';
+        if (document.getElementById('propVideoFxStyle')) {
+          document.getElementById('propVideoFxStyle').value = clip.fxStyle || 'smooth_fade';
+        }
+        if (lblFadeIn) lblFadeIn.innerText = 'Fade In (s):';
+        if (lblFadeOut) lblFadeOut.innerText = 'Fade Out (s):';
+      } else {
+        videoRow.style.display = 'none';
+        if (fxRow) fxRow.style.display = 'none';
+        if (lblFadeIn) lblFadeIn.innerText = 'Fade In Nhạc (s):';
+        if (lblFadeOut) lblFadeOut.innerText = 'Fade Out Nhạc (s):';
+      }
+    }
+
+    function updateSelectedClipProp(field, val) {
+      const clip = findClipById(project.selectedClipId);
+      if (!clip) return;
+      pushUndoState();
+      clip[field] = val;
+      const layer = findLayerOfClip(clip.id);
+      if (layer) enforceNoOverlapOnLayer(layer);
+      recalcProjectDuration();
+      renderTimeline();
+      drawFrameAt(project.currentTime);
+      updateInspector();
+    }
+
+    // ========================================================
+    // CLIP ACTIONS: SPLIT, DUPLICATE, DELETE
+    // ========================================================
+    function splitSelectedClipAtPlayhead() {
+      const clip = findClipById(project.selectedClipId);
+      if (!clip) {
+        alert('Vui lòng chọn 1 đoạn clip trên timeline để cắt!');
+        return;
+      }
+      splitClipAtTime(clip, project.currentTime);
+    }
+
+    function splitAllLayersAtPlayhead() {
+      const t = project.currentTime;
+      pushUndoState();
+
+      project.videoLayers.forEach(l => {
+        const found = l.clips.find(c => t > c.startTime && t < c.startTime + c.duration);
+        if (found) splitClipAtTime(found, t, false);
+      });
+
+      project.audioLayers.forEach(l => {
+        const found = l.clips.find(c => t > c.startTime && t < c.startTime + c.duration);
+        if (found) splitClipAtTime(found, t, false);
+      });
+
+      recalcProjectDuration();
+      renderTimeline();
+    }
+
+    function splitClipAtTime(clip, t, recordUndo = true) {
+      if (t <= clip.startTime || t >= clip.startTime + clip.duration) return;
+
+      if (recordUndo) pushUndoState();
+
+      const firstDur = t - clip.startTime;
+      const secondDur = clip.duration - firstDur;
+
+      clip.duration = firstDur;
+
+      const newClip = {
+        ...clip,
+        id: clip.trackType + '_' + Date.now() + Math.floor(Math.random()*100),
+        name: clip.name + ' (P2)',
+        startTime: t,
+        duration: secondDur,
+        sourceStartTime: (clip.sourceStartTime || 0) + firstDur
+      };
+
+      const layer = findLayerOfClip(clip.id);
+      if (layer) {
+        layer.clips.push(newClip);
+        enforceNoOverlapOnLayer(layer);
+      }
+
+      if (recordUndo) {
+        recalcProjectDuration();
+        selectClip(newClip.id);
+        renderTimeline();
+      }
+    }
+
+    function findLayerOfClip(clipId) {
+      for (const l of project.videoLayers) {
+        if (l.clips.some(c => c.id === clipId)) return l;
+      }
+      for (const l of project.audioLayers) {
+        if (l.clips.some(c => c.id === clipId)) return l;
+      }
+      return null;
+    }
+
+    function duplicateSelectedClip() {
+      const clip = findClipById(project.selectedClipId);
+      if (!clip) return;
+      pushUndoState();
+
+      const layer = findLayerOfClip(clip.id);
+      const newClip = {
+        ...clip,
+        id: clip.trackType + '_' + Date.now(),
+        name: clip.name + ' (Copy)',
+        startTime: clip.startTime + clip.duration
+      };
+
+      if (layer) {
+        layer.clips.push(newClip);
+        enforceNoOverlapOnLayer(layer);
+      }
+
+      recalcProjectDuration();
+      selectClip(newClip.id);
+      renderTimeline();
+    }
+
+    function deleteSelectedClip() {
+      const clip = findClipById(project.selectedClipId);
+      if (!clip) return;
+      pushUndoState();
+
+      project.videoLayers.forEach(l => {
+        l.clips = l.clips.filter(c => c.id !== clip.id);
+      });
+      project.audioLayers.forEach(l => {
+        l.clips = l.clips.filter(c => c.id !== clip.id);
+      });
+
+      project.selectedClipId = null;
+      recalcProjectDuration();
+      renderTimeline();
+      drawFrameAt(project.currentTime);
+    }
+
+    // ========================================================
+    // CONTEXT MENU (CHUỘT PHẢI)
+    // ========================================================
+    function setupContextMenu() {
+      window.addEventListener('click', () => {
+        document.getElementById('clipContextMenu').classList.remove('open');
+      });
+    }
+
+    function openContextMenu(e, clipId) {
+      project.contextClipId = clipId;
+      selectClip(clipId);
+
+      const menu = document.getElementById('clipContextMenu');
+      const clip = findClipById(clipId);
+
+      const isVideo = clip?.trackType === 'video';
+      document.getElementById('ctxToggleTransparent').style.display = isVideo ? 'flex' : 'none';
+      document.getElementById('ctxToggleVideo').style.display = isVideo ? 'flex' : 'none';
+      document.getElementById('ctxToggleGreen').style.display = isVideo ? 'flex' : 'none';
+
+      menu.style.left = `${Math.min(window.innerWidth - 220, e.clientX)}px`;
+      menu.style.top = `${Math.min(window.innerHeight - 300, e.clientY)}px`;
+      menu.classList.add('open');
+    }
+
+    function contextAction(action) {
+      const clip = findClipById(project.contextClipId);
+      if (!clip) return;
+
+      if (action === 'split') {
+        splitClipAtTime(clip, project.currentTime);
+      } else if (action === 'duplicate') {
+        duplicateSelectedClip();
+      } else if (action === 'delete') {
+        deleteSelectedClip();
+      } else if (action === 'toggle_transparent') {
+        updateSelectedClipProp('type', 'blank_transparent');
+      } else if (action === 'toggle_video') {
+        updateSelectedClipProp('type', 'video');
+      } else if (action === 'toggle_green') {
+        updateSelectedClipProp('type', 'blank_green');
+      } else if (action === 'move_layer_up' || action === 'move_layer_down') {
+        moveClipLayer(clip, action === 'move_layer_up' ? -1 : 1);
+      }
+
+      document.getElementById('clipContextMenu').classList.remove('open');
+    }
+
+    function moveClipLayer(clip, dir) {
+      pushUndoState();
+      const isVideo = clip.trackType === 'video';
+      const layers = isVideo ? project.videoLayers : project.audioLayers;
+
+      let currentLayerIdx = -1;
+      for (let i = 0; i < layers.length; i++) {
+        if (layers[i].clips.some(c => c.id === clip.id)) {
+          currentLayerIdx = i;
+          break;
+        }
+      }
+
+      if (currentLayerIdx === -1) return;
+      const targetIdx = currentLayerIdx + dir;
+
+      if (targetIdx >= 0 && targetIdx < layers.length) {
+        layers[currentLayerIdx].clips = layers[currentLayerIdx].clips.filter(c => c.id !== clip.id);
+        layers[targetIdx].clips.push(clip);
+      } else if (dir > 0) {
+        if (isVideo) addNewVideoLayer(); else addNewAudioLayer();
+        const newLayer = layers[layers.length - 1];
+        layers[currentLayerIdx].clips = layers[currentLayerIdx].clips.filter(c => c.id !== clip.id);
+        newLayer.clips.push(clip);
+      }
+
+      renderTimeline();
+    }
+
+    // Vẽ màn hình trống ban đầu khi chưa nạp video
+    function drawEmptyStage() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0a1120';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 26px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎬 CHƯA NẠP VIDEO', canvas.width / 2, canvas.height / 2 - 25);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '16px system-ui';
+      ctx.fillText('Chọn video trong Studio hoặc Bấm Tải Lên', canvas.width / 2, canvas.height / 2 + 15);
+      ctx.fillText('để bắt đầu chỉnh sửa hiệu ứng', canvas.width / 2, canvas.height / 2 + 42);
+    }
+
+    // ========================================================
+    // PLAYBACK & CANVAS DRAWING (TRONG SUỐT VÀ ĐỒNG BỘ CHÍNH XÁC)
+    // ========================================================
+    function drawFrameAt(time, isRendering = false) {
+      if (isRendering) {
+        // Khi Render xuất file: Khởi tạo toàn bộ canvas với Chroma Green (#00FF00)
+        // để mọi khoảng trống và hiệu ứng mờ dần (Fade In/Out) được FFmpeg colorkey chuyển thành TRONG SUỐT 100% không tì vết!
+        ctx.fillStyle = '#00ff00';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      if (!currentLoadedSourceUrl || project.duration === 0) {
+        drawEmptyStage();
+        return;
+      }
+
+      let activeVideoClip = null;
+      for (const layer of project.videoLayers) {
+        const found = layer.clips.find(c => time >= c.startTime && time < c.startTime + c.duration);
+        if (found) {
+          activeVideoClip = found;
+          break;
+        }
+      }
+
+      if (!activeVideoClip || activeVideoClip.type === 'blank_transparent' || activeVideoClip.type === 'blank_green') {
+        if (!hiddenVideo.paused) hiddenVideo.pause();
+        return;
+      }
+
+      // Đang trong clip video: đồng bộ thời gian nguồn chính xác
+      const srcTime = (activeVideoClip.sourceStartTime || 0) + (time - activeVideoClip.startTime);
+      if (hiddenVideo.readyState >= 2) {
+        if (Math.abs(hiddenVideo.currentTime - srcTime) > 0.1) {
+          hiddenVideo.currentTime = Math.min(srcTime, hiddenVideo.duration);
+        }
+        if (hiddenVideo.paused && (isPlaying || isRendering)) {
+          hiddenVideo.play().catch(() => {});
+        }
+      }
+
+      // TÍNH TOÁN HIỆU ỨNG BIẾN HÌNH ẢO DIỆU (MAGIC TRANSFORM)
+      let alpha = 1.0;
+      let scale = 1.0;
+      let brightness = 1.0;
+      let blurPx = 0;
+
+      const elapsedInClip = time - activeVideoClip.startTime;
+      const remainingInClip = activeVideoClip.startTime + activeVideoClip.duration - time;
+      const fadeInDur = Math.max(0, Number(activeVideoClip.fadeIn) || 0);
+      const fadeOutDur = Math.max(0, Number(activeVideoClip.fadeOut) || 0);
+      const fxStyle = activeVideoClip.fxStyle || 'smooth_fade';
+
+      if (fadeInDur > 0 && elapsedInClip < fadeInDur) {
+        const rawP = Math.max(0, Math.min(1, elapsedInClip / fadeInDur));
+        // Smooth Cubic Easing: Đường cong S-curve mượt mà
+        const p = rawP < 0.5 ? 4 * Math.pow(rawP, 3) : 1 - Math.pow(-2 * rawP + 2, 3) / 2;
+        alpha = p;
+
+        if (fxStyle === 'magic_transform') {
+          // Zoom nhẹ 1.09 hạ dần xuống 1.00 chuẩn biến hình CapCut
+          scale = 1.0 + (1 - p) * 0.09;
+          // Flash sáng biến hình rực rỡ từ 1.40 xuống 1.0
+          brightness = 1.0 + (1 - p) * 0.40;
+          blurPx = (1 - p) * 3;
+        } else if (fxStyle === 'flash_glow') {
+          scale = 1.0 + (1 - p) * 0.04;
+          brightness = 1.0 + (1 - p) * 0.65;
+        } else {
+          // 'smooth_fade': Mờ dần thuần túy, không giật, không zoom, không chớp sáng
+          scale = 1.0;
+          brightness = 1.0;
+          blurPx = 0;
+        }
+      } else if (fadeOutDur > 0 && remainingInClip < fadeOutDur) {
+        const rawP = Math.max(0, Math.min(1, remainingInClip / fadeOutDur));
+        const p = rawP < 0.5 ? 4 * Math.pow(rawP, 3) : 1 - Math.pow(-2 * rawP + 2, 3) / 2;
+        alpha = p;
+
+        if (fxStyle === 'magic_transform') {
+          scale = 1.0 + (1 - p) * 0.07;
+          brightness = 1.0 + (1 - p) * 0.25;
+          blurPx = (1 - p) * 3;
+        } else if (fxStyle === 'flash_glow') {
+          brightness = 1.0 + (1 - p) * 0.45;
+        } else {
+          scale = 1.0;
+          brightness = 1.0;
+          blurPx = 0;
+        }
+      }
+
+      const vRatio = (hiddenVideo.videoWidth || 720) / (hiddenVideo.videoHeight || 1280);
+      const cRatio = canvas.width / canvas.height;
+      let dw, dh, dx, dy;
+
+      if (vRatio > cRatio) {
+        dw = canvas.width;
+        dh = canvas.width / vRatio;
+        dx = 0;
+        dy = (canvas.height - dh) / 2;
+      } else {
+        dh = canvas.height;
+        dw = canvas.height * vRatio;
+        dx = (canvas.width - dw) / 2;
+        dy = 0;
+      }
+
+      ctx.save();
+      // Khi đang render xuất file: giữ opacity 1.0 trên canvas để không trộn màu nhân vật với nền xanh #00FF00.
+      // Hiệu ứng mờ dần (Fade In/Out) sẽ được FFmpeg xử lý chuẩn xác trực tiếp trên kênh Alpha (yuva420p).
+      ctx.globalAlpha = isRendering ? 1.0 : Math.max(0, Math.min(1, alpha));
+
+      // Áp dụng bộ lọc biến hình rực rỡ (Brightness, Contrast, Blur)
+      let filterStr = '';
+      if (brightness > 1.02) {
+        filterStr += `brightness(${brightness.toFixed(2)}) contrast(${(1 + (brightness - 1) * 0.35).toFixed(2)}) `;
+      }
+      if (blurPx > 0.4) {
+        filterStr += `blur(${blurPx.toFixed(1)}px)`;
+      }
+      if (filterStr) ctx.filter = filterStr.trim();
+
+      // Vẽ hình ảnh với tâm Scale chính giữa khung hình
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      ctx.translate(cx, cy);
+      ctx.scale(scale, scale);
+      ctx.translate(-cx, -cy);
+
+      ctx.drawImage(hiddenVideo, dx, dy, dw, dh);
+      ctx.restore();
+    }
+
+    // Vòng lặp phát thử (Play Loop)
+    function playLoop(now) {
+      if (!isPlaying) return;
+      const dt = (now - lastPlayTick) / 1000;
+      lastPlayTick = now;
+
+      project.currentTime += dt;
+      if (project.currentTime >= project.duration) {
+        project.currentTime = 0;
+      }
+
+      updatePlayheadPosition();
+      drawFrameAt(project.currentTime);
+
+      animFrameId = requestAnimationFrame(playLoop);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('btnPlayPause');
+
+      if (isPlaying) {
+        btn.innerText = '⏸ Tạm Dừng';
+        btn.className = 'btn btn-warning btn-sm';
+        lastPlayTick = performance.now();
+        startAudioPlayback();
+        hiddenVideo.play().catch(() => {});
+        animFrameId = requestAnimationFrame(playLoop);
+      } else {
+        btn.innerText = '▶ Phát';
+        btn.className = 'btn btn-primary btn-sm';
+        stopAudioPlayback();
+        hiddenVideo.pause();
+        cancelAnimationFrame(animFrameId);
+      }
+    }
+
+    function seekTo(time) {
+      project.currentTime = Math.max(0, Math.min(time, project.duration));
+      updatePlayheadPosition();
+      drawFrameAt(project.currentTime);
+      if (isPlaying) {
+        stopAudioPlayback();
+        startAudioPlayback();
+      }
+    }
+
+    function startAudioPlayback() {
+      if (!rawAudioBuffer || !audioCtx) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        stopAudioPlayback();
+
+        const curT = project.currentTime;
+
+        project.audioLayers.forEach(layer => {
+          layer.clips.forEach(clip => {
+            if (curT < clip.startTime + clip.duration) {
+              const srcNode = audioCtx.createBufferSource();
+              srcNode.buffer = rawAudioBuffer;
+
+              const gainNode = audioCtx.createGain();
+              srcNode.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+
+              let offsetInAudio = clip.sourceStartTime || 0;
+              let startDelay = 0;
+              let clipPlayDur = clip.duration;
+
+              if (curT >= clip.startTime) {
+                const elapsedInClip = curT - clip.startTime;
+                offsetInAudio += elapsedInClip;
+                clipPlayDur = clip.duration - elapsedInClip;
+              } else {
+                startDelay = clip.startTime - curT;
+              }
+
+              // Áp dụng Fade In & Fade Out mượt mà cho Audio khi phát thử
+              const fadeIn = Math.max(0, Number(clip.fadeIn) || 0);
+              const fadeOut = Math.max(0, Number(clip.fadeOut) || 0);
+              const now = audioCtx.currentTime;
+              const clipStartInCtx = now + startDelay;
+              const clipEndInCtx = clipStartInCtx + clipPlayDur;
+
+              gainNode.gain.cancelScheduledValues(now);
+
+              if (fadeIn > 0 && curT < clip.startTime + fadeIn) {
+                const elapsedFade = Math.max(0, curT - clip.startTime);
+                const currentGain = elapsedFade / fadeIn;
+                gainNode.gain.setValueAtTime(currentGain, now);
+                gainNode.gain.linearRampToValueAtTime(1.0, clipStartInCtx + (fadeIn - elapsedFade));
+              } else {
+                gainNode.gain.setValueAtTime(1.0, now);
+              }
+
+              if (fadeOut > 0) {
+                const fadeOutStartInCtx = Math.max(now, clipEndInCtx - fadeOut);
+                gainNode.gain.setValueAtTime(1.0, fadeOutStartInCtx);
+                gainNode.gain.linearRampToValueAtTime(0.001, clipEndInCtx);
+              }
+
+              srcNode.start(clipStartInCtx, offsetInAudio, clipPlayDur);
+              activeAudioSources.push({ srcNode, gainNode });
+            }
+          });
+        });
+      } catch (err) { console.warn('Lỗi phát audio:', err); }
+    }
+
+    function stopAudioPlayback() {
+      activeAudioSources.forEach(s => {
+        try {
+          if (s.srcNode) { s.srcNode.stop(); s.srcNode.disconnect(); }
+          if (s.gainNode) { s.gainNode.disconnect(); }
+          if (s.stop) { s.stop(); s.disconnect(); }
+        } catch (_) {}
+      });
+      activeAudioSources = [];
+    }
+
+    function setupKeyboard() {
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.code === 'Delete' && e.target.tagName !== 'INPUT') {
+          deleteSelectedClip();
+        } else if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !e.shiftKey) {
+          e.preventDefault();
+          undo();
+        } else if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyY' || (e.code === 'KeyZ' && e.shiftKey))) {
+          e.preventDefault();
+          redo();
+        }
+      });
+    }
+
+    function escapeHtml(t) {
+      return (t || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ========================================================
+    // MODAL XUẤT VIDEO (NHẬP TÊN BẮT BUỘC & CHỌN FPS GỐC/60FPS)
+    // ========================================================
+    function openExportModal() {
+      if (isPlaying) togglePlay();
+
+      // Điền sẵn tên sạch sẽ (loại bỏ các chuỗi ID timestamp thừa nếu có)
+      let cleanBase = (currentLoadedSourceName || 'Effect_Idol')
+        .replace(/\.[^/.]+$/, '')
+        .replace(/_\d{10,}$/, '')
+        .replace(/_Edited$/, '');
+      const defaultName = `${cleanBase}_Edited`;
+
+      document.getElementById('exportVideoNameInput').value = defaultName;
+      document.getElementById('optOriginalFpsText').innerText = detectedSourceFps;
+      document.getElementById('exportModal').classList.add('open');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.remove('open');
+    }
+
+    async function confirmStartRender() {
+      const nameInput = document.getElementById('exportVideoNameInput').value.trim();
+      if (!nameInput) {
+        alert('⚠️ Vui lòng nhập tên cho video hiệu ứng!');
+        document.getElementById('exportVideoNameInput').focus();
+        return;
+      }
+
+      const fpsChoice = document.getElementById('exportFpsSelect').value;
+      const targetFps = fpsChoice === 'original' ? detectedSourceFps : Number(fpsChoice);
+
+      // Áp dụng kiểu chuyển cảnh mà user đã chọn trong modal xuất
+      const transitionSelect = document.getElementById('exportTransitionStyleSelect');
+      const transitionChoice = transitionSelect ? transitionSelect.value : 'smooth_fade';
+
+      if (transitionChoice !== 'as_timeline') {
+        project.videoLayers.forEach(l => {
+          l.clips.forEach(c => {
+            if (c.trackType === 'video') {
+              c.fxStyle = transitionChoice;
+            }
+          });
+        });
+      }
+
+      closeExportModal();
+      await executeHighFpsRender(nameInput, targetFps, fpsChoice);
+    }
+
+    // ========================================================
+    // ENGINE RENDER 60 FPS MƯỢT MÀ KHÔNG GIẬT KHUNG HÌNH
+    // ========================================================
+    async function executeHighFpsRender(videoCustomName, targetFps, fpsChoice) {
+      const overlay = document.getElementById('renderOverlay');
+      const pBar = document.getElementById('renderProgressBar');
+      const pText = document.getElementById('renderStatusText');
+
+      overlay.classList.add('open');
+      pBar.style.width = '3%';
+      pText.innerText = `Đang đồng bộ luồng ghi hình GPU ở ${targetFps} FPS...`;
+
+      // 1. Tạo Canvas Stream với đúng targetFps (30 hoặc 60)
+      const canvasStream = canvas.captureStream(targetFps);
+
+      // 2. Mix toàn bộ Audio Layers
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const dest = audioCtx.createMediaStreamDestination();
+
+      project.audioLayers.forEach(layer => {
+        layer.clips.forEach(clip => {
+          if (rawAudioBuffer) {
+            const srcNode = audioCtx.createBufferSource();
+            srcNode.buffer = rawAudioBuffer;
+            const gain = audioCtx.createGain();
+            srcNode.connect(gain);
+            gain.connect(dest);
+
+            const clipStart = audioCtx.currentTime + clip.startTime;
+            const clipEnd = clipStart + clip.duration;
+            const fadeIn = Math.max(0, Number(clip.fadeIn) || 0);
+            const fadeOut = Math.max(0, Number(clip.fadeOut) || 0);
+
+            if (fadeIn > 0) {
+              gain.gain.setValueAtTime(0.001, clipStart);
+              gain.gain.linearRampToValueAtTime(1.0, clipStart + fadeIn);
+            } else {
+              gain.gain.setValueAtTime(1.0, clipStart);
+            }
+
+            if (fadeOut > 0) {
+              gain.gain.setValueAtTime(1.0, clipEnd - fadeOut);
+              gain.gain.linearRampToValueAtTime(0.001, clipEnd);
+            }
+
+            srcNode.start(clipStart, clip.sourceStartTime || 0, clip.duration);
+          }
+        });
+      });
+
+      dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
+
+      // 3. MediaRecorder với Bitrate 16Mbps mượt mà
+      let mimeType = 'video/webm;codecs=vp9,opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+
+      const recorder = new MediaRecorder(canvasStream, {
+        mimeType,
+        videoBitsPerSecond: 16000000 // 16 Mbps nét căng chuẩn TikTok
+      });
+
+      const chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+      recorder.onstop = async () => {
+        pBar.style.width = '90%';
+        pText.innerText = 'Đang tối ưu qua FFmpeg và lưu vào Studio...';
+
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const tempFileName = `raw_${Date.now()}.webm`;
+        const file = new File([blob], tempFileName, { type: 'video/webm' });
+
+        const formData = new FormData();
+        formData.append('video', file);
+        formData.append('customName', videoCustomName);
+        formData.append('targetFps', String(targetFps));
+        formData.append('sourceUrl', currentLoadedSourceUrl);
+
+        // Gửi thông số Fade In / Fade Out của từng clip lên server để FFmpeg render mờ dần trên kênh Alpha
+        const fades = (project.videoLayers[0]?.clips || [])
+          .filter(c => c.type !== 'blank_transparent' && c.type !== 'blank_green')
+          .map(c => ({
+            startTime: Number(c.startTime) || 0,
+            duration: Number(c.duration) || 0,
+            fadeIn: Number(c.fadeIn) || 0,
+            fadeOut: Number(c.fadeOut) || 0
+          }));
+        formData.append('fadesJson', JSON.stringify(fades));
+
+        try {
+          // Gửi lên server xử lý qua FFmpeg
+          const res = await fetch('/api/render-export', { method: 'POST', body: formData });
+          const data = await res.json();
+          pBar.style.width = '100%';
+          pText.innerText = '✅ Xuất video thành công!';
+
+          setTimeout(() => {
+            overlay.classList.remove('open');
+            alert(`🎉 CHÚC MỪNG!\n\nVideo "${data.fileName}" đã được xuất thành công ở ${data.fps} FPS mượt mà!\n\n👉 File đã lưu: ${data.savedName}\n👉 Video này đã có mặt sẵn trong danh sách chọn của trang Quản Trị!`);
+            fetchAvailableVideos();
+          }, 600);
+        } catch (err) {
+          overlay.classList.remove('open');
+          alert('Lỗi tải video lên server: ' + err.message);
+        }
+      };
+
+      recorder.start();
+
+      // 4. Ghi hình chính xác theo các clip trên dòng thời gian Timeline
+      project.currentTime = 0;
+      hiddenVideo.muted = true;
+      hiddenVideo.pause();
+      hiddenVideo.currentTime = 0;
+
+      const renderStartWallTime = performance.now();
+      const totalSec = project.duration;
+
+      function renderFrameTick(now) {
+        const elapsed = (now - renderStartWallTime) / 1000;
+        project.currentTime = elapsed;
+
+        updatePlayheadPosition();
+        drawFrameAt(project.currentTime, true);
+
+        const pct = Math.min(88, Math.round((elapsed / totalSec) * 88));
+        pBar.style.width = `${pct}%`;
+        pText.innerText = `Đang ghi hình mượt mà (${targetFps} FPS): ${elapsed.toFixed(1)}s / ${totalSec.toFixed(1)}s (${pct}%)`;
+
+        if (elapsed < totalSec) {
+          requestAnimationFrame(renderFrameTick);
+        } else {
+          hiddenVideo.pause();
+          recorder.stop();
+        }
+      }
+
+      requestAnimationFrame(renderFrameTick);
+    }
+
+    init();
+  </script>
+</body>
+</html>

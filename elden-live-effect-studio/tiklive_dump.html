@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f4ff">
+  <title>TikLive Manager — Phần mềm livestream TikTok cho streamer Việt</title>
+  <meta name="description" content="Tất cả công cụ livestream TikTok trong một app: tự chạy hiệu ứng khi khán giả tặng quà, vào phòng, lên cấp; hơn 100 mẫu hũ quà, donate QR không phí, bảng âm thanh, đọc bình luận. Giao diện tiếng Việt.">
+  <meta property="og:title" content="TikLive Manager — Tất cả công cụ livestream TikTok trong một app">
+  <meta property="og:description" content="Hũ quà, hiệu ứng vào phòng, donate QR, bảng âm thanh, đọc bình luận — giao diện tiếng Việt, dễ dùng.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tikliveapp.com/">
+  <meta property="og:image" content="https://tikliveapp.com/trang-chu/anh/og-trang-chu.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://tikliveapp.com/">
+  <!-- V261 (anh duyệt hướng 12–13/10/2026): trang chủ mới, thay trang đời đầu. Nguồn thiết kế + công cụ chụp ảnh: thiet-ke/v261-trang-chu (workspace).
+       Phục vụ ở "/" bởi src/routes/public-guides.js: mọi src/href/poster/srcset cục bộ được gắn ?v= theo nội dung (proxy giữ tài sản 30 ngày)
+       và CSP chặt ⇒ không style/script nội dòng. Không đăng ký, không đăng nhập, không tải app trên web (anh 13/10). -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png?v=813501eeb7fc">
+  <link rel="icon" type="image/png" sizes="512x512" href="/brand/tiklive-app-icon-512.png?v=78ae5b4552f0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png?v=f31c7cde442b">
+  <link rel="stylesheet" href="/trang-chu/trang-chu.css?v=e4728afe98cd">
+  <script src="/trang-chu/trang-chu.js?v=198dab649fba" defer></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4A8 8 0 1 1 20 12Z"/></symbol>
+  <symbol id="i-tiktok" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M16.6 3c.4 2.3 1.9 3.9 4.2 4.1v3.2a7.6 7.6 0 0 1-4.2-1.3v6.1A6.1 6.1 0 1 1 10.5 9v3.3a2.9 2.9 0 1 0 2.9 2.8V3h3.2Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3.5-6-3.5-5.5-.5.3 1.6 3 .5 5.5.5Zm0 0c1.5-3.5 6-3.5 5.5-.5-.3 1.6-3 .5-5.5.5Z"/></symbol>
+  <symbol id="i-jar" viewBox="0 0 24 24"><path d="M8 3h8v3H8zM7 6h10l1.5 3v9.5A2.5 2.5 0 0 1 16 21H8a2.5 2.5 0 0 1-2.5-2.5V9L7 6Z"/><circle cx="10" cy="15" r="1.4"/><circle cx="14" cy="13" r="1.4"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="m3 7 4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4ZM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+  <symbol id="i-comment" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5Z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></symbol>
+  <symbol id="i-game" viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6h-4A4 4 0 0 1 3 13v-1a4 4 0 0 1 4-4Z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6"/></symbol>
+  <symbol id="i-cage" viewBox="0 0 24 24"><path d="M5 20V9a7 7 0 0 1 14 0v11M3 20h18M9 20V6.5M15 20V6.5M12 20V5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-obs" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="7.5" r="2.2"/><circle cx="8" cy="14.5" r="2.2"/><circle cx="16" cy="14.5" r="2.2"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><path d="M3 5h18v11H3zM9 20h6M12 16v4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 15l4.5-4.5 4 4 2.5-2.5L20 17"/><circle cx="15.5" cy="9" r="1.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5a5 5 0 0 0-8 1 5 5 0 0 0-8-1c-3 3-2 6 1 9l7 7 7-7c3-3 4-6 1-9Z"/></symbol>
+</svg>
+
+<header class="top" id="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#gioi-thieu" aria-label="TikLive Manager — về đầu trang">
+      <img src="/trang-chu/anh/logo-128.webp?v=a902eebe2c87" alt="" width="34" height="34">
+      <span class="wm" role="img" aria-label="TikLive Manager"><span class="wm-tik">Tik</span><span class="wm-live">Live</span></span>
+    </a>
+    <nav class="nav" aria-label="Mục chính">
+      <a href="#tinh-nang">Tính năng</a>
+      <a href="#bang-gia">Bảng giá</a>
+      <a href="#hoi-dap">Hỏi đáp</a>
+    </nav>
+    <div class="top-cta">
+      <a class="icon-btn" href="https://www.tiktok.com/@tikliveapp" target="_blank" rel="noopener" data-link="tiktok" aria-label="Kênh TikTok của TikLive"><svg class="i"><use href="#i-tiktok"/></svg></a>
+      <a class="btn btn-sm btn-primary" href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo"><svg class="i"><use href="#i-chat"/></svg>Nhắn Zalo</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 1. GIỚI THIỆU -->
+  <section class="hero" id="gioi-thieu">
+    <div class="wrap hero-grid">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Phần mềm livestream TikTok cho streamer Việt</p>
+        <h1>Tất cả công cụ livestream TikTok <span class="grad-text h1-line">trong một app</span></h1>
+        <p class="lead">Tự động chạy hiệu ứng khi khán giả <b>tặng quà, vào phòng, lên cấp</b>. Hũ quà, donate, bảng âm thanh, đọc bình luận — giao diện tiếng Việt, thao tác dễ dàng.</p>
+        <div class="cta-row">
+          <a class="btn btn-lg btn-primary" href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo"><svg class="i"><use href="#i-chat"/></svg>Nhắn Zalo tư vấn</a>
+          <a class="btn btn-lg btn-ghost" href="https://www.tiktok.com/@tikliveapp" target="_blank" rel="noopener" data-link="tiktok"><svg class="i"><use href="#i-tiktok"/></svg>Xem kênh TikTok</a>
+        </div>
+        <ul class="hero-meta">
+          <li><svg class="i"><use href="#i-check"/></svg>Máy tính Windows</li>
+          <li><svg class="i"><use href="#i-check"/></svg>Dùng với TikTok Studio, OBS</li>
+          <li><svg class="i"><use href="#i-check"/></svg>Hỗ trợ cài đặt qua Zalo</li>
+        </ul>
+      </div>
+
+      <div class="hero-art reveal" aria-label="Màn hình chính của app TikLive và một buổi live đang nhận donate">
+        <div class="blob blob-a" aria-hidden="true"></div>
+        <div class="blob blob-b" aria-hidden="true"></div>
+        <figure class="app-window">
+          <img src="/trang-chu/anh/app-trang-chu-dau-600.webp?v=d17b4ba98190" srcset="/trang-chu/anh/app-trang-chu-dau-600.webp?v=d17b4ba98190 600w, /trang-chu/anh/app-trang-chu-dau.webp?v=497f05bc1c50 1100w" sizes="(max-width: 760px) 80vw, 500px"
+               alt="Màn hình chính của app TikLive: hiệu ứng PK, bảng âm thanh, hiệu ứng user" width="600" height="626" fetchpriority="high">
+        </figure>
+        <span class="chip chip-1"><svg class="i"><use href="#i-jar"/></svg>Hũ quà</span>
+        <span class="chip chip-2"><svg class="i"><use href="#i-crown"/></svg>Hiệu ứng vào phòng</span>
+        <span class="chip chip-3"><svg class="i"><use href="#i-qr"/></svg>Donate QR</span>
+        <span class="chip chip-4"><svg class="i"><use href="#i-sound"/></svg>Bảng âm thanh</span>
+        <span class="chip chip-5"><svg class="i"><use href="#i-comment"/></svg>Đọc bình luận</span>
+        <div class="phone phone-hero r916">
+          <div class="screen live has-video" data-live="donate">
+            <video class="live-video" src="/trang-chu/video/donate-live.mp4?v=336b26b49b73" poster="/trang-chu/anh/donate-live-poster.webp?v=d66cab8317ef" muted loop playsinline preload="none" aria-hidden="true"></video>
+            <div class="alert-slot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <ul class="stats reveal">
+        <li><b>1000+</b><span>streamer tin dùng TikLive</span></li>
+        <li><b>100+</b><span>mẫu hũ quà để chọn</span></li>
+        <li><b>130+</b><span>phụ kiện trang trí hũ</span></li>
+        <li><b>0đ</b><span>phí donate từ TikLive</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. MỘT APP THAY NHIỀU PHẦN MỀM -->
+  <section class="section" id="mot-app">
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="kicker">Vì sao chọn TikLive</p>
+        <h2>Không cần cài cả chục phần mềm nữa</h2>
+        <p class="sub">Streamer thường phải ghép nhiều công cụ rời rạc — mỗi cái một kiểu, phần lớn bằng tiếng Anh, cài đặt rắc rối. TikLive gom tất cả vào một nơi.</p>
+      </div>
+      <div class="compare reveal">
+        <div class="cmp cmp-old">
+          <p class="cmp-title">Trước đây</p>
+          <ul>
+            <li><svg class="i"><use href="#i-x"/></svg>Một phần mềm riêng để phát tiếng cười, vỗ tay</li>
+            <li><svg class="i"><use href="#i-x"/></svg>Một phần mềm riêng cho hũ quà</li>
+            <li><svg class="i"><use href="#i-x"/></svg>Công cụ nhận quà tiếng Anh, khó cài, khó dùng</li>
+            <li><svg class="i"><use href="#i-x"/></svg>OBS phải tự thêm và chỉnh từng nguồn</li>
+            <li><svg class="i"><use href="#i-x"/></svg>Trang donate bên ngoài, thêm một chỗ phải lo</li>
+          </ul>
+        </div>
+        <div class="cmp-arrow" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></div>
+        <div class="cmp cmp-new">
+          <p class="cmp-title"><img src="/trang-chu/anh/logo-128.webp?v=a902eebe2c87" alt="" width="28" height="28">Với TikLive — một app</p>
+          <ul>
+            <li><svg class="i"><use href="#i-check"/></svg>Bảng âm thanh có sẵn, bấm là phát</li>
+            <li><svg class="i"><use href="#i-check"/></svg>Hơn 100 mẫu hũ quà ngay trong app</li>
+            <li><svg class="i"><use href="#i-check"/></svg>Tiếng Việt, tự kết nối khi bạn lên live</li>
+            <li><svg class="i"><use href="#i-check"/></svg>App tự gắn vào OBS, tự báo khi OBS lỗi</li>
+            <li><svg class="i"><use href="#i-check"/></svg>Donate QR ngay trong app, không thu phí</li>
+          </ul>
+        </div>
+      </div>
+      <div class="auto reveal">
+        <p>Hiệu ứng tự chạy khi</p>
+        <ul>
+          <li><svg class="i"><use href="#i-gift"/></svg>Tặng quà</li>
+          <li><svg class="i"><use href="#i-crown"/></svg>Vào phòng</li>
+          <li><svg class="i"><use href="#i-spark"/></svg>Lên cấp</li>
+          <li><svg class="i"><use href="#i-user"/></svg>Follow</li>
+          <li><svg class="i"><use href="#i-link"/></svg>Chia sẻ</li>
+          <li><svg class="i"><use href="#i-heart"/></svg>Donate</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div id="tinh-nang" class="anchor" aria-hidden="true"></div>
+
+  <!-- 3a. HŨ QUÀ -->
+  <section class="section feature" id="hu-qua">
+    <div class="wrap feat-grid">
+      <div class="feat-copy reveal">
+        <p class="kicker"><span class="num">01</span>Hũ quà</p>
+        <h2>Hơn 100 mẫu hũ quà, trang trí theo phong cách của bạn</h2>
+        <p class="sub">Quà khán giả tặng rơi thẳng vào hũ ngay trên live. Chọn kiểu hũ, gắn phụ kiện, đặt tên hũ — mỗi phòng live một phong cách riêng.</p>
+        <ul class="ticks">
+          <li><svg class="i"><use href="#i-check"/></svg><span><b>100+ mẫu hũ</b>, mới thêm <b>78 mẫu tháng 10</b>: 20/10, Halloween, bình sữa, trái tim, ngôi sao…</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span><b>130+ phụ kiện</b> trang trí, và tự thêm sticker PNG/GIF của riêng bạn</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Quà trộm, quà tim, top người tặng hiện ngay trên hũ</span></li>
+        </ul>
+      </div>
+      <div class="feat-art jar-art reveal">
+        <div class="jar-live">
+          <img src="/trang-chu/anh/hu-qua-live.webp?v=8b7df0e2a53f" alt="Hũ quà 20/10 “Amy Nọng — cảm ơn bụt” đang nhận quà trên live" width="596" height="596" loading="lazy" decoding="async">
+          <span class="tag tag-live">Hũ 20/10 trên live</span>
+        </div>
+        <div class="jar-panels">
+          <figure class="panel">
+            <img src="/trang-chu/anh/hu-qua-mau-moi.webp?v=6f9bb54ba6b6" alt="Hộp Mẫu hũ mới trong app: 12 mẫu tháng 10, có 4 mẫu 20/10" width="900" height="864" loading="lazy" decoding="async">
+            <figcaption>Mẫu hũ mới tháng 10</figcaption>
+          </figure>
+          <figure class="panel">
+            <img src="/trang-chu/anh/hu-qua-phu-kien.webp?v=205dc0ecb480" alt="Hộp chọn phụ kiện hũ trong app" width="860" height="875" loading="lazy" decoding="async">
+            <figcaption>Phụ kiện trang trí hũ</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3b. HIỆU ỨNG VÀO PHÒNG — 6 ảnh Full HD cắt từ video live thật anh gửi 13/10 (anh: ảnh nét hơn video). -->
+  <section class="section feature alt" id="vao-phong">
+    <div class="wrap feat-grid flip">
+      <div class="feat-copy reveal">
+        <p class="kicker"><span class="num">02</span>Hiệu ứng vào phòng</p>
+        <h2>Đón VIP và người quan trọng bằng hiệu ứng riêng</h2>
+        <p class="sub">Đại gia, top tặng quà, hộ vệ, fan cứng vừa vào phòng là cả live đều thấy — khung riêng theo danh hiệu, kèm ảnh đại diện và tên của họ. Ai cũng thích được chào đón như vậy.</p>
+        <ul class="ticks">
+          <li><svg class="i"><use href="#i-check"/></svg><span>Khung riêng cho <b>ENIGMA, Top 1–3, Hộ vệ, Super Fan</b></span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Hiệu ứng khi <b>VIP, Tim đội theo cấp, người cấp cao</b> vào phòng</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Hiệu ứng chúc mừng khi khán giả <b>lên cấp</b></span></li>
+        </ul>
+      </div>
+      <div class="feat-art video-art reveal">
+        <div class="phone phone-video-frame r916">
+          <div class="screen entry-show" data-entry-show>
+            <img class="on" src="/trang-chu/anh/vao-phong/ho-ve.webp?v=a4f50f8ae2ec" alt="Khung Hộ vệ và hiệu ứng hươu vàng khi hộ vệ vào phòng" width="1080" height="1920" loading="lazy" decoding="async">
+            <img class="" src="/trang-chu/anh/vao-phong/enigma.webp?v=90e8b2913560" alt="Khung ENIGMA và hiệu ứng mặt nạ khi khách bí ẩn vào phòng" width="1080" height="1920" loading="lazy" decoding="async">
+            <img class="" src="/trang-chu/anh/vao-phong/super-fan.webp?v=5e0d00dff77e" alt="Khung Super Fan và hiệu ứng trái tim vàng" width="1080" height="1920" loading="lazy" decoding="async">
+            <img class="" src="/trang-chu/anh/vao-phong/fan-club.webp?v=eb3f3c2789dd" alt="Khung Fan Club và hiệu ứng chàng trai ôm tim" width="1080" height="1920" loading="lazy" decoding="async">
+            <img class="" src="/trang-chu/anh/vao-phong/top-1.webp?v=9ad427eb10f6" alt="Khung Top 1 và hiệu ứng vương miện" width="1080" height="1920" loading="lazy" decoding="async">
+            <img class="" src="/trang-chu/anh/vao-phong/len-cap.webp?v=3ccb8e45a5f2" alt="Khung lên cấp 25 và hiệu ứng pha lê tím" width="1080" height="1920" loading="lazy" decoding="async">
+          </div>
+          <span class="tag tag-live">Live thật</span>
+        </div>
+        <div class="entry-picks" role="tablist" aria-label="Chọn hiệu ứng vào phòng">
+          <button type="button" role="tab" aria-selected="true" data-pick="0">Hộ vệ</button>
+          <button type="button" role="tab" aria-selected="false" data-pick="1">ENIGMA</button>
+          <button type="button" role="tab" aria-selected="false" data-pick="2">Super Fan</button>
+          <button type="button" role="tab" aria-selected="false" data-pick="3">Fan Club</button>
+          <button type="button" role="tab" aria-selected="false" data-pick="4">Top 1</button>
+          <button type="button" role="tab" aria-selected="false" data-pick="5">Lên cấp</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3c. DONATE -->
+  <section class="section feature" id="donate">
+    <div class="wrap feat-grid">
+      <div class="feat-copy reveal">
+        <p class="kicker"><span class="num">03</span>Donate chuyển khoản <span class="new">Mới</span></p>
+        <h2>Donate qua mã QR, <span class="h2-line">tiền vào thẳng tài khoản của bạn</span></h2>
+        <p class="sub">Fan mở trang donate riêng của bạn, chọn số tiền, quét QR bằng app ngân hàng là xong. Tiền vào thẳng tài khoản ngân hàng của bạn — TikLive không giữ tiền, không thu phí.</p>
+        <ul class="ticks">
+          <li><svg class="i"><use href="#i-check"/></svg><span>Trang donate riêng <b>tikliveapp.com/donate/tên-bạn</b>, có ảnh đại diện</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Lên live ngay: nhân vật, mưa tiền, <b>giọng đọc tên và lời nhắn</b></span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span><b>Vòng quay may mắn</b> và <b>bảng xếp hạng</b> người donate</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span><b>Không thu phí</b> trên khoản donate</span></li>
+        </ul>
+        <p class="fine">Cần một tài khoản SePay để báo tiền về (SePay miễn phí 50 giao dịch mỗi tháng). App có hướng dẫn thiết lập từng bước.</p>
+      </div>
+      <div class="feat-art donate-art reveal">
+        <div class="phone phone-page">
+          <div class="screen"><img src="/trang-chu/anh/donate-qr.webp?v=a3eb2647ce7f" alt="Trang donate trên điện thoại: mã QR chuyển khoản 200.000đ" width="780" height="1688" loading="lazy" decoding="async"></div>
+          <span class="tag">Fan quét QR</span>
+        </div>
+        <div class="phone phone-live r916">
+          <div class="screen live has-video" data-live="donate">
+            <video class="live-video" src="/trang-chu/video/donate-live.mp4?v=336b26b49b73" poster="/trang-chu/anh/donate-live-poster.webp?v=d66cab8317ef" muted loop playsinline preload="none" aria-hidden="true"></video>
+            <div class="alert-slot"></div>
+          </div>
+          <span class="tag tag-live">Hiện trên live</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3c2. GAME TROLL — 6 khung cắt từ video game troll chạy thật anh gửi 13/10 -->
+  <section class="section feature" id="game-troll">
+    <div class="wrap feat-grid">
+      <div class="feat-copy reveal">
+        <p class="kicker"><span class="num">04</span>Game troll idol</p>
+        <h2>Khán giả tặng quà, idol “gặp nạn” ngay trên live</h2>
+        <p class="sub">Bộ game troll idol chạy thẳng trên live: idol bị ép, bị đĩa bay bắt cóc, bị phóng lên trời, bị nổ tung… Khán giả nào cũng muốn tặng thử một lần.</p>
+        <ul class="ticks">
+          <li><svg class="i"><use href="#i-check"/></svg><span>Nhiều màn troll: <b>Máy ép idol, UFO bắt cóc, Phóng tên lửa, Vòng xoáy vô cực</b>…</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Mỗi màn gán một món quà — <b>bạn tự chọn quà</b> kích hoạt màn nào</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span><b>Nhốt Idol</b>: nhốt idol vào lồng theo giờ, khán giả tặng quà để cộng giờ hoặc giải cứu</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Hiện <b>menu quà</b> ngay trên live để khán giả biết tặng gì</span></li>
+        </ul>
+      </div>
+      <div class="feat-art game-art reveal">
+        <ul class="game-grid" aria-label="Ảnh game troll chạy thật trên live">
+          <li><img src="/trang-chu/anh/game/game-1.webp?v=9a26817e20f7" alt="Vòng xoáy vô cực: idol bị gắp thả vào bồn cầu" width="540" height="960" loading="lazy" decoding="async"><span>Vòng xoáy vô cực</span></li>
+          <li><img src="/trang-chu/anh/game/game-2.webp?v=cfda08098207" alt="Máy ép idol: idol nằm dưới máy ép 85 tấn" width="540" height="960" loading="lazy" decoding="async"><span>Máy ép idol</span></li>
+          <li><img src="/trang-chu/anh/game/game-4.webp?v=c9c39fd3b13c" alt="Đĩa bay bắt cóc idol" width="540" height="960" loading="lazy" decoding="async"><span>UFO bắt cóc</span></li>
+          <li><img src="/trang-chu/anh/game/game-5.webp?v=1550aa2e6f84" alt="Idol ngồi trong tên lửa, nút Phóng ngay" width="540" height="960" loading="lazy" decoding="async"><span>Phóng tên lửa</span></li>
+          <li><img src="/trang-chu/anh/game/game-6.webp?v=5652f3a708f7" alt="Idol cháy đen sau vụ nổ" width="540" height="960" loading="lazy" decoding="async"><span>Nổ bom</span></li>
+          <li class="game-more"><img src="/trang-chu/anh/game/game-7.webp?v=3d77bad92a8e" alt="" width="540" height="960" loading="lazy" decoding="async"><div><b>+</b><strong>Còn nhiều hơn nữa</strong><em>Máy hút bụi, nồi lẩu, hồ nước…</em></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3d. GIAO DIỆN THU GỌN -->
+  <section class="section feature alt" id="thu-gon">
+    <div class="wrap feat-grid flip">
+      <div class="feat-copy reveal">
+        <p class="kicker"><span class="num">05</span>Giao diện thu gọn</p>
+        <h2>Thu gọn app, đặt ngay cạnh TikTok Studio</h2>
+        <p class="sub">Đang live chỉ cần một cửa sổ nhỏ: bấm hiệu ứng, phát âm thanh, trả kèo PK mà không phải chuyển qua lại. Cần chỉnh cài đặt thì bấm Mở rộng.</p>
+        <ul class="ticks">
+          <li><svg class="i"><use href="#i-check"/></svg><span>Chỉ còn những nút hay dùng khi live: <b>Hiệu ứng User, Hiệu ứng PK, Bảng âm thanh</b></span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Thanh điều khiển nhanh: kết nối live, <b>Đọc comment, Trả kèo PK, Bắn pháo</b></span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Kéo, đổi cỡ tùy ý — app <b>nhớ vị trí riêng</b> cho cửa sổ thu gọn và mở rộng</span></li>
+          <li><svg class="i"><use href="#i-check"/></svg><span>Bật <b>luôn nổi trên cùng</b> để TikTok Studio, OBS không che mất</span></li>
+        </ul>
+      </div>
+      <div class="feat-art compact-art reveal">
+        <figure class="app-window compact-back">
+          <img src="/trang-chu/anh/app-trang-chu-dau-600.webp?v=d17b4ba98190" alt="" width="600" height="626" loading="lazy" decoding="async">
+        </figure>
+        <span class="compact-arrow" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg>Thu gọn</span>
+        <figure class="app-window compact-front">
+          <img src="/trang-chu/anh/app-thu-gon.webp?v=9103424bc677" alt="Cửa sổ thu gọn của app TikLive: Hiệu ứng User, Hiệu ứng PK, Bảng âm thanh" width="900" height="1620" loading="lazy" decoding="async">
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CÒN NHIỀU HƠN NỮA -->
+  <section class="section" id="con-nua">
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="kicker">Và còn nhiều hơn nữa</p>
+        <h2>Đủ công cụ cho mọi kiểu live</h2>
+      </div>
+      <ul class="tiles reveal">
+        <li><span class="ti"><svg class="i"><use href="#i-gift"/></svg></span><b>Hiệu ứng theo quà</b><span>Gán quà nào ra video, âm thanh nấy; kho hàng trăm hiệu ứng có sẵn.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-comment"/></svg></span><b>Đọc bình luận</b><span>Giọng tiếng Việt đọc bình luận của khán giả ngay trên live.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-bolt"/></svg></span><b>PK x2 · x3 · x5</b><span>Hiệu ứng nhân điểm và trả kèo PK chỉ một cú bấm.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-target"/></svg></span><b>Mục tiêu live</b><span>Thanh mục tiêu quà tự cộng theo từng món khán giả tặng.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-cage"/></svg></span><b>Lồng sắt, Ngôi sao ước nguyện</b><span>Màn hình tương tác để khán giả cùng chơi.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-link"/></svg></span><b>Tự kết nối khi lên live</b><span>Bật live là app tự bắt, không phải bấm lại.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-obs"/></svg></span><b>Tự gắn vào OBS</b><span>App tự thêm nguồn và báo khi OBS có lỗi.</span></li>
+        <li><span class="ti"><svg class="i"><use href="#i-monitor"/></svg></span><b>TikTok Studio hoặc OBS</b><span>Dùng với công cụ phát live bạn đang quen.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. IDOL -->
+  <!-- Tạm ẩn (anh 13/10: chưa xin được ảnh idol). Bật lại: bỏ thuộc tính hidden và thêm lại mục Idol (neo #idol) ở thanh menu. -->
+  <section class="section alt" id="idol" hidden>
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="kicker">Idol tin dùng</p>
+        <h2>Các idol đang live cùng TikLive</h2>
+        <p class="sub">Hơn 1000 streamer đã tin dùng TikLive.</p>
+      </div>
+      <ul class="idols reveal">
+        <li><div class="idol-photo"><svg class="i"><use href="#i-image"/></svg><span>Ảnh idol 9:16</span></div><b>Tên idol</b><span>@tiktok · người theo dõi</span></li>
+        <li><div class="idol-photo"><svg class="i"><use href="#i-image"/></svg><span>Ảnh idol 9:16</span></div><b>Tên idol</b><span>@tiktok · người theo dõi</span></li>
+        <li><div class="idol-photo"><svg class="i"><use href="#i-image"/></svg><span>Ảnh idol 9:16</span></div><b>Tên idol</b><span>@tiktok · người theo dõi</span></li>
+        <li><div class="idol-photo"><svg class="i"><use href="#i-image"/></svg><span>Ảnh idol 9:16</span></div><b>Tên idol</b><span>@tiktok · người theo dõi</span></li>
+        <li><div class="idol-photo"><svg class="i"><use href="#i-image"/></svg><span>Ảnh idol 9:16</span></div><b>Tên idol</b><span>@tiktok · người theo dõi</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. BẮT ĐẦU -->
+  <section class="section" id="bat-dau">
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="kicker">Bắt đầu</p>
+        <h2>Chỉ 3 bước để có buổi live sôi động</h2>
+      </div>
+      <ol class="steps reveal">
+        <li><span class="step-n">1</span><b>Nhắn Zalo cho TikLive</b><span>Cho bên mình biết bạn live gì, dùng TikTok Studio hay OBS.</span></li>
+        <li><span class="step-n">2</span><b>Được cài đặt và hướng dẫn</b><span>Đội ngũ TikLive hỗ trợ cài app và cài sẵn hiệu ứng cho bạn.</span></li>
+        <li><span class="step-n">3</span><b>Lên live</b><span>Quà tới là hiệu ứng chạy, bạn chỉ việc trò chuyện với khán giả.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 7. BẢNG GIÁ -->
+  <section class="section alt" id="bang-gia">
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="kicker">Bảng giá</p>
+        <h2>Gói Pro — đầy đủ mọi tính năng</h2>
+        <p class="sub">Chọn thời hạn phù hợp, dùng càng lâu càng tiết kiệm.</p>
+      </div>
+      <div class="plans single reveal">
+        <article class="plan plan-pro">
+          <img class="plan-mascot" src="/donate/linh-vat/cat.webp?v=96dca913a567" alt="" width="96" height="96" loading="lazy">
+          <p class="plan-badge">Đầy đủ tính năng</p>
+          <h3>Gói Pro</h3>
+          <div class="terms" role="radiogroup" aria-label="Thời hạn gói Pro">
+            <button type="button" role="radio" aria-checked="false" data-price="350000" data-months="1">1 tháng</button>
+            <button type="button" role="radio" aria-checked="false" data-price="1000000" data-months="3">3 tháng</button>
+            <button type="button" role="radio" aria-checked="false" data-price="1900000" data-months="6">6 tháng</button>
+            <button type="button" role="radio" aria-checked="true" data-price="3800000" data-months="12">12 tháng</button>
+          </div>
+          <p class="price"><b id="pro-price">3.800.000đ</b><span id="pro-term">/ 12 tháng</span></p>
+          <p class="per" id="pro-per">≈ 316.667đ mỗi tháng</p>
+          <ul class="ticks">
+            <li><svg class="i"><use href="#i-check"/></svg><span>Hơn 100 mẫu hũ quà cao cấp</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Hiệu ứng vào phòng, khung danh hiệu</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Donate QR, vòng quay, bảng xếp hạng</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Bảng âm thanh, hiệu ứng user, đọc bình luận</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Game troll idol, hiệu ứng PK, màn hình tương tác</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Giao diện thu gọn, hỗ trợ cài đặt qua Zalo</span></li>
+          </ul>
+          <a class="btn btn-primary btn-block" href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo"><svg class="i"><use href="#i-chat"/></svg>Nhắn Zalo đăng ký</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. HỎI ĐÁP -->
+  <section class="section" id="hoi-dap">
+    <div class="wrap narrow">
+      <div class="head center reveal">
+        <p class="kicker">Hỏi đáp</p>
+        <h2>Câu hỏi thường gặp</h2>
+      </div>
+      <div class="faq reveal">
+        <details><summary>TikLive chạy trên máy nào?</summary><p>App chạy trên máy tính Windows. Bạn vẫn live bằng TikTok Studio hoặc OBS trên máy tính như bình thường; TikLive chạy song song để phát hiệu ứng, âm thanh, hũ quà… App không cài trên điện thoại.</p></details>
+        <details><summary>Có cần đưa mật khẩu TikTok không?</summary><p>Không cần đưa mật khẩu cho ai. Để kết nối live, app chỉ cần ID TikTok của bạn để nhận quà, bình luận và lượt vào phòng. Riêng tính năng tặng quà thử cần đăng nhập TikTok — bạn tự đăng nhập trong cửa sổ đăng nhập của chính TikTok.</p></details>
+        <details><summary>Donate có mất phí không?</summary><p>TikLive không giữ tiền và không thu phí trên khoản donate — tiền chuyển thẳng tới tài khoản ngân hàng của bạn. Để báo tiền về, bạn cần một tài khoản SePay (miễn phí 50 giao dịch mỗi tháng).</p></details>
+        <details><summary>Tôi không rành OBS thì có dùng được không?</summary><p>Được. App tự thêm nguồn vào OBS và báo cho bạn khi OBS có lỗi. Cần gì thêm, đội ngũ TikLive hỗ trợ qua Zalo.</p></details>
+        <details><summary>Gói Pro gồm những gì?</summary><p>Toàn bộ tính năng của TikLive: hơn 100 mẫu hũ quà, hiệu ứng vào phòng, donate QR, bảng âm thanh, hiệu ứng user, đọc bình luận, game troll idol, hiệu ứng PK và giao diện thu gọn. Bạn chọn thời hạn 1, 3, 6 hoặc 12 tháng.</p></details>
+        <details><summary>Làm sao để bắt đầu?</summary><p>Nhắn Zalo cho TikLive. Bên mình tư vấn gói phù hợp, hỗ trợ cài đặt và hướng dẫn bạn tới khi lên live được.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. LỜI MỜI CUỐI -->
+  <section class="section last">
+    <div class="wrap">
+      <div class="final reveal">
+        <img class="final-mascot" src="/donate/linh-vat/cat.webp?v=96dca913a567" alt="" width="180" height="180" loading="lazy">
+        <div class="final-copy">
+          <h2>Sẵn sàng cho buổi live sôi động hơn?</h2>
+          <p>Nhắn Zalo để được tư vấn gói phù hợp và hỗ trợ cài đặt.</p>
+        </div>
+        <div class="final-cta">
+          <a class="btn btn-lg btn-white" href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo"><svg class="i"><use href="#i-chat"/></svg>Nhắn Zalo tư vấn</a>
+          <a class="btn btn-lg btn-glass" href="https://www.tiktok.com/@tikliveapp" target="_blank" rel="noopener" data-link="tiktok"><svg class="i"><use href="#i-tiktok"/></svg>Kênh TikTok</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="#gioi-thieu"><img src="/trang-chu/anh/logo-128.webp?v=a902eebe2c87" alt="" width="30" height="30"><span class="wm" role="img" aria-label="TikLive Manager"><span class="wm-tik">Tik</span><span class="wm-live">Live</span></span></a>
+      <p>Phần mềm livestream TikTok cho streamer Việt.</p>
+    </div>
+    <div>
+      <p class="foot-h">Sản phẩm</p>
+      <a href="#tinh-nang">Tính năng</a><a href="#bang-gia">Bảng giá</a><a href="#hoi-dap">Hỏi đáp</a>
+    </div>
+    <div>
+      <p class="foot-h">Hướng dẫn</p>
+      <a href="/huong-dan/sepay">Thiết lập donate SePay</a>
+    </div>
+    <div>
+      <p class="foot-h">Liên hệ</p>
+      <a href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo">Zalo 0981-161-363</a><a href="https://www.tiktok.com/@tikliveapp" target="_blank" rel="noopener" data-link="tiktok">Kênh TikTok</a>
+    </div>
+  </div>
+  <div class="wrap foot-bottom"><span>© 2026 TikLive Manager</span><span>TikLive Manager là phần mềm độc lập, không thuộc TikTok. TikTok là nhãn hiệu của chủ sở hữu tương ứng.</span></div>
+</footer>
+
+<div class="dock" id="dock">
+  <a class="btn btn-primary" href="https://zalo.me/0981161363" target="_blank" rel="noopener" data-link="zalo"><svg class="i"><use href="#i-chat"/></svg>Nhắn Zalo tư vấn</a>
+  <a class="icon-btn" href="https://www.tiktok.com/@tikliveapp" target="_blank" rel="noopener" data-link="tiktok" aria-label="Kênh TikTok của TikLive"><svg class="i"><use href="#i-tiktok"/></svg></a>
+</div>
+
+<template id="tpl-alert">
+  <div class="stage onlive-mini">
+    <div class="pv-fx" aria-hidden="true"><div class="pv-glow"></div><div class="pv-rain"><i></i><i></i><i></i><i class="bill"></i><i></i><i></i><i class="bill"></i><i></i><i class="bill"></i><i></i><i></i><i class="bill"></i><i></i><i class="bill"></i><i></i><i class="bill"></i></div></div>
+    <img class="pv-mascot" alt="">
+    <div class="pv-head"><span class="pv-crown" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="m3 6 4.5 4L12 3l4.5 7L21 6l-2 12H5L3 6Z"/></svg></span><span class="pv-name"></span><span class="pv-verb">vừa donate</span></div>
+    <div><span class="pv-amt-wrap"><span class="pv-amt"></span><span class="pv-shine"></span></span></div>
+    <div class="pv-msg"></div>
+  </div>
+</template>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <circle cx="60" cy="60" r="54" fill="#ff6584" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="42" cy="52" r="7" fill="#222222"/>
+  <circle cx="78" cy="52" r="7" fill="#222222"/>
+  <circle cx="44" cy="50" r="2.5" fill="#ffffff"/>
+  <circle cx="80" cy="50" r="2.5" fill="#ffffff"/>
+  <ellipse cx="32" cy="64" rx="7" ry="4" fill="#ff9eb5"/>
+  <ellipse cx="88" cy="64" rx="7" ry="4" fill="#ff9eb5"/>
+  <path d="M 50 68 Q 60 80 70 68" stroke="#222222" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="60" y="106" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">ELDEN</text>
+</svg>

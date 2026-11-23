@@ -1,0 +1,3696 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elden Media · Điều Khiển Hiệu Ứng TikTok LIVE Pro</title>
+  <style>
+    :root {
+      --bg: #0b111e;
+      --card-bg: #111a2d;
+      --card-border: #1e2c45;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-glow: rgba(2, 132, 199, 0.35);
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 70px;
+    }
+
+    /* HEADER */
+    header {
+      background: #090e1a;
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #111c30;
+      border: 1px solid #1e3052;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+    .status-dot.live {
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    .status-dot.connecting {
+      background: #f59e0b;
+      box-shadow: 0 0 10px #f59e0b;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* RESPONSIVE CONTAINER & GRID */
+    .container {
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* Trên màn hình laptop & máy tính bảng (< 1380px) -> Chuyển thành 1 cột rộng rãi, không bị bóp méo */
+    @media (max-width: 1380px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .side-widgets-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      .side-widgets-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* OBS Link Box */
+    .obs-link-box {
+      background: #0f172a;
+      border: 1px dashed #38bdf8;
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .obs-link-box code {
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 0.95rem;
+      word-break: break-all;
+    }
+
+    /* Form inputs */
+    input[type="text"], input[type="number"], select {
+      background: #0a1120;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.15s;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #1e293b;
+      color: #f8fafc;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 12px var(--accent-glow); }
+    .btn-success { background: #15803d; color: #fff; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-danger { background: #b91c1c; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-warning:hover { background: #b45309; }
+    .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+
+    /* VIEW SWITCHER TABS */
+    .view-toggle {
+      display: inline-flex;
+      background: #090f1d;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .view-toggle-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .view-toggle-btn.active {
+      background: #0284c7;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    /* GGTT-STYLE DATA TABLE */
+    .ggtt-table-wrapper {
+      overflow-x: auto;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      background: #0d1422;
+    }
+    .ggtt-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .ggtt-table th {
+      background: #0f182b;
+      color: #94a3b8;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 1px solid #1e293b;
+      white-space: nowrap;
+    }
+    .ggtt-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #192336;
+      vertical-align: middle;
+    }
+    .ggtt-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .ggtt-table tr.row-disabled { opacity: 0.45; }
+
+    .onoff-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .row-index-badge {
+      background: #15803d;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      min-width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(21, 128, 61, 0.4);
+    }
+    .ggtt-input-name {
+      background: #111726;
+      border: 1px solid #2a3b54;
+      color: #f8fafc;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      width: 100%;
+      min-width: 120px;
+    }
+
+    /* Gift Chip like GGTT with searchable click */
+    .ggtt-gift-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #172338;
+      border: 1px solid #253957;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .ggtt-gift-chip:hover {
+      background: #1e3052;
+      border-color: #38bdf8;
+    }
+    .ggtt-gift-coins {
+      background: #0f182b;
+      color: #38bdf8;
+      font-size: 0.78rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* Gacha Mini Pill */
+    .gacha-mini-pill {
+      background: #121c2e;
+      border: 1px solid #22334d;
+      border-radius: 8px;
+      padding: 6px 10px;
+      min-width: 140px;
+    }
+    .gacha-mini-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Video/Audio Cell */
+    .ggtt-video-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ggtt-video-pill {
+      background: #152238;
+      border: 1px solid #253957;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+      flex: 1;
+      min-width: 160px;
+      cursor: pointer;
+    }
+    .ggtt-video-pill:hover {
+      background: #1d2d48;
+      border-color: #38bdf8;
+    }
+    .btn-circle-play {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    /* CARD VIEW (THẺ CHI TIẾT) */
+    .rule-card {
+      background: #0f182b;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .rule-card.disabled { opacity: 0.45; }
+    .rule-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .rule-name-input {
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex: 1;
+    }
+
+    /* Logs & Simulator */
+    .log-box {
+      background: #080d1a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      height: 380px;
+      overflow-y: auto;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+    .log-entry {
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      border-left: 3px solid #64748b;
+      background: rgba(255,255,255,0.02);
+    }
+    .log-entry.hit { border-color: var(--success); background: rgba(16, 185, 129, 0.08); }
+    .log-entry.miss { border-color: var(--danger); background: rgba(239, 68, 68, 0.08); }
+    .log-entry.gift { border-color: var(--warning); }
+
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      width: 90%;
+      max-width: 680px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+    .modal-box-lg { max-width: 880px; }
+
+    /* Visual Segmented Progress Bar for % Pool */
+    .pool-visual-bar {
+      display: flex;
+      height: 18px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      background: #1e293b;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .pool-bar-segment {
+      height: 100%;
+      transition: width 0.2s;
+    }
+
+    /* Fixed Footer Auto-Save Bar */
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(9, 14, 26, 0.95);
+      border-top: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 40;
+    }
+    .auto-save-tag {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #10b981;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Gift Grid in Search Modal */
+    .gift-search-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .gift-search-item {
+      background: #0f182b;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .gift-search-item:hover {
+      background: #1a273e;
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+    .gift-search-item.selected {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Filter Chips */
+    .chip-filter {
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 999px;
+      background: #1e293b;
+      color: #94a3b8;
+      border: none;
+      cursor: pointer;
+    }
+    .chip-filter.active {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    /* JAR MANAGEMENT STYLES */
+    .jar-card {
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      background: linear-gradient(180deg, #101827 0%, #0b1120 100%);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(245, 158, 11, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .jar-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #ef4444);
+    }
+    .jar-style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .jar-style-card {
+      background: #090f1d;
+      border: 2px solid #1e293b;
+      border-radius: 10px;
+      padding: 12px 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .jar-style-card:hover {
+      border-color: #f59e0b;
+      background: #131d33;
+      transform: translateY(-2px);
+    }
+    .jar-style-card.active {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.35);
+    }
+    .jar-style-icon {
+      font-size: 2.2rem;
+      margin-bottom: 4px;
+    }
+    .jar-style-name {
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: #f8fafc;
+    }
+    .jar-style-desc {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .jar-action-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .jar-action-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .jar-btn-shake { background: #0284c7; color: #fff; }
+    .jar-btn-shake:hover { background: #0369a1; box-shadow: 0 0 12px rgba(2, 132, 199, 0.5); transform: translateY(-1px); }
+    .jar-btn-crack { background: #7c3aed; color: #fff; }
+    .jar-btn-crack:hover { background: #6d28d9; box-shadow: 0 0 12px rgba(124, 58, 237, 0.5); transform: translateY(-1px); }
+    .jar-btn-flip { background: #d97706; color: #fff; }
+    .jar-btn-flip:hover { background: #b45309; box-shadow: 0 0 12px rgba(217, 119, 6, 0.5); transform: translateY(-1px); }
+    .jar-btn-burst { background: #dc2626; color: #fff; }
+    .jar-btn-burst:hover { background: #b91c1c; box-shadow: 0 0 15px rgba(220, 38, 38, 0.6); transform: translateY(-1px); }
+    .jar-btn-clear { background: #475569; color: #fff; }
+    .jar-btn-clear:hover { background: #334155; }
+    .jar-btn-reset { background: #059669; color: #fff; }
+    .jar-btn-reset:hover { background: #047857; }
+
+    .jar-tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .jar-tab-btn.active {
+      background: #f59e0b;
+      color: #0f172a;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+    }
+    .decor-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      border: 2px solid #253957;
+      background: #090f1d;
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .decor-thumb:hover { border-color: #f59e0b; transform: scale(1.05); }
+    .decor-thumb.active { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+    .decor-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  
+    /* APP NAVIGATION BAR (MODULE SWITCHER) */
+    .app-nav-bar {
+      background: rgba(10, 16, 30, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 61px;
+      z-index: 40;
+      padding: 8px 24px;
+    }
+    .app-nav-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .app-nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .app-nav-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .app-nav-tab:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .app-nav-tab.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(6, 182, 212, 0.25));
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+    }
+    .nav-tab-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid #f59e0b;
+      font-weight: 800;
+    }
+    .app-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Nạp dữ liệu quà tặng TikTok chuẩn Việt Nam -->
+  <script src="/gifts-data.js?v=20261115_clean"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <span>🎬 Elden Media</span>
+      <span class="brand-badge">TikTok LIVE Pro</span>
+      <a href="#jarSection" class="btn btn-sm btn-warning" style="margin-left: 8px; color: #000; font-weight: 700;">🏺 Hũ Quà Vật Lý (Mới)</a>
+      <a href="/editor.html" class="btn btn-sm btn-primary" style="margin-left: 8px;">✂️ Mở Trình Edit Video (CapCut)</a>
+      <button class="btn btn-sm" onclick="openMediaManager()">📁 Kho Lưu Trữ Media</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="headerAutoSaveTag" class="auto-save-tag">✓ Đã đồng bộ OBS</span>
+      <div class="status-pill">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Chưa kết nối Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOP APP NAVIGATION BAR (MODULE SWITCHER) -->
+  <div class="app-nav-bar">
+    <div class="app-nav-container">
+      <div class="app-nav-tabs">
+        <button class="app-nav-tab active" id="navBtnJar" onclick="switchMainView('jar')">
+          <span>🏺</span>
+          <span>Hũ Quà Vật Lý</span>
+          <span class="nav-tab-badge">60fps</span>
+        </button>
+        <button class="app-nav-tab" id="navBtnRules" onclick="switchMainView('rules')">
+          <span>🎬</span>
+          <span>Video & Hiệu Ứng Quà</span>
+        </button>
+        <button class="app-nav-tab" id="navBtnSim" onclick="switchMainView('sim')">
+          <span>🎮</span>
+          <span>Bắn Test & Giả Lập</span>
+        </button>
+        <button class="app-nav-tab" id="navBtnMedia" onclick="switchMainView('media')">
+          <span>📁</span>
+          <span>Kho Video</span>
+        </button>
+        <button class="app-nav-tab" id="navBtnLogs" onclick="switchMainView('logs')">
+          <span>📜</span>
+          <span>Nhật Ký</span>
+        </button>
+      </div>
+
+      <div class="app-nav-actions">
+        <button class="btn btn-sm" id="btnOpenUpdateModal" onclick="openUpdateModal()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px;" title="Kiểm tra & Cập nhật phiên bản">
+          <span>⚡ Cập Nhật</span>
+          <span id="appVersionBadge" style="background: #059669; color: #fff; padding: 1px 6px; border-radius: 999px; font-size: 0.72rem;">v1.0.0</span>
+        </button>
+        <button class="btn btn-sm" id="navBtnAll" onclick="switchMainView(currentMainView === 'all' ? 'jar' : 'all')" title="Chuyển chế độ xem gọn từng tab hoặc xem toàn bộ trang">
+          📋 Xem Toàn Bộ
+        </button>
+        <a href="/jar-studio.html" target="_blank" class="btn btn-sm btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none; font-weight: 700; text-decoration: none;">
+          🎨 Studio Chỉnh Hũ
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MAIN RESPONSIVE CONTAINER -->
+  <div class="container">
+    <!-- CỘT CHÍNH: BẢNG CẤU HÌNH QUY TẮC -->
+    <div>
+      <!-- OBS Link Banner Hỗ trợ cả Video Effects & Physics Jar -->
+      <div class="obs-link-box" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 700;">1. LINK OBS VIDEO HIỆU ỨNG (OVERLAY):</div>
+            <code id="obsUrlDisplay">http://localhost:3000/overlay.html</code>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <a href="/overlay.html" target="_blank" class="btn btn-sm">👁️ Xem Trước</a>
+            <button class="btn btn-primary btn-sm" onclick="copyObsUrl()">📋 Sao chép Link</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px dashed #253957; padding-top: 8px;">
+          <div>
+            <div style="font-size: 0.78rem; color: #fbbf24; font-weight: 700;">2. LINK OBS HŨ QUÀ RƠI VẬT LÝ (PHYSICS JAR):</div>
+            <code id="obsJarUrlDisplay" style="color: #fbbf24;">http://localhost:3000/jar.html</code>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <a href="/jar.html" target="_blank" class="btn btn-sm btn-warning" style="color: #000; font-weight: 700;">🏺 Xem Hũ Quà</a>
+            <button class="btn btn-sm btn-warning" style="color: #000; font-weight: 700;" onclick="copyJarObsUrl()">📋 Sao chép Link Hũ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Hũ Quà Rơi Vật Lý TikTok (Interactive Physics Jar) -->
+      <div class="card jar-card" id="jarSection">
+        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.25rem;">🏺</span>
+            <span style="color: #fbbf24; font-weight: 800;">Hũ Quà Rơi Vật Lý TikTok Pro</span>
+            <span class="brand-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;">Matter.js 60fps</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #f8fafc; cursor: pointer; margin-right: 4px;">
+              <input type="checkbox" id="jarMasterEnabled" checked onchange="toggleJarMasterEnabled(this.checked)" style="width: 18px; height: 18px; accent-color: #f59e0b;">
+              Bật Hũ Quà
+            </label>
+            <a href="/jar.html" target="_blank" class="btn btn-sm btn-warning" style="color: #000; font-weight: 700; text-decoration: none;">
+              🔗 Mở Hũ OBS
+            </a>
+            <button class="btn btn-sm" onclick="copyJarObsUrl()">📋 Copy Link</button>
+            <a href="/jar-studio.html" target="_blank" class="btn btn-sm btn-primary" style="background: #8b5cf6; border-color: #7c3aed; font-weight: 700; text-decoration: none;">
+              🎨 Studio Chỉnh Hũ
+            </a>
+            <a href="/uploads/decor/jar_template_guide.svg" download="jar_template_guide.svg" class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fbbf24; text-decoration: none;" title="Tải khung mẫu chuẩn để render hũ bằng AI">
+              📥 Khung Hũ AI
+            </a>
+          </div>
+        </div>
+
+        <!-- TABS ĐIỀU KHIỂN HŨ -->
+        <div style="display: flex; gap: 6px; background: #090f1d; padding: 4px; border-radius: 8px; border: 1px solid #1e293b; margin-top: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+          <button class="jar-tab-btn active" id="tabBtnJarActions" onclick="switchJarTab('actions')">⚡ Thao Tác & Bắn Test</button>
+          <button class="jar-tab-btn" id="tabBtnJarPosition" onclick="switchJarTab('position')">📍 Vị Trí & Chế Độ Rơi</button>
+          <button class="jar-tab-btn" id="tabBtnJarSizes" onclick="switchJarTab('sizes')">📏 Kích Cỡ Quà (Realtime)</button>
+          <button class="jar-tab-btn" id="tabBtnJarStyles" onclick="switchJarTab('styles')">🎨 Kiểu Dáng & Mẫu Hũ</button>
+          <button class="jar-tab-btn" id="tabBtnJarSettings" onclick="switchJarTab('settings')">⚙️ Rung Lắc & Mục Tiêu</button>
+        </div>
+
+        <!-- TAB 1: THAO TÁC KỊCH TÍNH & BẮN QUÀ TEST -->
+        <div id="jarTabActions">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; margin-bottom: 6px;">
+            💥 1. Kích hoạt hiệu ứng kịch tính tức thì:
+          </div>
+          <div class="jar-actions-grid">
+            <button class="jar-action-btn jar-btn-shake" onclick="triggerJarAction('shake', 1.0)">
+              📳 Rung Lắc Hũ
+            </button>
+            <button class="jar-action-btn jar-btn-crack" onclick="triggerJarAction('crack', 1.0)">
+              ⚡ Làm Nứt Hũ
+            </button>
+            <button class="jar-action-btn jar-btn-flip" onclick="triggerJarAction('flip', 1.0)">
+              🔄 Lật Đổ Hũ (Xả Quà)
+            </button>
+            <button class="jar-action-btn jar-btn-burst" onclick="triggerJarAction('burst', 1.0)">
+              🎆 Nổ Tung Hũ
+            </button>
+            <button class="jar-action-btn jar-btn-clear" onclick="triggerJarAction('clear', 1.0)">
+              🧹 Dọn Sạch
+            </button>
+            <button class="jar-action-btn jar-btn-reset" onclick="triggerJarAction('reset', 1.0)">
+              🔄 Reset Mục Tiêu
+            </button>
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-top: 16px; margin-bottom: 6px;">
+            🎯 2. Bắn test quà rơi vào hũ (Physics Drop):
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-sm" style="background: #1e293b; border-color: #f43f5e; color: #fda4af;" onclick="quickDropGift('Hoa Hồng', 1, 10)">
+              🌹 10x Hoa Hồng
+            </button>
+            <button class="btn btn-sm" style="background: #1e293b; border-color: #f43f5e; color: #f43f5e; font-weight: 800;" onclick="quickDropGift('Hoa Hồng', 1, 50)">
+              🌹 50x Mưa Hoa Hồng (Tràn Hũ)
+            </button>
+            <button class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fde68a;" onclick="quickDropGift('Bánh Vòng', 30, 1)">
+              🍩 1x Bánh Vòng (30 xu)
+            </button>
+            <button class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fbbf24; font-weight: 800;" onclick="quickDropGift('Sư Tử', 29999, 1)">
+              🦁 1x Sư Tử VIP (29,999 xu)
+            </button>
+            <button class="btn btn-sm" style="background: #1e293b; border-color: #8b5cf6; color: #c4b5fd; font-weight: 800;" onclick="quickDropGift('Vũ Trụ TikTok', 44999, 1)">
+              🌌 1x Vũ Trụ TikTok
+            </button>
+          </div>
+
+          <!-- Bắn quà tuỳ chọn từ 763 quà -->
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px; background: #090f1d; padding: 10px; border-radius: 8px; border: 1px solid #1e293b; flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 180px;">
+              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Tên quà tuỳ chọn:</span>
+              <select id="jarCustomGiftSelect" style="width: 100%; font-size: 0.85rem;" onchange="onJarGiftSelectChange(this.value)">
+                <!-- Nạp danh mục quà -->
+              </select>
+            </div>
+            <div style="width: 80px;">
+              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Số lượng:</span>
+              <input type="number" id="jarCustomGiftCount" value="5" min="1" max="50" style="width: 100%; font-size: 0.85rem; font-weight: 700;">
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Người gửi:</span>
+              <input type="text" id="jarCustomDonorName" value="Đại Gia Elden" style="width: 100%; font-size: 0.85rem;">
+            </div>
+            <div style="padding-top: 16px;">
+              <button class="btn btn-primary" onclick="dropCustomJarGift()" style="height: 38px;">
+                🚀 Bắn Rơi Vào Hũ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: VỊ TRÍ HŨ & CHẾ ĐỘ RƠI QUÀ -->
+        <div id="jarTabPosition" style="display: none;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; margin-bottom: 6px;">
+            📍 1. Vị Trí Nhanh Của Hũ Trong Khung Hình (1-Click Presets):
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+            <button class="btn btn-sm" onclick="setJarPositionPreset(50, 82, 1.0)">📍 Dưới Chính Giữa (Chuẩn Streamer)</button>
+            <button class="btn btn-sm" onclick="setJarPositionPreset(80, 82, 0.95)">📍 Dưới Góc Phải (Bên Cạnh Idol)</button>
+            <button class="btn btn-sm" onclick="setJarPositionPreset(20, 82, 0.95)">📍 Dưới Góc Trái</button>
+            <button class="btn btn-sm" onclick="setJarPositionPreset(50, 55, 1.05)">📍 Giữa Màn Hình (Tâm Điểm)</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #090f1d; padding: 14px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 16px;">
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">↔️ Vị Trí Ngang (Trái - Phải): <b id="labelJarPosX" style="color: #38bdf8;">50%</b></span>
+              <input type="range" id="jarPosXSlider" min="10" max="90" step="1" value="50" style="width: 100%; margin-top: 6px;" oninput="updateJarPosField('jarPosX', this.value)">
+            </div>
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">↕️ Vị Trí Dọc (Trên - Dưới): <b id="labelJarPosY" style="color: #38bdf8;">82%</b></span>
+              <input type="range" id="jarPosYSlider" min="20" max="95" step="1" value="82" style="width: 100%; margin-top: 6px;" oninput="updateJarPosField('jarPosY', this.value)">
+            </div>
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">🔍 Kích Thước Hũ (Scale): <b id="labelJarScale" style="color: #fbbf24;">100%</b></span>
+              <input type="range" id="jarScaleSlider" min="0.6" max="1.4" step="0.05" value="1.0" style="width: 100%; margin-top: 6px;" oninput="updateJarPosField('jarScale', this.value)">
+            </div>
+          </div>
+
+          <!-- CHẾ ĐỘ RƠI QUÀ (DROP MODE) -->
+          <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px;">
+            ⬇️ 2. Chế Độ Rơi Quà (Drop Mode):
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 14px;">
+            <div class="jar-style-card active" id="dropModeStraight" onclick="setDropMode('straight')">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">⬇️</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Rơi Thẳng Lần Lượt (Khuyên Dùng)</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Rơi tuần tự từng món quà thẳng trục vào miệng hũ, không tung toé văng ngang</div>
+            </div>
+            <div class="jar-style-card" id="dropModeShower" onclick="setDropMode('shower')">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">🌧️</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Mưa Quà Tản Nhẹ</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Mưa quà rơi tản nhẹ theo chiều rộng miệng hũ</div>
+            </div>
+          </div>
+
+          <!-- TỐC ĐỘ RƠI & TRỌNG LỰC -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #090f1d; padding: 14px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 16px;">
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">⚡ Tốc Độ Rơi Quà: <b id="labelFallSpeed" style="color: #fbbf24;">1.0x</b></span>
+              <input type="range" id="jarFallSpeedSlider" min="0.5" max="2.5" step="0.1" value="1.0" style="width: 100%; margin-top: 6px;" oninput="updateFallSpeed(this.value)">
+            </div>
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">🌍 Trọng Lực Rơi (Gravity): <b id="labelGravity" style="color: #38bdf8;">1.0</b></span>
+              <input type="range" id="jarGravitySlider" min="0.5" max="2.0" step="0.1" value="1.0" style="width: 100%; margin-top: 6px;" oninput="updateGravity(this.value)">
+            </div>
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 6px;">
+            🌧️ 3. Điểm Xuất Phát Rơi Quà (Drop Origin):
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px;">
+            <div class="jar-style-card active" id="dropOriginTop" onclick="setDropOrigin('top')">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">☁️</div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Từ Trên Cùng Màn Hình</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Rơi mưa quà từ đỉnh cao nhất xuống</div>
+            </div>
+            <div class="jar-style-card" id="dropOriginMiddle" onclick="setDropOrigin('middle')">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">👤</div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Từ Giữa Màn Hình</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Ngang ngực / khuôn mặt Streamer</div>
+            </div>
+            <div class="jar-style-card" id="dropOriginMouth" onclick="setDropOrigin('mouth')">
+              <div style="font-size: 1.8rem; margin-bottom: 4px;">🏺</div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Ngay Sát Miệng Hũ</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Rơi nhẹ nhàng lọt ngay vào hũ</div>
+            </div>
+          </div>
+
+          <!-- HIỆU ỨNG TRÀN HŨ RƠI XUỐNG ĐẤT CHỒNG CHẤT -->
+          <div style="background: #090f1d; padding: 14px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; color: #fbbf24; cursor: pointer;">
+                <input type="checkbox" id="jarFloorAccCheck" checked onchange="saveJarSettingsField('enableFloorAccumulation', this.checked)">
+                🧱 Bật Hiệu Ứng Tràn Hũ Rơi Xuống Đất Chồng Chất
+              </label>
+              <span style="font-size: 0.74rem; color: #94a3b8;">Sức chứa: <b id="labelGiftCapacity" style="color: #38bdf8;">600 quà</b></span>
+            </div>
+            <p style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">
+              Khi quà đầy tràn khỏi miệng hũ hoặc rơi chệch mép ngoài, các món quà sẽ rớt xuống sàn đáy màn hình và chất đống xếp lớp cao dần lên 2 bên hũ giống hệt live stream TikTok thực tế!
+            </p>
+            <input type="range" id="jarGiftCapacitySlider" min="150" max="1000" step="50" value="600" style="width: 100%;" oninput="updateGiftCapacity(this.value)">
+          </div>
+        </div>
+
+        <!-- TAB 3: KÍCH CỠ QUÀ TẶNG REALTIME (DÀNH CHO QUÀ ĐÃ RƠI VÀ MỚI) -->
+        <div id="jarTabSizes" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; text-transform: uppercase;">
+              📏 Cài Đặt Kích Cỡ Quà (Tự Động Co Giãn Cả Quà Đã Rơi Trong Hũ):
+            </div>
+            <div style="font-size: 0.74rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8; padding: 3px 8px; border-radius: 6px;">
+              ⚡ Cập nhật vật lý tức thì 60fps
+            </div>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1px dashed #38bdf8; padding: 10px; border-radius: 8px; margin-bottom: 14px; font-size: 0.76rem; color: #cbd5e1;">
+            💡 <b>Mẹo cực đỉnh:</b> Kéo các thanh trượt bên dưới, toàn bộ hoa hồng và quà tặng <b>ĐÃ RƠI NẰM TRONG HŨ</b> và trên sàn sẽ co giãn kích thước to nhỏ ngay lập tức mà không cần xoá hũ làm lại!
+          </div>
+
+          <!-- TỈ LỆ TỔNG THỂ GLOBAL -->
+          <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">🌐 Tỉ Lệ Toàn Bộ Quà (Global Multiplier):</span>
+              <b id="labelGiftScaleGlobal" style="color: #fbbf24; font-size: 0.9rem;">100%</b>
+            </div>
+            <input type="range" id="jarGiftScaleGlobalSlider" min="0.5" max="2.0" step="0.05" value="1.0" style="width: 100%; margin-top: 8px;" oninput="updateGiftScaleGlobal(this.value)">
+          </div>
+
+          <!-- CÁC NHÓM QUÀ CỤ THỂ -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+            <!-- Nhóm 1: Quà nhỏ 1-9 xu -->
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: #f43f5e;">🌹 Quà Nhỏ (1 - 9 xu):</span>
+                <b id="labelGiftSizeSmall" style="color: #fda4af;">15px</b>
+              </div>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Hoa Hồng, Nốt Nhạc, Kẹo Mút...</div>
+              <input type="range" id="jarGiftSizeSmallSlider" min="10" max="28" step="1" value="15" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Small', this.value)">
+            </div>
+
+            <!-- Nhóm 2: Quà vừa 10-99 xu -->
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: #f59e0b;">🍩 Quà Vừa (10 - 99 xu):</span>
+                <b id="labelGiftSizeMedium" style="color: #fde68a;">24px</b>
+              </div>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Bánh Vòng, Trái Tim, Kính Râm...</div>
+              <input type="range" id="jarGiftSizeMediumSlider" min="16" max="38" step="1" value="24" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Medium', this.value)">
+            </div>
+
+            <!-- Nhóm 3: Quà lớn 100-999 xu -->
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: #8b5cf6;">🚀 Quà Lớn (100 - 999 xu):</span>
+                <b id="labelGiftSizeLarge" style="color: #c4b5fd;">35px</b>
+              </div>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Pháo Hoa, Xe Hơi, Vương Miện...</div>
+              <input type="range" id="jarGiftSizeLargeSlider" min="24" max="52" step="1" value="35" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Large', this.value)">
+            </div>
+
+            <!-- Nhóm 4: Quà VIP >= 1000 xu -->
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: #ef4444;">🦁 Quà VIP (>= 1,000 xu):</span>
+                <b id="labelGiftSizeVIP" style="color: #fca5a5;">52px</b>
+              </div>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Sư Tử, Thiên Nga, Vũ Trụ TikTok...</div>
+              <input type="range" id="jarGiftSizeVIPSlider" min="36" max="75" step="1" value="52" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('VIP', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: KIỂU DÁNG & DECOR XOÁ PHÔNG -->
+        <div id="jarTabStyles" style="display: none;">
+          <!-- BANNER STUDIO CHUYÊN NGHIỆP -->
+          <div style="display: flex; gap: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.18)); border: 1px solid rgba(139, 92, 246, 0.5); padding: 14px 18px; border-radius: 10px; margin-bottom: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>🎨 Elden Jar Studio Pro</span>
+                <span class="brand-badge" style="background: #8b5cf6;">Mới Nâng Cấp</span>
+              </div>
+              <div style="font-size: 0.74rem; color: #cbd5e1; margin-top: 3px;">
+                Chuyển trọn vẹn vào Studio để thiết kế hũ riêng, dán sticker Amy Nọng / nơ 20/10 / búp bê, nới rộng lề không bị cắt phụ kiện, xoá phông chroma key và quản lý thư viện mẫu đã lưu.
+              </div>
+            </div>
+            <a href="/jar-studio.html" target="_blank" class="btn btn-primary" style="text-decoration: none; font-weight: 800; white-space: nowrap;">
+              🚀 Mở Studio Thiết Kế Hũ →
+            </a>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #fbbf24; text-transform: uppercase;">
+              🏺 Chọn Kiểu Dáng Hũ (Hỗ trợ Khổ Dọc & Khổ Ngang):
+            </div>
+            <div>
+              <input type="file" id="jarSkinFileInput" accept="image/png,image/webp,image/svg+xml,image/jpeg" style="display: none;" onchange="uploadJarSkinFile(this)">
+              <button class="btn btn-sm btn-primary" onclick="document.getElementById('jarSkinFileInput').click()">
+                🖼️ Tải Lên Mẫu Hũ Mới (PNG/WebP)
+              </button>
+            </div>
+          </div>
+
+          <div style="background: #090f1d; padding: 10px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; color: #38bdf8; cursor: pointer;">
+              <input type="checkbox" id="jarHideDefaultJarCheck" checked onchange="saveJarSettingsField('hideDefaultJarOnCustom', this.checked)">
+              ✨ Ẩn hũ vector mặc định khi sử dụng mẫu hũ ảnh riêng (Tránh trùng / đè nét)
+            </label>
+          </div>
+
+          <div class="jar-style-grid">
+            <div class="jar-style-card active" id="styleCardMason" onclick="setJarStyle('mason')">
+              <div class="jar-style-icon">🏺</div>
+              <div class="jar-style-name">Hũ Thủy Tinh Pha Lê (Dọc 4:5)</div>
+              <div class="jar-style-desc">Bo góc tròn mềm mại, chuẩn tỷ lệ TikTok Live</div>
+            </div>
+            <div class="jar-style-card" id="styleCardDiamond" onclick="setJarStyle('diamond')">
+              <div class="jar-style-icon">💎</div>
+              <div class="jar-style-name">Crystal Diamond</div>
+              <div class="jar-style-desc">Pha lê kim cương đa giác, lấp lánh tím</div>
+            </div>
+            <div class="jar-style-card" id="styleCardFishbowl" onclick="setJarStyle('fishbowl')">
+              <div class="jar-style-icon">🔮</div>
+              <div class="jar-style-name">Round Fishbowl</div>
+              <div class="jar-style-desc">Bình tròn thuỷ tinh bầu rộng, sức chứa lớn</div>
+            </div>
+            <div class="jar-style-card" id="styleCardChest" onclick="setJarStyle('chest')">
+              <div class="jar-style-icon">👑</div>
+              <div class="jar-style-name">Treasure Chest</div>
+              <div class="jar-style-desc">Rương vàng hoàng gia quý tộc</div>
+            </div>
+            
+            <div class="jar-style-card" id="styleCardOceanWide" onclick="setJarStyleCustom('/uploads/decor/hu-qua-ngang-glass.svg', 'horizontal')">
+              <div class="jar-style-icon">🌊</div>
+              <div class="jar-style-name">Bể Hũ Ngang Pha Lê</div>
+              <div class="jar-style-desc">Khổ rộng 4:3, miệng hũ rộng không che Idol</div>
+            </div>
+            <div class="jar-style-card" id="styleCardCustom" onclick="document.getElementById('jarSkinFileInput').click()">
+              <div class="jar-style-icon">🖼️</div>
+              <div class="jar-style-name">Hũ Từ Ảnh Của Bạn</div>
+              <div class="jar-style-desc">Bấm để tải ảnh bình hũ tuỳ ý</div>
+            </div>
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-top: 18px; margin-bottom: 6px;">
+            ✨ Hình Ảnh Decor Xoá Phông PNG Dán Lên Hũ:
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+            <div id="decorThumbsList" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <!-- Nạp danh sách ảnh decor -->
+            </div>
+            <div>
+              <input type="file" id="decorFileInput" accept="image/png,image/svg+xml,image/webp,image/jpeg" style="display: none;" onchange="uploadDecorFile(this)">
+              <button class="btn btn-sm btn-primary" onclick="document.getElementById('decorFileInput').click()">
+                📤 Tải Ảnh PNG Mới (Xoá Phông)
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">Vị trí dán decor:</span>
+              <select id="jarDecorPosSelect" style="width: 100%; margin-top: 4px;" onchange="updateJarDecorPos(this.value)">
+                <option value="center">Giữa Thân Hũ (Center)</option>
+                <option value="top">Phía Trên / Gần Cổ (Top)</option>
+                <option value="bottom">Dưới Đáy Hũ (Bottom)</option>
+                <option value="neck">Ngay Cổ Hũ (Neck)</option>
+              </select>
+            </div>
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">Kích thước Decor: <span id="labelDecorScale">100%</span></span>
+              <input type="range" id="jarDecorScaleSlider" min="0.5" max="1.6" step="0.05" value="1.0" style="width: 100%; margin-top: 8px;" oninput="updateJarDecorScale(this.value)">
+            </div>
+            <div>
+              <span style="font-size: 0.76rem; color: #94a3b8;">Độ mờ / Trong suốt: <span id="labelDecorOpacity">95%</span></span>
+              <input type="range" id="jarDecorOpacitySlider" min="0.2" max="1.0" step="0.05" value="0.95" style="width: 100%; margin-top: 8px;" oninput="updateJarDecorOpacity(this.value)">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: MỤC TIÊU & ÂM THANH & RUNG LẮC -->
+        <div id="jarTabSettings" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #fbbf24; margin-bottom: 8px;">🎯 Cấu hình Mục Tiêu Xu:</div>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #f8fafc; margin-bottom: 10px; cursor: pointer;">
+                <input type="checkbox" id="jarGoalEnabled" checked onchange="saveJarSettingsField('goalEnabled', this.checked)">
+                Hiển thị thanh Mục Tiêu Xu (HUD)
+              </label>
+
+              <div style="margin-bottom: 10px;">
+                <span style="font-size: 0.76rem; color: #94a3b8;">Mục tiêu xu đầy hũ:</span>
+                <input type="number" id="jarGoalTargetInput" value="500" min="50" step="50" style="width: 100%; font-weight: 700; color: #fbbf24;" onchange="saveJarSettingsField('goalTargetCoins', Number(this.value))">
+              </div>
+
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #f8fafc; cursor: pointer;">
+                <input type="checkbox" id="jarAutoBurstCheck" checked onchange="saveJarSettingsField('autoBurstOnGoal', this.checked)">
+                Tự động Nổ Tung hũ khi đạt 100% mục tiêu
+              </label>
+            </div>
+
+            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">🔊 Âm Thanh & Rung Lắc Kịch Tính:</div>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #f8fafc; margin-bottom: 10px; cursor: pointer;">
+                <input type="checkbox" id="jarSoundEnabled" checked onchange="saveJarSettingsField('soundEnabled', this.checked)">
+                Bật âm thanh vật lý chân thực (Web Audio API)
+              </label>
+
+              <div style="margin-bottom: 10px;">
+                <span style="font-size: 0.76rem; color: #94a3b8;">Âm lượng âm thanh: <span id="labelSoundVol">70%</span></span>
+                <input type="range" id="jarSoundVolSlider" min="0.1" max="1.0" step="0.05" value="0.7" style="width: 100%; margin-top: 6px;" oninput="updateJarSoundVol(this.value)">
+              </div>
+
+              <div>
+                <span style="font-size: 0.76rem; color: #94a3b8;">📳 Rung lắc hũ khi quà từ (kim cương / xu):</span>
+                <input type="number" id="jarShakeThresholdInput" value="50" min="1" style="width: 100%; font-weight: 700; color: #38bdf8; margin-top: 4px;" onchange="saveJarSettingsField('shakeThreshold', Number(this.value))">
+                <span style="font-size: 0.7rem; color: #64748b; margin-top: 2px; display: block;">Quà lớn hơn mốc này sẽ kích hoạt rung lắc kịch tính!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rulesSection">
+      <!-- Card 1: Kết Nối TikTok Live -->
+      <div class="card">
+        <div class="card-title">1. Kết Nối Kênh TikTok Live</div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="tiktokUsernameInput" value="eldenmedia" placeholder="Nhập ID kênh TikTok (vd: eldenmedia hoặc @id)" style="flex: 1; min-width: 220px;">
+          <button class="btn btn-primary" id="btnConnect" onclick="toggleConnect()">Kết Nối</button>
+        </div>
+        <div id="liveInfoMsg" style="font-size: 0.82rem; color: #94a3b8; margin-top: 8px;">
+          Gõ ID kênh TikTok đang phát Live. Trạng thái kết nối sẽ được cập nhật tức thì không cần tải lại trang.
+        </div>
+
+        <!-- CÀI ĐẶT NÂNG CAO CHO EULERSTREAM & TIKTOK SESSION -->
+        <details id="advancedConnDetails" style="margin-top: 12px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 14px;">
+          <summary style="font-size: 0.85rem; font-weight: 600; color: #94a3b8; cursor: pointer; user-select: none;">
+            ⚙️ Cài đặt kết nối nâng cao (EulerStream API Key / Session ID)
+          </summary>
+          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;">
+            <div style="color: #94a3b8; line-height: 1.45;">
+              <span style="color: #f59e0b; font-weight: 600;">Lưu ý về lỗi EulerStream:</span> Nếu TikTok hoặc Euler báo lỗi <i>Failed to sign a request: This endpoint requires a Business plan</i>, do EulerStream hạn chế gói ký miễn phí. Bạn có thể:
+              <br>• Đăng ký API Key miễn phí tại <a href="https://www.eulerstream.com" target="_blank" style="color: #38bdf8; text-decoration: underline;">eulerstream.com</a> rồi nhập vào ô dưới.
+              <br>• Hoặc dán mã Cookie <code>sessionid</code> của bạn (lấy từ F12 TikTok Web) để kết nối trực tiếp không qua Euler.
+              <br>• Hoặc chuyển sang tab <b>🎮 Bắn Test & Giả Lập</b> trên menu để test đầy đủ hiệu ứng ngay lập tức!
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+              <div>
+                <label style="display:block; margin-bottom: 4px; color: #cbd5e1; font-weight: 500;">EulerStream API Key (Tùy chọn)</label>
+                <input type="text" id="eulerApiKeyInput" placeholder="VD: eul_live_xxxx" style="width: 100%; font-size: 0.82rem; padding: 6px 10px; background: #0b1120; border: 1px solid #334155; border-radius: 6px; color: #fff;">
+              </div>
+              <div>
+                <label style="display:block; margin-bottom: 4px; color: #cbd5e1; font-weight: 500;">TikTok Session ID (cookie sessionid)</label>
+                <input type="password" id="tiktokSessionIdInput" placeholder="Dán cookie sessionid vào đây..." style="width: 100%; font-size: 0.82rem; padding: 6px 10px; background: #0b1120; border: 1px solid #334155; border-radius: 6px; color: #fff;">
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+              <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 14px;" onclick="saveTikTokSettings()">💾 Lưu Cài Đặt</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Card 2: Danh sách Quy tắc & Tỉ Lệ -->
+      <div class="card">
+        <div class="card-title">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span>2. Danh Sách Hiệu Ứng & Tỉ Lệ Quà</span>
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" id="btnViewTable" onclick="switchView('table')">📋 Bảng GGTT (Chuẩn)</button>
+              <button class="view-toggle-btn" id="btnViewCard" onclick="switchView('card')">🗂️ Thẻ Chi Tiết</button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary btn-sm" onclick="addNewRule()">+ Thêm Hàng Mới</button>
+          </div>
+        </div>
+
+        <!-- BẢNG GGTT CHUẨN (RESPONSIVE TABLE VIEW) -->
+        <div id="viewTableWrapper" class="ggtt-table-wrapper">
+          <table class="ggtt-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;">On/Off</th>
+                <th style="min-width: 140px;">Tên</th>
+                <th style="width: 160px;">Loại</th>
+                <th style="min-width: 220px;">Mốc / Quà / Lệnh</th>
+                <th style="min-width: 150px;">Tỉ Lệ Nổ (%)</th>
+                <th style="min-width: 320px;">Video / Audio</th>
+                <th style="width: 50px; text-align: center;">✕</th>
+              </tr>
+            </thead>
+            <tbody id="rulesTableBody">
+              <!-- Render động danh sách rules -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- THẺ CHI TIẾT (CARD VIEW) -->
+        <div id="viewCardWrapper" style="display: none;">
+          <div id="rulesContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+      <!-- CỘT PHỤ (BÊN DƯỚI NẾU MÀN HÌNH NHỎ): TEST QUÀ & NHẬT KÝ -->
+    <div class="side-widgets-grid">
+      <div id="simSection">
+        <!-- Card Giả Lập Test Quà Thông Minh -->
+        <div class="card">
+        <div class="card-title">
+          <span>🎮 Giả Lập Test Quà (Không cần Live)</span>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">
+            Chọn quà muốn bắn test:
+          </label>
+          <div style="display: flex; gap: 6px;">
+            <select id="simGiftDropdown" style="flex: 1;" onchange="onSimDropdownChange(this.value)">
+              <!-- Nạp danh mục quà -->
+            </select>
+            <button class="btn btn-sm" title="Tìm quà theo tên hoặc số xu" onclick="openGiftPickerForSimulator()">🔍 Tìm</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px;">
+          <div style="flex: 1;">
+            <span style="font-size: 0.76rem; color: #94a3b8;">Số xu tương ứng:</span>
+            <input type="number" id="simCoinsInput" value="30" min="1" style="width: 100%; font-weight: 700; color: #38bdf8;">
+          </div>
+          <div style="flex: 1;">
+            <span style="font-size: 0.76rem; color: #94a3b8;">Số lượng:</span>
+            <input type="number" id="simCountInput" value="1" min="1" style="width: 100%; font-weight: 700;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; font-weight: 800; padding: 10px;" onclick="executeSimulateGift()">
+          🚀 Bắn Test Quà Này Ngay
+        </button>
+
+        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.75rem; color: #64748b; font-weight: 700;">Test Nhanh:</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-sm" style="flex: 1;" onclick="quickSimulate('Bánh Vòng', 30)">🍩 Bánh Vòng (30 xu)</button>
+            <button class="btn btn-sm" style="flex: 1;" onclick="quickSimulate('Hoa Hồng', 1)">🌹 Hoa Hồng (1 xu)</button>
+            <button class="btn btn-sm" style="flex: 1;" onclick="quickSimulate('Sư Tử', 29999)">🦁 Sư Tử (VIP)</button>
+          </div>
+        </div>
+      </div>
+
+      </div>
+
+      <div id="logsSection">
+        <!-- Card Nhật Ký Hoạt Động Realtime -->
+        <div class="card">
+        <div class="card-title">
+          <span>📜 Nhật Ký Hoạt Động</span>
+          <button class="btn btn-sm" onclick="clearLogs()">Xóa</button>
+        </div>
+        <div class="log-box" id="logBox">
+          <div class="log-entry">Hệ thống sẵn sàng. Chờ sự kiện...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+      <!-- TAB KHO VIDEO INLINE -->
+      <div id="mediaSectionInline" style="display: none;">
+        <div class="card">
+          <div class="card-title">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span>📁 Kho Video & Phương Tiện Hệ Thống</span>
+              <span class="brand-badge" id="mediaTotalInlineBadge">0 Video</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="file" id="mediaDirectUploadInline" accept="video/*" style="display: none;" onchange="handleDirectUpload(this)">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('mediaDirectUploadInline').click()">📤 Tải Video Mới</button>
+              <button class="btn btn-sm" onclick="fetchVideos()">🔄 Làm Mới</button>
+            </div>
+          </div>
+          <div id="mediaFilesListInline" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+            <!-- Render video inline -->
+          </div>
+        </div>
+      </div>
+
+  <!-- FIXED FOOTER -->
+  <div class="footer-bar">
+    <div style="font-size: 0.85rem; color: #94a3b8;">
+      ⚡ Tự động lưu & đồng bộ OBS ngay khi bạn thay đổi bất kỳ trường nào.
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span id="footerSaveStatus" style="font-size: 0.85rem; color: #10b981; font-weight: 700;">✓ Đồng bộ hoàn tất</span>
+      <button class="btn btn-success" onclick="saveAllRules(true)">💾 Lưu Tất Cả Cấu Hình</button>
+    </div>
+  </div>
+
+  <!-- MODAL 1: BỘ TÌM KIẾM QUÀ TẶNG THEO TÊN HOẶC SỐ XU (SEARCHABLE GIFT PICKER) -->
+  <div class="modal-backdrop" id="giftPickerModal" onclick="closeGiftPicker(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="card-title" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span>🎁 Chọn Quà Tặng (Kèm Icon Ảnh TikTok Thực Tế)</span>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-sm btn-primary" onclick="refreshGiftsFromTikTok()" title="Tải icon mới nhất từ phòng live TikTok">🔄 Tải Icon TikTok</button>
+          <button class="btn btn-sm" onclick="closeGiftPickerDirect()">✕ Đóng</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="giftSearchInput" placeholder="🔍 Gõ tên quà (vd: Bánh Vòng) HOẶC gõ số xu (vd: 30, 99, 100, 1000)..." style="width: 100%; font-size: 0.95rem; padding: 10px 14px;" oninput="filterGiftPicker()">
+      </div>
+
+      <!-- Filter chips -->
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;">
+        <button class="chip-filter active" id="chipAll" onclick="setGiftCategoryFilter('all')">Tất cả</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('1')">1 xu</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('low')">2 - 9 xu</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('popular')">30 xu (Bánh Vòng)</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('high')">99 - 198 xu</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('vip')">199 - 499 xu</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('super')">500+ xu</button>
+        <button class="chip-filter" onclick="setGiftCategoryFilter('ultra')">Đại Gia</button>
+      </div>
+
+      <!-- Grid danh sách quà -->
+      <div class="gift-search-grid" id="giftSearchGrid">
+        <!-- Render danh sách quà -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: QUẢN LÝ POOL VIDEO & TỰ ĐỘNG CHIA 100% (CHỈ 1 Ô NHẬP %) -->
+  <div class="modal-backdrop" id="poolModal" onclick="closePoolModal(event)">
+    <div class="modal-box modal-box-lg" onclick="event.stopPropagation()">
+      <div class="card-title" style="margin-bottom: 14px;">
+        <span id="poolModalTitle">🎲 Danh Sách Video & Tỉ Lệ Xuất Hiện (%)</span>
+        <button class="btn btn-sm" onclick="closePoolModalDirect()">Đóng (✓ Đã lưu)</button>
+      </div>
+
+      <!-- Visual segmented color bar -->
+      <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between;">
+        <span>Phân bổ tỉ lệ xuất hiện:</span>
+        <span id="poolTotalPctText" style="color: #38bdf8;">Tổng: 100%</span>
+      </div>
+      <div class="pool-visual-bar" id="poolVisualBar"></div>
+
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem; color: #bae6fd;">
+        💡 <b>Tự động cân bằng tỉ lệ:</b> Bạn chỉ cần nhập số <b>%</b> của một video, các video còn lại sẽ tự động tăng hoặc giảm chia đều để đảm bảo <b>tổng luôn bằng 100%</b>.
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+        <button class="btn btn-sm btn-primary" onclick="addVideoToActivePool()">+ Thêm Video Vào Danh Sách</button>
+        <div style="display: flex; gap: 6px;">
+          <input type="file" id="modalFileUpload" accept="video/*" style="display: none;" onchange="uploadToActivePool(this.files[0])">
+          <button class="btn btn-sm" onclick="document.getElementById('modalFileUpload').click()">📤 Tải Video Mới Lên</button>
+          <button class="btn btn-sm btn-success" onclick="distributeActivePoolEqually()">⚖️ Chia Đều 100%</button>
+        </div>
+      </div>
+
+      <div id="modalPoolList" style="display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto;">
+        <!-- Render danh sách video pool -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: KHO LƯU TRỮ PHƯƠNG TIỆN (MEDIA STORAGE MANAGER) -->
+  <div class="modal-backdrop" id="mediaManagerModal" onclick="closeMediaManager(event)">
+    <div class="modal-box modal-box-lg" onclick="event.stopPropagation()">
+      <div class="card-title" style="margin-bottom: 14px;">
+        <span>📁 Quản Lý Kho Lưu Trữ Phương Tiện</span>
+        <button class="btn btn-sm" onclick="closeMediaManagerDirect()">✕ Đóng</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: 0.85rem; color: #94a3b8;">
+          Tổng cộng: <b id="mediaTotalCount" style="color: #38bdf8;">0</b> video trong hệ thống
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input type="file" id="mediaDirectUpload" accept="video/*" style="display: none;" onchange="uploadNewMediaFile(this.files[0])">
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('mediaDirectUpload').click()">📤 Tải Video Mới Lên Kho</button>
+          <button class="btn btn-sm" onclick="fetchVideos()">🔄 Làm Mới</button>
+        </div>
+      </div>
+
+      <div id="mediaFilesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto;">
+        <!-- Render danh sách media files -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: XEM TRƯỚC VIDEO (PREVIEW MODAL) -->
+  <div class="modal-backdrop" id="previewModal" onclick="closePreview(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="card-title" style="margin-bottom: 10px;">
+        <span id="previewTitle">Xem Trước Video</span>
+        <button class="btn btn-sm" onclick="closePreviewDirect()">✕ Đóng</button>
+      </div>
+      <video id="previewPlayer" controls style="width: 100%; border-radius: 8px; background: #000; max-height: 70vh;"></video>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CẬP NHẬT ỨNG DỤNG (AUTO-UPDATE MODAL) -->
+  <div class="modal-backdrop" id="updateModal" onclick="closeUpdateModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 650px;">
+      <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">⚡</span>
+          <span style="font-weight: 800; color: #38bdf8;">Quản Lý Phiên Bản & Cập Nhật</span>
+          <span class="version-badge" id="modalCurrentVersionBadge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #0284c7; padding: 2px 8px; border-radius: 999px; font-size: 0.76rem; font-weight: 700;">v1.0.0</span>
+        </div>
+        <button class="btn btn-sm" onclick="closeUpdateModalDirect()">✕ Đóng</button>
+      </div>
+
+      <!-- Khung cam kết bảo vệ an toàn dữ liệu -->
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem; color: #a7f3d0; line-height: 1.45;">
+        🛡️ <b>Bảo Toàn Dữ Liệu 100%:</b> Quá trình cập nhật chỉ thay thế các tệp code/giao diện mới. Toàn bộ <b>Kho Video, Sticker hũ quà, Tỉ lệ xu và Cài đặt cá nhân</b> của bạn được bảo vệ nguyên vẹn và không bao giờ bị ghi đè!
+      </div>
+
+      <!-- TABS CẬP NHẬT -->
+      <div style="display: flex; gap: 6px; background: #090f1d; padding: 4px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 14px;">
+        <button class="jar-tab-btn active" id="tabBtnUpdatePatch" onclick="switchUpdateTab('patch')">
+          📦 Cập Nhật Bằng File Patch (.zip)
+        </button>
+        <button class="jar-tab-btn" id="tabBtnUpdateGitHub" onclick="switchUpdateTab('github')">
+          🌐 Cập Nhật Tự Động (GitHub Online)
+        </button>
+      </div>
+
+      <!-- TAB 1: CẬP NHẬT BẰNG FILE PATCH .ZIP (OFFLINE / KHÔNG CẦN GITHUB) -->
+      <div id="updateTabPatch">
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 10px;">
+          Kéo thả file cập nhật <code>.zip</code> nhận được từ lập trình viên vào khung bên dưới để nâng cấp app ngay tức thì:
+        </div>
+
+        <div id="patchDropzone" style="border: 2px dashed #0284c7; background: rgba(2, 132, 199, 0.05); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('patchFileInput').click()" ondragover="handlePatchDragOver(event)" ondragleave="handlePatchDragLeave(event)" ondrop="handlePatchDrop(event)">
+          <div style="font-size: 2.2rem; margin-bottom: 6px;">📥</div>
+          <div style="font-weight: 700; color: #f8fafc; font-size: 0.92rem;" id="patchFileLabel">Bấm để chọn file .zip hoặc kéo thả vào đây</div>
+          <div style="font-size: 0.76rem; color: #64748b; margin-top: 4px;">Hỗ trợ file patch nén (.zip) chứa code cập nhật mới</div>
+          <input type="file" id="patchFileInput" accept=".zip" style="display: none;" onchange="handlePatchFileSelected(this)">
+        </div>
+
+        <div id="patchProgressBox" style="display: none; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #94a3b8; margin-bottom: 4px;">
+            <span id="patchProgressText">Đang nâng cấp ứng dụng...</span>
+            <span id="patchProgressPercent">0%</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: #1e293b; border-radius: 999px; overflow: hidden;">
+            <div id="patchProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); transition: width 0.3s;"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+          <button class="btn btn-secondary" onclick="closeUpdateModalDirect()">Hủy</button>
+          <button class="btn btn-primary" id="btnApplyPatch" onclick="applyUploadedPatch()" disabled style="background: linear-gradient(135deg, #0284c7, #0ea5e9); font-weight: 700;">
+            🚀 Nâng Cấp Ngay
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 2: CẬP NHẬT TỰ ĐỘNG QUA GITHUB (ONLINE) -->
+      <div id="updateTabGitHub" style="display: none;">
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 10px;">
+          Tự động kiểm tra bản cập nhật mới nhất từ kho lưu trữ GitHub và nâng cấp với 1 click:
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="githubRepoInput" placeholder="Nhập tên Repo (vd: username/live-effect-studio)" style="flex: 1; font-size: 0.84rem; padding: 8px 12px; background: #0b1120; border: 1px solid #334155; border-radius: 6px; color: #fff;">
+          <button class="btn btn-secondary" onclick="saveGitHubRepoConfig()" title="Lưu tên Repo">💾 Lưu</button>
+          <button class="btn btn-primary" onclick="checkGitHubUpdate()" id="btnCheckGitHub">🔍 Kiểm Tra</button>
+        </div>
+
+        <!-- Kết quả kiểm tra GitHub -->
+        <div id="githubCheckResult" style="display: none; background: #090f1d; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; margin-top: 10px;">
+          <div id="githubStatusMsg" style="font-size: 0.84rem; font-weight: 700;"></div>
+          <div id="githubReleaseNotes" style="font-size: 0.78rem; color: #94a3b8; margin-top: 6px; max-height: 120px; overflow-y: auto; white-space: pre-wrap; background: #050914; padding: 8px; border-radius: 4px; display: none;"></div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <button class="btn btn-success" id="btnApplyGitHub" style="display: none; background: #059669; font-weight: 700;" onclick="applyGitHubUpdate()">
+              ⚡ Nâng Cấp Tự Động Lên Bản Này
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thanh trạng thái và nút khởi động lại ở đáy modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px; margin-top: 16px;">
+        <div style="font-size: 0.76rem; color: #64748b;">
+          Được vận hành bởi LiveEffect Studio Portable Engine
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="restartServerNow()" title="Khởi động lại Server để áp dụng toàn bộ thay đổi">
+          🔄 Khởi Động Lại Server
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- CHẾ ĐỘ XEM MODULE / TAB GIAO DIỆN (FRONTEND DESIGN REDESIGN) ---
+    let currentMainView = 'jar'; // 'jar' | 'rules' | 'sim' | 'media' | 'logs' | 'all'
+
+    function switchMainView(view) {
+      currentMainView = view;
+      localStorage.setItem('elden_admin_view', view);
+
+      const navTabs = ['jar', 'rules', 'sim', 'media', 'logs', 'all'];
+      navTabs.forEach(v => {
+        const btn = document.getElementById(`navBtn${v.charAt(0).toUpperCase() + v.slice(1)}`);
+        if (btn) btn.classList.toggle('active', v === view);
+      });
+
+      const secJar = document.getElementById('jarSection');
+      const secRules = document.getElementById('rulesSection');
+      const secSim = document.getElementById('simSection');
+      const secMedia = document.getElementById('mediaSectionInline');
+      const secLogs = document.getElementById('logsSection');
+
+      if (view === 'all') {
+        if (secJar) secJar.style.display = 'block';
+        if (secRules) secRules.style.display = 'block';
+        if (secSim) secSim.style.display = 'block';
+        if (secMedia) secMedia.style.display = 'none';
+        if (secLogs) secLogs.style.display = 'block';
+      } else {
+        if (secJar) secJar.style.display = view === 'jar' ? 'block' : 'none';
+        if (secRules) secRules.style.display = view === 'rules' ? 'block' : 'none';
+        if (secSim) secSim.style.display = view === 'sim' ? 'block' : 'none';
+        if (secMedia) secMedia.style.display = view === 'media' ? 'block' : 'none';
+        if (secLogs) secLogs.style.display = view === 'logs' ? 'block' : 'none';
+      }
+
+      if (view === 'media') {
+        fetchVideos();
+      }
+    }
+
+    // Toast Notification System
+    function showAppToast(icon, message, type = 'info') {
+      let toastContainer = document.getElementById('appToastContainer');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'appToastContainer';
+        toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;';
+        document.body.appendChild(toastContainer);
+      }
+
+      const toast = document.createElement('div');
+      toast.style.cssText = 'background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 10px; pointer-events: auto; transform: translateY(-20px); opacity: 0; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);';
+      if (type === 'success') toast.style.borderColor = '#10b981';
+      if (type === 'error') toast.style.borderColor = '#ef4444';
+      if (type === 'warning') toast.style.borderColor = '#f59e0b';
+
+      toast.innerHTML = `<span style="font-size: 1.1rem;">${icon}</span><span>${message}</span>`;
+      toastContainer.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+      });
+
+      setTimeout(() => {
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    const socket = io();
+    let currentRules = [];
+    let availableVideos = [];
+    let isConnectedLive = false;
+    let currentView = 'table';
+    let activeEditingRuleIdx = null; // index rule đang mở modal pool
+    let activeTargetForGiftPicker = null; // { type: 'rule', rIdx: 0 } hoặc { type: 'sim' }
+    let currentGiftCategoryFilter = 'all';
+
+    // Bảng màu rực rỡ phân biệt từng video trong pool %
+    const POOL_COLORS = [
+      '#0284c7', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6',
+      '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6'
+    ];
+
+    // Khởi tạo
+    async function init() {
+      await fetchVideos();
+      await fetchRules();
+      await checkLiveStatus();
+      try {
+        const gRes = await fetch('/api/tiktok/gifts');
+        const gData = await gRes.json();
+        if (gData.success && Array.isArray(gData.gifts) && gData.gifts.length > 0) {
+          TIKTOK_GIFTS_CATALOG.length = 0;
+          TIKTOK_GIFTS_CATALOG.push(...gData.gifts);
+        }
+      } catch (_) {}
+      setupSocket();
+      populateSimulatorDropdown();
+      filterGiftPicker();
+      initJarPanel();
+      await loadTikTokSettings();
+      await fetchAppVersion();
+      const savedView = localStorage.getItem('elden_admin_view') || 'jar';
+      switchMainView(savedView);
+    }
+
+    // Sao chép link OBS
+    function copyObsUrl() {
+      const url = `${location.origin}/overlay.html`;
+      navigator.clipboard.writeText(url);
+      alert('Đã sao chép link OBS vào bộ nhớ tạm:\n' + url);
+    }
+
+    // Tự động lưu cấu hình (Debounced Auto-save)
+    let autoSaveTimer = null;
+    async function triggerAutoSave() {
+      const statusEl = document.getElementById('footerSaveStatus');
+      const headerTag = document.getElementById('headerAutoSaveTag');
+      statusEl.innerText = 'Đang lưu...';
+      statusEl.style.color = '#f59e0b';
+      headerTag.innerText = 'Đang lưu...';
+      headerTag.style.color = '#f59e0b';
+
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/rules', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rules: currentRules })
+          });
+          const data = await res.json();
+          if (data.success) {
+            statusEl.innerText = '✓ Đã đồng bộ OBS';
+            statusEl.style.color = '#10b981';
+            headerTag.innerText = '✓ Đã đồng bộ OBS';
+            headerTag.style.color = '#10b981';
+          }
+        } catch (_) {}
+      }, 400);
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('btnViewTable').classList.toggle('active', view === 'table');
+      document.getElementById('btnViewCard').classList.toggle('active', view === 'card');
+      document.getElementById('viewTableWrapper').style.display = view === 'table' ? 'block' : 'none';
+      document.getElementById('viewCardWrapper').style.display = view === 'card' ? 'block' : 'none';
+      renderCurrentView();
+    }
+
+    function renderCurrentView() {
+      if (currentView === 'table') {
+        renderTableView();
+      } else {
+        renderCardView();
+      }
+    }
+
+    // Lấy danh sách video từ server
+    async function fetchVideos() {
+      try {
+        const res = await fetch('/api/videos');
+        const data = await res.json();
+        if (data.success) {
+          availableVideos = data.videos;
+          renderMediaManagerList();
+        }
+      } catch (e) { console.error('Lỗi lấy video:', e); }
+    }
+
+    // Lấy rules
+    async function fetchRules() {
+      try {
+        const res = await fetch('/api/rules');
+        const data = await res.json();
+        if (data.success) {
+          currentRules = data.rules;
+          renderCurrentView();
+          populateSimulatorDropdown();
+        }
+      } catch (e) { console.error('Lỗi lấy rules:', e); }
+    }
+
+    // Trạng thái live
+    async function checkLiveStatus() {
+      try {
+        const res = await fetch('/api/tiktok/status');
+        const data = await res.json();
+        updateLiveStatusUI(data);
+      } catch (_) {}
+    }
+
+    function updateLiveStatusUI(status) {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      const btn = document.getElementById('btnConnect');
+
+      dot.className = 'status-dot';
+      btn.disabled = false;
+
+      if (status.isConnected) {
+        dot.classList.add('live');
+        text.innerText = `Đang Live @${status.username} (${status.viewerCount || 0} người xem)`;
+        btn.innerText = 'Ngắt Kết Nối';
+        btn.className = 'btn btn-danger';
+        isConnectedLive = true;
+      } else if (status.isConnecting) {
+        dot.classList.add('connecting');
+        text.innerText = `Đang kết nối @${status.username}...`;
+        btn.innerText = 'Đang Vào...';
+        btn.className = 'btn btn-warning';
+        btn.disabled = true;
+      } else {
+        text.innerText = 'Chưa kết nối Live';
+        btn.innerText = 'Kết Nối';
+        btn.className = 'btn btn-primary';
+        isConnectedLive = false;
+      }
+    }
+
+    // CÀI ĐẶT KẾT NỐI TIKTOK NÂNG CAO
+    async function loadTikTokSettings() {
+      try {
+        const res = await fetch('/api/tiktok/settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          if (document.getElementById('eulerApiKeyInput')) {
+            document.getElementById('eulerApiKeyInput').value = data.settings.signApiKey || '';
+          }
+          if (document.getElementById('tiktokSessionIdInput')) {
+            document.getElementById('tiktokSessionIdInput').value = data.settings.sessionId || '';
+          }
+        }
+      } catch (_) {}
+    }
+
+    async function saveTikTokSettings() {
+      const signApiKey = document.getElementById('eulerApiKeyInput')?.value?.trim() || '';
+      const sessionId = document.getElementById('tiktokSessionIdInput')?.value?.trim() || '';
+      try {
+        const res = await fetch('/api/tiktok/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signApiKey, sessionId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showAppToast('success', 'Đã lưu cài đặt kết nối TikTok thành công!');
+        }
+      } catch (err) {
+        showAppToast('error', 'Lỗi lưu cài đặt: ' + err.message);
+      }
+    }
+
+    // NGẮT / KẾT NỐI TỨC THÌ (KHÔNG CẦN RELOAD TRANG)
+    async function toggleConnect() {
+      const input = document.getElementById('tiktokUsernameInput');
+      const btn = document.getElementById('btnConnect');
+      const user = input.value.trim().replace(/^@/, '');
+
+      if (isConnectedLive) {
+        // Cập nhật trạng thái giao diện NGAY LẬP TỨC
+        updateLiveStatusUI({ isConnected: false, isConnecting: false });
+        try {
+          await fetch('/api/tiktok/disconnect', { method: 'POST' });
+        } catch (_) {}
+        return;
+      }
+
+      if (!user) {
+        showAppToast('warning', 'Vui lòng nhập ID kênh TikTok!');
+        input.focus();
+        return;
+      }
+
+      // Đặt ngay trạng thái Đang Kết Nối
+      updateLiveStatusUI({ isConnected: false, isConnecting: true, username: user });
+
+      const signApiKey = document.getElementById('eulerApiKeyInput')?.value?.trim() || '';
+      const sessionId = document.getElementById('tiktokSessionIdInput')?.value?.trim() || '';
+
+      try {
+        const res = await fetch('/api/tiktok/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, signApiKey, sessionId })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          updateLiveStatusUI({ isConnected: false, isConnecting: false });
+          alert('Không thể kết nối: ' + data.error);
+        }
+      } catch (err) {
+        updateLiveStatusUI({ isConnected: false, isConnecting: false });
+        alert('Lỗi mạng kết nối: ' + err.message);
+      }
+    }
+
+    // ========================================================
+    // RENDER BẢNG GGTT CHUẨN
+    // ========================================================
+    // Helper: Hiển thị icon quà tặng (Ưu tiên ảnh CDN thực tế của TikTok, fallback sang emoji)
+    function renderGiftIconHtml(gift, size = 22) {
+      if (gift && gift.iconUrl) {
+        return `<img src="${gift.iconUrl}" style="width: ${size}px; height: ${size}px; object-fit: contain; vertical-align: middle; border-radius: 4px; display: inline-block;" onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='inline';"><span style="display: none;">${gift.icon || '🎁'}</span>`;
+      }
+      return `<span>${gift ? (gift.icon || '🎁') : '🎁'}</span>`;
+    }
+
+    function renderTableView() {
+      const tbody = document.getElementById('rulesTableBody');
+      tbody.innerHTML = '';
+
+      if (currentRules.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 30px;">Chưa có hàng quy tắc nào. Bấm "+ Thêm Hàng Mới".</td></tr>`;
+        return;
+      }
+
+      currentRules.forEach((rule, rIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = rule.enabled ? '' : 'row-disabled';
+
+        const isRandom = (rule.videoPool && rule.videoPool.length > 1) || rule.ruleType === 'random_pool';
+        const isMinCoins = rule.ruleType === 'min_coins';
+        const displayType = isMinCoins ? 'min_coins' : (isRandom ? 'random_pool' : 'specific_gift');
+
+        // Tìm icon quà trong kho quà
+        const foundGift = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === (rule.giftName || '').toLowerCase());
+        const giftIconHtml = renderGiftIconHtml(foundGift, 22);
+        const giftCoins = rule.minCoins || (foundGift ? foundGift.coins : 1);
+
+        const hitRate = typeof rule.successRate === 'number' ? rule.successRate : 100;
+        const missRate = 100 - hitRate;
+
+        // Video Cell
+        const pool = rule.videoPool || [];
+        const totalWeight = pool.reduce((s, v) => s + (Number(v.weight) || 0), 0);
+        let videoCellContent = '';
+
+        if (displayType === 'random_pool') {
+          const previewNames = pool.map(v => {
+            const pct = totalWeight > 0 ? ((Number(v.weight) || 0) / totalWeight * 100).toFixed(0) : 0;
+            return `${v.name} (${pct}%)`;
+          }).join(', ');
+
+          videoCellContent = `
+            <div class="ggtt-video-cell">
+              <div class="ggtt-video-pill" title="${escapeHtml(previewNames)}" onclick="openPoolModal(${rIdx})">
+                <span style="font-weight: 700; color: #38bdf8;">🎲 ${pool.length} Video:</span>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${escapeHtml(previewNames) || 'Chưa có video'}</span>
+                <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700;">[⚙️ Chỉnh %]</span>
+              </div>
+              <button class="btn btn-sm" title="Quản lý % các video" onclick="openPoolModal(${rIdx})">⚙️</button>
+              <button class="btn-circle-play" title="Xem thử video" onclick="previewPoolFirstVideo(${rIdx})">▶</button>
+            </div>
+          `;
+        } else {
+          const firstVid = pool[0];
+          videoCellContent = `
+            <div class="ggtt-video-cell">
+              <select style="flex: 1;" onchange="updateSingleVideoFile(${rIdx}, this.value)">
+                ${availableVideos.map(v => `<option value="${v.url}" ${firstVid?.file === v.url ? 'selected' : ''}>${v.name}</option>`).join('')}
+              </select>
+              <input type="file" id="tblUpload_${rIdx}" accept="video/*" style="display: none;" onchange="uploadSingleVideo(${rIdx}, this.files[0])">
+              <button class="btn btn-sm btn-primary" title="Tải video mới lên máy" onclick="document.getElementById('tblUpload_${rIdx}').click()">📤</button>
+              <button class="btn-circle-play" title="Xem trước" onclick="openPreview('${escapeHtml(firstVid?.name || 'Video')}', '${firstVid?.file || ''}')">▶</button>
+            </div>
+          `;
+        }
+
+        tr.innerHTML = `
+          <!-- 1. ON/OFF -->
+          <td>
+            <div class="onoff-cell">
+              <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;" ${rule.enabled ? 'checked' : ''} onchange="toggleRuleEnabled(${rIdx}, this.checked)">
+              <div class="row-index-badge">${rIdx + 1}</div>
+            </div>
+          </td>
+
+          <!-- 2. TÊN QUY TẮC -->
+          <td>
+            <input type="text" class="ggtt-input-name" value="${escapeHtml(rule.name || '')}" placeholder="Tên quy tắc" onchange="updateRuleField(${rIdx}, 'name', this.value)">
+          </td>
+
+          <!-- 3. LOẠI QUY TẮC -->
+          <td>
+            <select style="width: 100%; font-weight: 600;" onchange="onTableTypeChange(${rIdx}, this.value)">
+              <option value="specific_gift" ${displayType === 'specific_gift' ? 'selected' : ''}>Quà tặng (1 video)</option>
+              <option value="random_pool" ${displayType === 'random_pool' ? 'selected' : ''}>Ngẫu nhiên (Nhiều video %)</option>
+              <option value="min_coins" ${displayType === 'min_coins' ? 'selected' : ''}>Mốc xu tối thiểu (VIP)</option>
+            </select>
+          </td>
+
+          <!-- 4. MỐC / QUÀ / LỆNH (SEARCHABLE CHIP) -->
+          <td>
+            ${!isMinCoins ? `
+            <div class="ggtt-gift-chip" title="Nhấp để tìm và đổi quà khác" onclick="openGiftPickerForRule(${rIdx})">
+              ${giftIconHtml}
+              <span>${escapeHtml(rule.giftName || 'Chọn quà')}</span>
+              <span class="ggtt-gift-coins">${giftCoins} xu</span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">▾</span>
+            </div>
+            ` : `
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span style="font-weight: 700; color: #34d399;">💎 Từ:</span>
+              <input type="number" min="1" value="${rule.minCoins || 100}" style="width: 90px; text-align: center; font-weight: 700;" onchange="updateRuleField(${rIdx}, 'minCoins', Number(this.value))">
+              <span style="font-size: 0.8rem; color: #94a3b8;">xu</span>
+            </div>
+            `}
+          </td>
+
+          <!-- 5. TỈ LỆ NỔ GACHA -->
+          <td>
+            <div class="gacha-mini-pill">
+              <div class="gacha-mini-text">
+                <span style="color: #34d399;">🎯 Nổ: <b id="tblHitText_${rIdx}">${hitRate}%</b></span>
+                <span style="color: #f87171;">💨 Xịt: <b id="tblMissText_${rIdx}">${missRate}%</b></span>
+              </div>
+              <input type="range" min="1" max="100" value="${hitRate}" style="accent-color: #10b981; width: 100%;" oninput="updateTableRateSlider(${rIdx}, this.value)">
+            </div>
+          </td>
+
+          <!-- 6. VIDEO / AUDIO -->
+          <td>
+            ${videoCellContent}
+          </td>
+
+          <!-- 7. XÓA -->
+          <td style="text-align: center;">
+            <button class="btn btn-danger btn-sm" title="Xóa hàng này" onclick="deleteRule(${rIdx})">✕</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ========================================================
+    // RENDER THẺ CHI TIẾT (CARD VIEW)
+    // ========================================================
+    function renderCardView() {
+      const container = document.getElementById('rulesContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (currentRules.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px; background: #0f182b; border-radius: 10px;">Chưa có quy tắc nào. Bấm "+ Thêm Hàng Mới" để tạo.</div>';
+        return;
+      }
+
+      currentRules.forEach((rule, rIdx) => {
+        const isRandom = (rule.videoPool && rule.videoPool.length > 1) || rule.ruleType === 'random_pool';
+        const isMinCoins = rule.ruleType === 'min_coins';
+        const displayType = isMinCoins ? 'min_coins' : (isRandom ? 'random_pool' : 'specific_gift');
+
+        const foundGift = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === (rule.giftName || '').toLowerCase());
+        const giftIconHtml = renderGiftIconHtml(foundGift, 22);
+        const giftCoins = rule.minCoins || (foundGift ? foundGift.coins : 1);
+
+        const hitRate = typeof rule.successRate === 'number' ? rule.successRate : 100;
+        const missRate = 100 - hitRate;
+
+        const pool = rule.videoPool || [];
+        const totalWeight = pool.reduce((s, v) => s + (Number(v.weight) || 0), 0);
+
+        const card = document.createElement('div');
+        card.className = `rule-card ${rule.enabled ? '' : 'disabled'}`;
+
+        let videoSection = '';
+        if (displayType === 'random_pool') {
+          videoSection = `
+            <div style="background: #090e1a; padding: 10px 14px; border-radius: 8px; border: 1px solid #1e293b; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; font-weight: 700; color: #38bdf8;">🎲 Danh Sách Random Pool (${pool.length} Video)</span>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-sm btn-primary" onclick="openPoolModal(${rIdx})">⚙️ Chỉnh % Chi Tiết</button>
+                  <button class="btn-circle-play" title="Xem thử" onclick="previewPoolFirstVideo(${rIdx})">▶</button>
+                </div>
+              </div>
+              <div class="pool-bar" style="margin-bottom: 8px;">
+                ${pool.map((v, idx) => {
+                  const pct = totalWeight > 0 ? Math.round(((Number(v.weight) || 0) / totalWeight) * 100) : 0;
+                  const color = POOL_COLORS[idx % POOL_COLORS.length];
+                  return `<div class="pool-bar-segment" style="width: ${pct}%; background: ${color};" title="${v.name}: ${pct}%"></div>`;
+                }).join('')}
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.75rem;">
+                ${pool.map((v, idx) => {
+                  const pct = totalWeight > 0 ? Math.round(((Number(v.weight) || 0) / totalWeight) * 100) : 0;
+                  const color = POOL_COLORS[idx % POOL_COLORS.length];
+                  return `<span style="display: flex; align-items: center; gap: 4px; color: #e2e8f0;"><span style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; display: inline-block;"></span>${escapeHtml(v.name)}: <b>${pct}%</b></span>`;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        } else {
+          const firstVid = pool[0];
+          videoSection = `
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+              <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600; width: 80px;">Video phát:</span>
+              <select style="flex: 1; min-width: 180px;" onchange="updateSingleVideoFile(${rIdx}, this.value)">
+                ${availableVideos.map(v => `<option value="${v.url}" ${firstVid?.file === v.url ? 'selected' : ''}>${v.name}</option>`).join('')}
+              </select>
+              <input type="file" id="cardUpload_${rIdx}" accept="video/*" style="display: none;" onchange="uploadSingleVideo(${rIdx}, this.files[0])">
+              <button class="btn btn-sm btn-primary" title="Tải video mới" onclick="document.getElementById('cardUpload_${rIdx}').click()">📤 Tải Lên</button>
+              <button class="btn-circle-play" title="Xem trước" onclick="openPreview('${escapeHtml(firstVid?.name || 'Video')}', '${firstVid?.file || ''}')">▶</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <!-- Header: On/Off, Index, Name, Delete -->
+          <div class="rule-header">
+            <input type="checkbox" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;" ${rule.enabled ? 'checked' : ''} onchange="toggleRuleEnabled(${rIdx}, this.checked)">
+            <div class="row-index-badge">${rIdx + 1}</div>
+            <input type="text" class="rule-name-input" value="${escapeHtml(rule.name || '')}" placeholder="Tên quy tắc (vd: Bánh Vòng Biến Hình)" onchange="updateRuleField(${rIdx}, 'name', this.value)">
+            <button class="btn btn-danger btn-sm" title="Xóa quy tắc này" onclick="deleteRule(${rIdx})">✕ Xóa</button>
+          </div>
+
+          <!-- Body Grid: Loại, Điều Kiện Quà, Tỉ Lệ Nổ -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: start;">
+            <!-- Loại quy tắc -->
+            <div>
+              <label style="font-size: 0.76rem; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">LOẠI QUY TẮC:</label>
+              <select style="width: 100%;" onchange="onTableTypeChange(${rIdx}, this.value)">
+                <option value="specific_gift" ${displayType === 'specific_gift' ? 'selected' : ''}>Quà tặng (1 video)</option>
+                <option value="random_pool" ${displayType === 'random_pool' ? 'selected' : ''}>Ngẫu nhiên (Nhiều video %)</option>
+                <option value="min_coins" ${displayType === 'min_coins' ? 'selected' : ''}>Mốc xu tối thiểu (VIP)</option>
+              </select>
+            </div>
+
+            <!-- Điều kiện Quà -->
+            <div>
+              <label style="font-size: 0.76rem; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">ĐIỀU KIỆN KÍCH HOẠT:</label>
+              ${!isMinCoins ? `
+              <div class="ggtt-gift-chip" style="width: 100%;" title="Nhấp để tìm và chọn quà" onclick="openGiftPickerForRule(${rIdx})">
+                ${giftIconHtml}
+                <span style="flex: 1; text-align: left;">${escapeHtml(rule.giftName || 'Chọn quà')}</span>
+                <span class="ggtt-gift-coins">${giftCoins} xu</span>
+                <span style="font-size: 0.7rem; color: #94a3b8;">▾ Đổi</span>
+              </div>
+              ` : `
+              <div style="display: flex; gap: 6px; align-items: center; height: 36px;">
+                <span style="font-weight: 700; color: #34d399;">💎 Từ:</span>
+                <input type="number" min="1" value="${rule.minCoins || 100}" style="flex: 1; text-align: center; font-weight: 700;" onchange="updateRuleField(${rIdx}, 'minCoins', Number(this.value))">
+                <span style="font-size: 0.8rem; color: #94a3b8;">xu</span>
+              </div>
+              `}
+            </div>
+
+            <!-- Tỉ lệ Gacha -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.76rem; font-weight: 700; margin-bottom: 4px;">
+                <span style="color: #34d399;">🎯 Nổ: <b id="cardHitText_${rIdx}">${hitRate}%</b></span>
+                <span style="color: #f87171;">💨 Xịt: <b id="cardMissText_${rIdx}">${missRate}%</b></span>
+              </div>
+              <input type="range" min="1" max="100" value="${hitRate}" style="accent-color: #10b981; width: 100%;" oninput="updateCardRateSlider(${rIdx}, this.value)">
+            </div>
+          </div>
+
+          <!-- Video Section -->
+          ${videoSection}
+
+          <!-- Lời nhắn khi Xịt -->
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
+            <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600; width: 80px;">Lời nhắn xịt:</span>
+            <input type="text" value="${escapeHtml(rule.missMessage || 'Tiếc quá, xịt rồi! Chúc bạn may mắn lần sau 💨')}" style="flex: 1; font-size: 0.82rem;" placeholder="Nhập câu thông báo khi người xem quay vào ô xịt" onchange="updateRuleField(${rIdx}, 'missMessage', this.value)">
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function updateCardRateSlider(rIdx, val) {
+      const hit = Number(val);
+      const miss = 100 - hit;
+      const hitEl = document.getElementById(`cardHitText_${rIdx}`);
+      const missEl = document.getElementById(`cardMissText_${rIdx}`);
+      if (hitEl) hitEl.innerText = hit + '%';
+      if (missEl) missEl.innerText = miss + '%';
+
+      if (currentRules[rIdx]) {
+        currentRules[rIdx].successRate = hit;
+        triggerAutoSave();
+      }
+    }
+
+    // Cập nhật trường của Rule & Auto-Save
+    function updateRuleField(rIdx, field, val) {
+      if (!currentRules[rIdx]) return;
+      currentRules[rIdx][field] = val;
+      triggerAutoSave();
+    }
+
+    function toggleRuleEnabled(rIdx, checked) {
+      if (!currentRules[rIdx]) return;
+      currentRules[rIdx].enabled = checked;
+      renderCurrentView();
+      triggerAutoSave();
+    }
+
+    function onTableTypeChange(rIdx, type) {
+      const rule = currentRules[rIdx];
+      if (!rule) return;
+      rule.ruleType = type;
+
+      if (type === 'random_pool') {
+        if (!rule.videoPool || rule.videoPool.length <= 1) {
+          rule.videoPool = (rule.videoPool || []).concat([
+            { id: 'v_' + Date.now(), name: 'Video 2', file: availableVideos[1]?.url || availableVideos[0]?.url || '', weight: 50 }
+          ]);
+        }
+      } else if (type === 'min_coins') {
+        rule.minCoins = rule.minCoins || 100;
+        rule.giftName = '';
+      }
+
+      renderCurrentView();
+      triggerAutoSave();
+    }
+
+    function updateTableRateSlider(rIdx, val) {
+      const hit = Number(val);
+      const miss = 100 - hit;
+      const hitText = document.getElementById(`tblHitText_${rIdx}`);
+      const missText = document.getElementById(`tblMissText_${rIdx}`);
+      if (hitText) hitText.innerText = hit + '%';
+      if (missText) missText.innerText = miss + '%';
+
+      if (currentRules[rIdx]) {
+        currentRules[rIdx].successRate = hit;
+        triggerAutoSave();
+      }
+    }
+
+    function updateSingleVideoFile(rIdx, fileUrl) {
+      const rule = currentRules[rIdx];
+      if (!rule) return;
+      if (!rule.videoPool || rule.videoPool.length === 0) {
+        rule.videoPool = [{ id: 'v_1', name: 'Video 1', file: fileUrl, weight: 100 }];
+      } else {
+        rule.videoPool[0].file = fileUrl;
+        const found = availableVideos.find(v => v.url === fileUrl);
+        if (found) rule.videoPool[0].name = found.name;
+      }
+      triggerAutoSave();
+    }
+
+    async function uploadSingleVideo(rIdx, file) {
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('video', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          await fetchVideos();
+          updateSingleVideoFile(rIdx, data.fileUrl);
+          renderCurrentView();
+        }
+      } catch (e) { alert('Lỗi tải video: ' + e.message); }
+    }
+
+    function addNewRule() {
+      currentRules.push({
+        id: 'rule_' + Date.now(),
+        name: 'Eff ' + (currentRules.length + 1),
+        enabled: true,
+        ruleType: 'specific_gift',
+        giftName: 'Bánh Vòng',
+        minCoins: 30,
+        successRate: 90,
+        missMessage: 'Tiếc quá, xịt rồi! Chúc bạn may mắn lần sau 💨',
+        videoPool: [
+          {
+            id: 'v_' + Date.now(),
+            name: 'Video 1',
+            file: availableVideos[0]?.url || '/uploads/videos/1chon_MOV_1794665109145.mov',
+            weight: 100
+          }
+        ]
+      });
+      renderCurrentView();
+      triggerAutoSave();
+    }
+
+    function deleteRule(rIdx) {
+      if (confirm(`Bạn có chắc muốn xóa hàng "${currentRules[rIdx]?.name}"?`)) {
+        currentRules.splice(rIdx, 1);
+        renderCurrentView();
+        triggerAutoSave();
+      }
+    }
+
+    // ========================================================
+    // MODAL CHỌN QUÀ TẶNG THÔNG MINH (SEARCH THEO TÊN HOẶC XU)
+    // ========================================================
+    function openGiftPickerForRule(rIdx) {
+      activeTargetForGiftPicker = { type: 'rule', rIdx };
+      document.getElementById('giftSearchInput').value = '';
+      currentGiftCategoryFilter = 'all';
+      filterGiftPicker();
+      document.getElementById('giftPickerModal').classList.add('open');
+      document.getElementById('giftSearchInput').focus();
+    }
+
+    function openGiftPickerForSimulator() {
+      activeTargetForGiftPicker = { type: 'sim' };
+      document.getElementById('giftSearchInput').value = '';
+      currentGiftCategoryFilter = 'all';
+      filterGiftPicker();
+      document.getElementById('giftPickerModal').classList.add('open');
+      document.getElementById('giftSearchInput').focus();
+    }
+
+    function closeGiftPickerDirect() {
+      document.getElementById('giftPickerModal').classList.remove('open');
+    }
+    function closeGiftPicker(e) {
+      if (e.target.id === 'giftPickerModal') closeGiftPickerDirect();
+    }
+
+    function setGiftCategoryFilter(cat) {
+      currentGiftCategoryFilter = cat;
+      document.querySelectorAll('.chip-filter').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      filterGiftPicker();
+    }
+
+    function filterGiftPicker() {
+      const q = document.getElementById('giftSearchInput').value.trim().toLowerCase();
+      const num = parseInt(q, 10);
+      const grid = document.getElementById('giftSearchGrid');
+      grid.innerHTML = '';
+
+      const filtered = TIKTOK_GIFTS_CATALOG.filter(gift => {
+        // Lọc danh mục nếu không phải 'all'
+        if (currentGiftCategoryFilter !== 'all' && gift.category !== currentGiftCategoryFilter) {
+          return false;
+        }
+
+        if (!q) return true;
+        // Khớp số xu chính xác
+        if (!isNaN(num) && gift.coins === num) return true;
+        // Khớp tên quà
+        return gift.name.toLowerCase().includes(q) || gift.id === q;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 30px;">Không tìm thấy quà nào khớp với từ khóa/số xu.</div>';
+        return;
+      }
+
+      // Giới hạn hiển thị 120 quà đầu tiên khi không có từ khóa để giao diện siêu mượt
+      const maxDisplay = (!q && currentGiftCategoryFilter === 'all') ? 120 : filtered.length;
+      const toShow = filtered.slice(0, maxDisplay);
+
+      toShow.forEach(gift => {
+        const item = document.createElement('div');
+        item.className = 'gift-search-item';
+        const iconDisplay = gift.iconUrl 
+          ? `<img src="${gift.iconUrl}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 8px; margin-bottom: 4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><div style="font-size: 2rem; display: none;">${gift.icon || '🎁'}</div>`
+          : `<div style="font-size: 2rem; margin-bottom: 4px;">${gift.icon || '🎁'}</div>`;
+        item.innerHTML = `
+          ${iconDisplay}
+          <div style="font-weight: 700; font-size: 0.85rem; color: #f8fafc; text-align: center;">${escapeHtml(gift.name)}</div>
+          <div style="background: #0284c7; color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; font-weight: 800; margin-top: 4px;">${gift.coins} xu</div>
+        `;
+        item.onclick = () => selectGiftFromPicker(gift);
+        grid.appendChild(item);
+      });
+
+      if (filtered.length > maxDisplay) {
+        const notice = document.createElement('div');
+        notice.style.gridColumn = '1/-1';
+        notice.style.textAlign = 'center';
+        notice.style.padding = '12px';
+        notice.style.color = '#94a3b8';
+        notice.style.fontSize = '0.8rem';
+        notice.innerText = `Đang hiển thị ${maxDisplay} / ${filtered.length} món quà. Gõ tên hoặc số xu ở ô tìm kiếm để lọc ngay lập tức!`;
+        grid.appendChild(notice);
+      }
+    }
+
+    async function refreshGiftsFromTikTok() {
+      try {
+        const res = await fetch('/api/tiktok/refresh-gifts', { method: 'POST' });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.gifts) && data.gifts.length > 0) {
+          TIKTOK_GIFTS_CATALOG.length = 0;
+          TIKTOK_GIFTS_CATALOG.push(...data.gifts);
+          filterGiftPicker();
+          renderCurrentView();
+          populateSimulatorDropdown();
+          alert(`✅ Đã đồng bộ thành công ${data.gifts.length} món quà kèm icon ảnh thực tế từ TikTok Việt Nam!`);
+        } else {
+          alert('ℹ️ Danh mục quà tặng và icon ảnh TikTok đã được tải đầy đủ.');
+        }
+      } catch (e) {
+        alert('Lỗi tải icon quà: ' + e.message);
+      }
+    }
+
+    function selectGiftFromPicker(gift) {
+      if (!activeTargetForGiftPicker) return;
+
+      if (activeTargetForGiftPicker.type === 'rule') {
+        const rIdx = activeTargetForGiftPicker.rIdx;
+        if (currentRules[rIdx]) {
+          currentRules[rIdx].giftName = gift.name;
+          currentRules[rIdx].giftId = String(gift.id || '');
+          currentRules[rIdx].minCoins = gift.coins;
+          currentRules[rIdx].iconUrl = gift.iconUrl || '';
+          renderCurrentView();
+          populateSimulatorDropdown();
+          triggerAutoSave();
+        }
+      } else if (activeTargetForGiftPicker.type === 'sim') {
+        document.getElementById('simCoinsInput').value = gift.coins;
+        const dropdown = document.getElementById('simGiftDropdown');
+        let exists = false;
+        for (let i = 0; i < dropdown.options.length; i++) {
+          if (dropdown.options[i].value.toLowerCase() === gift.name.toLowerCase()) {
+            dropdown.selectedIndex = i;
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          const opt = document.createElement('option');
+          opt.value = gift.name;
+          opt.innerText = `${gift.icon || '🎁'} ${gift.name} (${gift.coins} xu)`;
+          dropdown.appendChild(opt);
+          dropdown.value = gift.name;
+        }
+      }
+
+      closeGiftPickerDirect();
+    }
+
+    function renderGiftPickerGrid() {
+      filterGiftPicker();
+    }
+
+    // ========================================================
+    // MODAL QUẢN LÝ POOL % (TỰ ĐỘNG CÂN BẰNG TỈ LỆ 100%)
+    // ========================================================
+    function openPoolModal(rIdx) {
+      activeEditingRuleIdx = rIdx;
+      const rule = currentRules[rIdx];
+      if (!rule) return;
+
+      document.getElementById('poolModalTitle').innerText = `🎲 Tỉ Lệ Xuất Hiện Video: "${rule.name}"`;
+      document.getElementById('poolModal').classList.add('open');
+      renderPoolModalList();
+    }
+
+    function closePoolModalDirect() {
+      document.getElementById('poolModal').classList.remove('open');
+      renderCurrentView();
+      triggerAutoSave();
+    }
+    function closePoolModal(e) {
+      if (e.target.id === 'poolModal') closePoolModalDirect();
+    }
+
+    function renderPoolModalList() {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (!rule) return;
+      const pool = rule.videoPool || [];
+
+      // 1. Chuẩn hóa để tổng % luôn là 100
+      let totalW = pool.reduce((s, v) => s + (Number(v.weight) || 0), 0);
+      if (totalW === 0 && pool.length > 0) {
+        distributeActivePoolEqually();
+        return;
+      }
+
+      // Render thanh màu phân bổ %
+      const bar = document.getElementById('poolVisualBar');
+      bar.innerHTML = '';
+      pool.forEach((v, idx) => {
+        const pct = Math.round(((Number(v.weight) || 0) / totalW) * 100);
+        const color = POOL_COLORS[idx % POOL_COLORS.length];
+        const seg = document.createElement('div');
+        seg.className = 'pool-bar-segment';
+        seg.style.width = pct + '%';
+        seg.style.background = color;
+        seg.title = `${v.name}: ${pct}%`;
+        bar.appendChild(seg);
+      });
+
+      // Render từng hàng video
+      const list = document.getElementById('modalPoolList');
+      list.innerHTML = '';
+
+      pool.forEach((v, vIdx) => {
+        const pct = Math.round(((Number(v.weight) || 0) / totalW) * 100);
+        const color = POOL_COLORS[vIdx % POOL_COLORS.length];
+
+        const row = document.createElement('div');
+        row.style.cssText = `
+          display: flex; gap: 10px; align-items: center; background: #0f182b;
+          border: 1px solid #1e293b; border-left: 4px solid ${color};
+          padding: 8px 12px; border-radius: 8px;
+        `;
+
+        row.innerHTML = `
+          <input type="text" value="${escapeHtml(v.name)}" style="width: 140px; font-weight: 700;" onchange="updatePoolVideoName(${vIdx}, this.value)">
+
+          <select style="flex: 1;" onchange="updatePoolVideoFile(${vIdx}, this.value)">
+            ${availableVideos.map(av => `<option value="${av.url}" ${v.file === av.url ? 'selected' : ''}>${av.name}</option>`).join('')}
+          </select>
+
+          <!-- Ô NHẬP % DUY NHẤT (TỰ ĐỘNG CHIA TỶ LỆ) -->
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="number" min="1" max="99" value="${pct}" style="width: 60px; text-align: center; font-weight: 800; color: #38bdf8;" onchange="onPoolPctInputChange(${vIdx}, Number(this.value))">
+            <span style="font-weight: 800; color: #38bdf8;">%</span>
+          </div>
+
+          <button class="btn btn-sm" title="Xem trước" onclick="openPreview('${escapeHtml(v.name)}', '${v.file}')">▶</button>
+          <button class="btn btn-danger btn-sm" title="Xóa video này" onclick="removeVideoFromActivePool(${vIdx})">✕</button>
+        `;
+
+        list.appendChild(row);
+      });
+    }
+
+    // TỰ ĐỘNG CÂN BẰNG TỶ LỆ (%) KHI USER THAY ĐỔI 1 Ô (ĐẢM BẢO TỔNG LUÔN ĐÚNG 100%)
+    function onPoolPctInputChange(changedIdx, newPct) {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (!rule || !rule.videoPool || rule.videoPool.length <= 1) return;
+
+      const pool = rule.videoPool;
+      const count = pool.length;
+      // Giới hạn giá trị hợp lệ để mỗi video khác còn ít nhất 1%
+      newPct = Math.max(1, Math.min(100 - (count - 1), Math.round(newPct)));
+
+      const otherIndices = pool.map((_, i) => i).filter(i => i !== changedIdx);
+      const remainingPct = 100 - newPct;
+
+      let currentOtherSum = otherIndices.reduce((sum, i) => sum + (Number(pool[i].weight) || 1), 0);
+      if (currentOtherSum <= 0) currentOtherSum = otherIndices.length;
+
+      let allocatedOther = 0;
+      otherIndices.forEach((idx, arrIdx) => {
+        if (arrIdx === otherIndices.length - 1) {
+          // Gán phần còn lại chính xác cho video cuối cùng để tổng luôn đạt 100%
+          pool[idx].weight = Math.max(1, remainingPct - allocatedOther);
+        } else {
+          const ratio = (Number(pool[idx].weight) || 1) / currentOtherSum;
+          const share = Math.max(1, Math.round(ratio * remainingPct));
+          pool[idx].weight = share;
+          allocatedOther += share;
+        }
+      });
+      pool[changedIdx].weight = newPct;
+
+      renderPoolModalList();
+      triggerAutoSave();
+    }
+
+    // CHIA ĐỀU TỈ LỆ 100% CHO TẤT CẢ VIDEO
+    function distributeActivePoolEqually() {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (!rule || !rule.videoPool || rule.videoPool.length === 0) return;
+
+      const equal = Math.round(100 / rule.videoPool.length);
+      rule.videoPool.forEach(v => v.weight = equal);
+      renderPoolModalList();
+      triggerAutoSave();
+    }
+
+    function addVideoToActivePool() {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (!rule) return;
+      rule.videoPool = rule.videoPool || [];
+
+      rule.videoPool.push({
+        id: 'v_' + Date.now(),
+        name: 'Video ' + (rule.videoPool.length + 1),
+        file: availableVideos[rule.videoPool.length % availableVideos.length]?.url || availableVideos[0]?.url || '',
+        weight: 20
+      });
+
+      distributeActivePoolEqually();
+    }
+
+    function removeVideoFromActivePool(vIdx) {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (!rule || !rule.videoPool) return;
+      if (rule.videoPool.length <= 1) {
+        alert('Cần giữ ít nhất 1 video trong danh sách!');
+        return;
+      }
+      rule.videoPool.splice(vIdx, 1);
+      distributeActivePoolEqually();
+    }
+
+    function updatePoolVideoName(vIdx, name) {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (rule?.videoPool?.[vIdx]) {
+        rule.videoPool[vIdx].name = name;
+        triggerAutoSave();
+      }
+    }
+
+    function updatePoolVideoFile(vIdx, fileUrl) {
+      const rule = currentRules[activeEditingRuleIdx];
+      if (rule?.videoPool?.[vIdx]) {
+        rule.videoPool[vIdx].file = fileUrl;
+        const found = availableVideos.find(v => v.url === fileUrl);
+        if (found) rule.videoPool[vIdx].name = found.name;
+        renderPoolModalList();
+        triggerAutoSave();
+      }
+    }
+
+    async function uploadToActivePool(file) {
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('video', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          await fetchVideos();
+          const rule = currentRules[activeEditingRuleIdx];
+          rule.videoPool.push({
+            id: 'v_' + Date.now(),
+            name: data.fileName.replace(/\.[^/.]+$/, ''),
+            file: data.fileUrl,
+            weight: 20
+          });
+          distributeActivePoolEqually();
+        }
+      } catch (e) { alert('Lỗi tải video: ' + e.message); }
+    }
+
+    function previewPoolFirstVideo(rIdx) {
+      const rule = currentRules[rIdx];
+      const firstVid = rule?.videoPool?.[0];
+      if (firstVid) {
+        openPreview(firstVid.name, firstVid.file);
+      }
+    }
+
+    // ========================================================
+    // MODAL QUẢN LÝ KHO LƯU TRỮ PHƯƠNG TIỆN (MEDIA MANAGER)
+    // ========================================================
+    function openMediaManager() {
+      fetchVideos();
+      document.getElementById('mediaManagerModal').classList.add('open');
+    }
+
+    function closeMediaManagerDirect() {
+      document.getElementById('mediaManagerModal').classList.remove('open');
+    }
+    function closeMediaManager(e) {
+      if (e.target.id === 'mediaManagerModal') closeMediaManagerDirect();
+    }
+
+    function renderMediaManagerList() {
+      const list = document.getElementById('mediaFilesList');
+      const countEl = document.getElementById('mediaTotalCount');
+      const inlineList = document.getElementById('mediaFilesListInline');
+      const inlineBadge = document.getElementById('mediaTotalInlineBadge');
+      if (inlineBadge) inlineBadge.innerText = `${availableVideos.length} Video`;
+      if (inlineList) {
+        inlineList.innerHTML = '';
+        if (availableVideos.length === 0) {
+          inlineList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">Chưa có video nào trong kho. Hãy bấm nút "Tải Video Mới" ở trên để nạp video.</div>';
+        } else {
+          availableVideos.forEach(v => {
+            const card = document.createElement('div');
+            const sizeMb = (v.size / 1024 / 1024).toFixed(1);
+            card.style.cssText = 'background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px;';
+            card.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <button class="btn btn-sm btn-primary" onclick="openPreview('${escapeHtml(v.name)}', '${v.url}')">▶ Xem Thử</button>
+                <span style="font-size: 0.72rem; color: #94a3b8;">${sizeMb} MB</span>
+              </div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</div>
+              <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 4px;">
+                <button class="btn btn-sm" onclick="renameVideo('${escapeHtml(v.name)}')">✏️ Đổi Tên</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteVideo('${escapeHtml(v.name)}')">🗑️ Xoá</button>
+              </div>
+            `;
+            inlineList.appendChild(card);
+          });
+        }
+      }
+      if (!list || !countEl) return;
+
+      countEl.innerText = availableVideos.length;
+      list.innerHTML = '';
+
+      if (availableVideos.length === 0) {
+        list.innerHTML = '<div style="text-align: center; color: #64748b; padding: 30px;">Chưa có video nào trong kho. Hãy bấm "Tải Video Mới Lên".</div>';
+        return;
+      }
+
+      availableVideos.forEach(v => {
+        const item = document.createElement('div');
+        const sizeMb = (v.size / 1024 / 1024).toFixed(1);
+        const dateStr = v.mtime ? new Date(v.mtime).toLocaleString('vi-VN') : 'Mới';
+
+        item.style.cssText = `
+          display: flex; gap: 12px; align-items: center; background: #0f182b;
+          border: 1px solid #1e293b; padding: 10px 14px; border-radius: 8px;
+        `;
+
+        item.innerHTML = `
+          <button class="btn-circle-play" onclick="openPreview('${escapeHtml(v.name)}', '${v.url}')">▶</button>
+          <div style="flex: 1; overflow: hidden;">
+            <div style="font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${v.name}</div>
+            <div style="font-size: 0.75rem; color: #64748b;">${sizeMb} MB · ${dateStr}</div>
+          </div>
+          <button class="btn btn-sm" title="Sao chép đường dẫn" onclick="copyMediaUrl('${v.url}')">📋 Link</button>
+          <button class="btn btn-sm btn-primary" title="Đổi tên file" onclick="renameMediaFile('${v.name}')">✏️ Đổi Tên</button>
+          <button class="btn btn-sm btn-danger" title="Xóa file khỏi kho" onclick="deleteMediaFile('${v.name}')">🗑️ Xóa</button>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    function copyMediaUrl(url) {
+      navigator.clipboard.writeText(url);
+      alert('Đã sao chép link file:\n' + url);
+    }
+
+    async function renameMediaFile(oldName) {
+      const newName = prompt('Nhập tên mới cho file video:', oldName);
+      if (!newName || newName === oldName) return;
+
+      try {
+        const res = await fetch('/api/videos/rename', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldName, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          await fetchVideos();
+          await fetchRules();
+        } else {
+          alert('Lỗi đổi tên: ' + data.error);
+        }
+      } catch (err) { alert('Lỗi: ' + err.message); }
+    }
+
+    async function deleteMediaFile(filename) {
+      if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn file "${filename}" khỏi kho lưu trữ?`)) return;
+
+      try {
+        const res = await fetch(`/api/videos/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          await fetchVideos();
+          await fetchRules();
+        } else {
+          alert('Lỗi xóa: ' + data.error);
+        }
+      } catch (err) { alert('Lỗi: ' + err.message); }
+    }
+
+    async function uploadNewMediaFile(file) {
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('video', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          await fetchVideos();
+          alert('✅ Tải lên thành công: ' + data.fileName);
+        }
+      } catch (e) { alert('Lỗi tải video: ' + e.message); }
+    }
+
+    // ========================================================
+    // BỘ GIẢ LẬP TEST QUÀ (SIMULATOR)
+    // ========================================================
+    function populateSimulatorDropdown() {
+      const select = document.getElementById('simGiftDropdown');
+      select.innerHTML = '';
+
+      // Ưu tiên quà đang được cấu hình trong Rules
+      const ruleGifts = currentRules
+        .filter(r => r.enabled && r.giftName)
+        .map(r => r.giftName);
+
+      const uniqueGifts = [...new Set([...ruleGifts, 'Bánh Vòng', 'Hoa Hồng', 'Thả Tim Cho Tôi', 'Trà Sữa', 'Kính Râm', 'Sư Tử'])];
+
+      uniqueGifts.forEach(name => {
+        const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === name.toLowerCase());
+        const icon = found ? found.icon : '🎁';
+        const coins = found ? found.coins : 30;
+        select.innerHTML += `<option value="${name}">${icon} ${name} (${coins} xu)</option>`;
+      });
+
+      onSimDropdownChange(select.value);
+    }
+
+    function onSimDropdownChange(giftName) {
+      const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === (giftName || '').toLowerCase());
+      if (found) {
+        document.getElementById('simCoinsInput').value = found.coins;
+      }
+    }
+
+    async function executeSimulateGift() {
+      const select = document.getElementById('simGiftDropdown');
+      const giftName = select.value || 'Bánh Vòng';
+      const coins = Number(document.getElementById('simCoinsInput').value) || 30;
+      const count = Number(document.getElementById('simCountInput').value) || 1;
+      const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === giftName.toLowerCase());
+      const giftId = found ? found.id : '';
+      const iconUrl = found ? found.iconUrl : '';
+      await simulate('Stream_Tester', giftName, coins, count, giftId, iconUrl);
+    }
+
+    async function quickSimulate(giftName, coins) {
+      const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === giftName.toLowerCase());
+      const giftId = found ? found.id : '';
+      const iconUrl = found ? found.iconUrl : '';
+      await simulate('Stream_Tester', giftName, coins, 1, giftId, iconUrl);
+    }
+
+    async function simulate(sender, giftName, diamondCount, repeatCount, giftId = '', iconUrl = '') {
+      await fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender, giftName, diamondCount, repeatCount, giftId, iconUrl })
+      });
+    }
+
+    // ========================================================
+    // XEM TRƯỚC VIDEO (PREVIEW MODAL)
+    // ========================================================
+    function openPreview(name, fileUrl) {
+      const modal = document.getElementById('previewModal');
+      const title = document.getElementById('previewTitle');
+      const player = document.getElementById('previewPlayer');
+
+      title.innerText = 'Xem trước: ' + name;
+      player.src = fileUrl;
+      modal.classList.add('open');
+      player.play().catch(() => {});
+    }
+
+    function closePreviewDirect() {
+      const modal = document.getElementById('previewModal');
+      const player = document.getElementById('previewPlayer');
+      player.pause();
+      modal.classList.remove('open');
+    }
+    function closePreview(e) {
+      if (e.target.id === 'previewModal') closePreviewDirect();
+    }
+
+    // ========================================================
+    // QUẢN LÝ CẬP NHẬT ỨNG DỤNG (AUTO-UPDATE MODAL & LOGIC)
+    // ========================================================
+    let currentAppVersion = '1.0.0';
+    let selectedPatchFile = null;
+    let pendingGitHubDownloadUrl = '';
+    let pendingGitHubVersion = '';
+
+    function openUpdateModal() {
+      const modal = document.getElementById('updateModal');
+      if (modal) {
+        modal.classList.add('open');
+        fetchAppVersion();
+      }
+    }
+
+    function closeUpdateModalDirect() {
+      const modal = document.getElementById('updateModal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function closeUpdateModal(e) {
+      if (e.target.id === 'updateModal') closeUpdateModalDirect();
+    }
+
+    function switchUpdateTab(tab) {
+      const tabPatch = document.getElementById('updateTabPatch');
+      const tabGH = document.getElementById('updateTabGitHub');
+      const btnPatch = document.getElementById('tabBtnUpdatePatch');
+      const btnGH = document.getElementById('tabBtnUpdateGitHub');
+
+      if (tab === 'patch') {
+        if (tabPatch) tabPatch.style.display = 'block';
+        if (tabGH) tabGH.style.display = 'none';
+        if (btnPatch) btnPatch.classList.add('active');
+        if (btnGH) btnGH.classList.remove('active');
+      } else {
+        if (tabPatch) tabPatch.style.display = 'none';
+        if (tabGH) tabGH.style.display = 'block';
+        if (btnPatch) btnPatch.classList.remove('active');
+        if (btnGH) btnGH.classList.add('active');
+      }
+    }
+
+    async function fetchAppVersion() {
+      try {
+        const res = await fetch('/api/app/version');
+        const data = await res.json();
+        if (data.success) {
+          currentAppVersion = data.version || '1.0.0';
+          const badge = document.getElementById('appVersionBadge');
+          const modalBadge = document.getElementById('modalCurrentVersionBadge');
+          if (badge) badge.textContent = `v${currentAppVersion}`;
+          if (modalBadge) modalBadge.textContent = `v${currentAppVersion}`;
+          const ghInput = document.getElementById('githubRepoInput');
+          if (ghInput && data.githubRepo) ghInput.value = data.githubRepo;
+        }
+      } catch (_) {}
+    }
+
+    function handlePatchDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropzone = document.getElementById('patchDropzone');
+      if (dropzone) dropzone.style.borderColor = '#38bdf8';
+    }
+
+    function handlePatchDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropzone = document.getElementById('patchDropzone');
+      if (dropzone) dropzone.style.borderColor = '#0284c7';
+    }
+
+    function handlePatchDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropzone = document.getElementById('patchDropzone');
+      if (dropzone) dropzone.style.borderColor = '#0284c7';
+
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        if (!file.name.endsWith('.zip')) {
+          showAppToast('error', 'Chỉ chấp nhận file cập nhật định dạng .zip');
+          return;
+        }
+        setPatchFile(file);
+      }
+    }
+
+    function handlePatchFileSelected(input) {
+      if (input.files && input.files[0]) {
+        setPatchFile(input.files[0]);
+      }
+    }
+
+    function setPatchFile(file) {
+      selectedPatchFile = file;
+      const label = document.getElementById('patchFileLabel');
+      const btn = document.getElementById('btnApplyPatch');
+      if (label) {
+        label.innerHTML = `✅ Đã chọn: <span style="color: #38bdf8;">${file.name}</span> (${(file.size / 1024).toFixed(1)} KB)`;
+      }
+      if (btn) btn.disabled = false;
+    }
+
+    async function applyUploadedPatch() {
+      if (!selectedPatchFile) {
+        showAppToast('warning', 'Vui lòng chọn file .zip trước');
+        return;
+      }
+
+      const btn = document.getElementById('btnApplyPatch');
+      const progressBox = document.getElementById('patchProgressBox');
+      const progressText = document.getElementById('patchProgressText');
+      const progressBar = document.getElementById('patchProgressBar');
+      const progressPercent = document.getElementById('patchProgressPercent');
+
+      if (btn) btn.disabled = true;
+      if (progressBox) progressBox.style.display = 'block';
+      if (progressBar) progressBar.style.width = '30%';
+      if (progressPercent) progressPercent.textContent = '30%';
+      if (progressText) progressText.textContent = 'Đang tải file cập nhật lên máy chủ...';
+
+      const formData = new FormData();
+      formData.append('patchFile', selectedPatchFile);
+
+      try {
+        if (progressBar) progressBar.style.width = '60%';
+        if (progressPercent) progressPercent.textContent = '60%';
+        if (progressText) progressText.textContent = 'Đang giải nén và bảo vệ dữ liệu cũ...';
+
+        const res = await fetch('/api/app/apply-patch', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressPercent) progressPercent.textContent = '100%';
+          if (progressText) progressText.innerHTML = `✅ ${data.message} Đang khởi động lại...`;
+          showAppToast('success', 'Nâng cấp thành công! Đang tự động tải lại trang...');
+
+          await fetch('/api/app/restart', { method: 'POST' }).catch(() => {});
+          setTimeout(() => location.reload(), 2500);
+        } else {
+          throw new Error(data.error || 'Cập nhật thất bại');
+        }
+      } catch (err) {
+        if (btn) btn.disabled = false;
+        if (progressText) progressText.innerHTML = `<span style="color: #ef4444;">Lỗi: ${err.message}</span>`;
+        showAppToast('error', 'Lỗi cập nhật: ' + err.message);
+      }
+    }
+
+    async function saveGitHubRepoConfig() {
+      const repo = (document.getElementById('githubRepoInput')?.value || '').trim();
+      try {
+        const res = await fetch('/api/app/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ githubRepo: repo })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showAppToast('success', 'Đã lưu cấu hình GitHub Repo thành công!');
+        }
+      } catch (err) {
+        showAppToast('error', 'Lỗi lưu cấu hình: ' + err.message);
+      }
+    }
+
+    async function checkGitHubUpdate() {
+      const repo = (document.getElementById('githubRepoInput')?.value || '').trim();
+      if (!repo || !repo.includes('/')) {
+        showAppToast('warning', 'Vui lòng nhập định dạng: username/tên-repo');
+        return;
+      }
+
+      const btn = document.getElementById('btnCheckGitHub');
+      const box = document.getElementById('githubCheckResult');
+      const msg = document.getElementById('githubStatusMsg');
+      const notes = document.getElementById('githubReleaseNotes');
+      const applyBtn = document.getElementById('btnApplyGitHub');
+
+      if (btn) btn.disabled = true;
+      if (box) box.style.display = 'block';
+      if (msg) msg.innerHTML = '<span style="color: #38bdf8;">⏳ Đang kết nối máy chủ GitHub kiểm tra...</span>';
+      if (notes) notes.style.display = 'none';
+      if (applyBtn) applyBtn.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/app/check-github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ githubRepo: repo })
+        });
+        const data = await res.json();
+
+        if (btn) btn.disabled = false;
+
+        if (data.success) {
+          if (data.hasUpdate) {
+            pendingGitHubDownloadUrl = data.downloadUrl;
+            pendingGitHubVersion = data.latestVersion;
+            msg.innerHTML = `🎉 <span style="color: #34d399;">Phát hiện bản mới: v${data.latestVersion}</span> (Bản hiện tại: v${data.currentVersion})`;
+            if (data.releaseNotes && notes) {
+              notes.style.display = 'block';
+              notes.textContent = data.releaseNotes;
+            }
+            if (applyBtn) {
+              applyBtn.style.display = 'inline-block';
+              applyBtn.textContent = `⚡ Nâng Cấp Tự Động Lên v${data.latestVersion}`;
+            }
+          } else {
+            msg.innerHTML = `✅ <span style="color: #38bdf8;">Bạn đang dùng phiên bản mới nhất (v${data.currentVersion}).</span>`;
+          }
+        } else {
+          msg.innerHTML = `<span style="color: #ef4444;">${data.error}</span>`;
+        }
+      } catch (err) {
+        if (btn) btn.disabled = false;
+        if (msg) msg.innerHTML = `<span style="color: #ef4444;">Lỗi kết nối GitHub: ${err.message}</span>`;
+      }
+    }
+
+    async function applyGitHubUpdate() {
+      if (!pendingGitHubDownloadUrl) {
+        showAppToast('warning', 'Không tìm thấy link tải');
+        return;
+      }
+
+      const applyBtn = document.getElementById('btnApplyGitHub');
+      const msg = document.getElementById('githubStatusMsg');
+      if (applyBtn) applyBtn.disabled = true;
+      if (msg) msg.innerHTML = '⏳ Đang tải bản cập nhật từ GitHub và bảo vệ dữ liệu...';
+
+      try {
+        const res = await fetch('/api/app/apply-github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            downloadUrl: pendingGitHubDownloadUrl,
+            newVersion: pendingGitHubVersion
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.innerHTML = '✅ Cập nhật thành công! Đang khởi động lại...';
+          showAppToast('success', 'Đã cập nhật tự động thành công! Đang tải lại trang...');
+          await fetch('/api/app/restart', { method: 'POST' }).catch(() => {});
+          setTimeout(() => location.reload(), 2500);
+        } else {
+          throw new Error(data.error || 'Cập nhật thất bại');
+        }
+      } catch (err) {
+        if (applyBtn) applyBtn.disabled = false;
+        if (msg) msg.innerHTML = `<span style="color: #ef4444;">Lỗi: ${err.message}</span>`;
+        showAppToast('error', 'Lỗi cập nhật: ' + err.message);
+      }
+    }
+
+    async function restartServerNow() {
+      if (!confirm('Bạn có chắc chắn muốn khởi động lại Server LiveEffect Studio không?')) return;
+      showAppToast('info', 'Đang khởi động lại server...');
+      try {
+        await fetch('/api/app/restart', { method: 'POST' });
+      } catch (_) {}
+      setTimeout(() => location.reload(), 2500);
+    }
+
+    function escapeHtml(text) {
+      return (text || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ========================================================
+    // SOCKET & REALTIME LOGS
+    // ========================================================
+    function setupSocket() {
+      socket.on('tiktok_status', updateLiveStatusUI);
+
+      socket.on('new_log', (log) => {
+        const box = document.getElementById('logBox');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${log.type}`;
+        entry.innerHTML = `<span style="color: #64748b;">[${log.time}]</span> <b>${log.message}</b>`;
+        box.prepend(entry);
+      });
+
+      socket.on('media_updated', fetchVideos);
+      socket.on('rules_updated', (rules) => {
+        currentRules = rules;
+        renderCurrentView();
+      });
+
+      socket.on('gifts_updated', (gifts) => {
+        if (Array.isArray(gifts)) {
+          TIKTOK_GIFTS_CATALOG.length = 0;
+          TIKTOK_GIFTS_CATALOG.push(...gifts);
+          renderCurrentView();
+          populateSimulatorDropdown();
+          filterGiftPicker();
+        }
+      });
+    }
+
+    function clearLogs() {
+      document.getElementById('logBox').innerHTML = '<div class="log-entry">Đã xóa nhật ký.</div>';
+    }
+
+    // ========================================================
+    // QUẢN LÝ HŨ QUÀ TIKTOK VẬT LÝ (INTERACTIVE PHYSICS JAR)
+    // ========================================================
+    let currentJarConfig = {};
+
+    async function initJarPanel() {
+      try {
+        const res = await fetch('/api/jar/config');
+        const data = await res.json();
+        if (data.success && data.config) {
+          currentJarConfig = data.config;
+          applyJarConfigToUI(currentJarConfig);
+        }
+      } catch (err) {
+        console.error('Lỗi tải cấu hình hũ:', err);
+      }
+
+      await loadJarDecorList();
+      populateJarCustomGiftSelect();
+    }
+
+    function applyJarConfigToUI(cfg) {
+      if (!cfg) return;
+      const chk = document.getElementById('jarMasterEnabled');
+      if (chk) chk.checked = cfg.enabled !== false;
+
+      // Kiểu dáng
+      const style = cfg.style || 'mason';
+      ['mason', 'diamond', 'fishbowl', 'chest'].forEach(s => {
+        const card = document.getElementById(`styleCard${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        if (card) card.classList.toggle('active', s === style);
+      });
+      const cardTikLive = document.getElementById('styleCardTikLive');
+      if (cardTikLive) cardTikLive.classList.toggle('active', style === 'custom_image' && (cfg.customJarImage || '').includes('hu-qua-live'));
+      const cardCustom = document.getElementById('styleCardCustom');
+      if (cardCustom) cardCustom.classList.toggle('active', style === 'custom_image' && !(cfg.customJarImage || '').includes('hu-qua-live'));
+
+      const hideDefaultJarChk = document.getElementById('jarHideDefaultJarCheck');
+      if (hideDefaultJarChk) hideDefaultJarChk.checked = cfg.hideDefaultJarOnCustom !== false;
+
+      // Tọa độ vị trí & kích thước hũ
+      const posX = typeof cfg.jarPosX === 'number' ? cfg.jarPosX : 50;
+      const posY = typeof cfg.jarPosY === 'number' ? cfg.jarPosY : 82;
+      const scale = typeof cfg.jarScale === 'number' ? cfg.jarScale : 1.0;
+
+      const posXSlider = document.getElementById('jarPosXSlider');
+      if (posXSlider) posXSlider.value = posX;
+      const lblPosX = document.getElementById('labelJarPosX');
+      if (lblPosX) lblPosX.textContent = `${posX}%`;
+
+      const posYSlider = document.getElementById('jarPosYSlider');
+      if (posYSlider) posYSlider.value = posY;
+      const lblPosY = document.getElementById('labelJarPosY');
+      if (lblPosY) lblPosY.textContent = `${posY}%`;
+
+      const scaleSlider = document.getElementById('jarScaleSlider');
+      if (scaleSlider) scaleSlider.value = scale;
+      const lblScale = document.getElementById('labelJarScale');
+      if (lblScale) lblScale.textContent = `${Math.round(scale * 100)}%`;
+
+      // Chế độ rơi (Drop Mode)
+      const dropMode = cfg.dropMode || 'straight';
+      const dmStraight = document.getElementById('dropModeStraight');
+      if (dmStraight) dmStraight.classList.toggle('active', dropMode === 'straight');
+      const dmShower = document.getElementById('dropModeShower');
+      if (dmShower) dmShower.classList.toggle('active', dropMode === 'shower');
+
+      // Tốc độ rơi & trọng lực
+      const fallSpeedSlider = document.getElementById('jarFallSpeedSlider');
+      if (fallSpeedSlider) fallSpeedSlider.value = cfg.fallSpeed || 1.0;
+      const lblFallSpeed = document.getElementById('labelFallSpeed');
+      if (lblFallSpeed) lblFallSpeed.textContent = `${cfg.fallSpeed || 1.0}x`;
+
+      const gravitySlider = document.getElementById('jarGravitySlider');
+      if (gravitySlider) gravitySlider.value = cfg.gravity || 1.0;
+      const lblGravity = document.getElementById('labelGravity');
+      if (lblGravity) lblGravity.textContent = cfg.gravity || 1.0;
+
+      // Điểm xuất phát rơi quà (Drop origin)
+      const dropOrigin = cfg.dropOrigin || 'top';
+      const originTop = document.getElementById('dropOriginTop');
+      if (originTop) originTop.classList.toggle('active', dropOrigin === 'top');
+      const originMid = document.getElementById('dropOriginMiddle');
+      if (originMid) originMid.classList.toggle('active', dropOrigin === 'middle');
+      const originMouth = document.getElementById('dropOriginMouth');
+      if (originMouth) originMouth.classList.toggle('active', dropOrigin === 'mouth');
+
+      // Tràn hũ rơi xuống đất & Sức chứa
+      const floorAccChk = document.getElementById('jarFloorAccCheck');
+      if (floorAccChk) floorAccChk.checked = cfg.enableFloorAccumulation !== false;
+
+      const capacitySlider = document.getElementById('jarGiftCapacitySlider');
+      if (capacitySlider) capacitySlider.value = cfg.giftCapacity || 600;
+      const lblCapacity = document.getElementById('labelGiftCapacity');
+      if (lblCapacity) lblCapacity.textContent = `${cfg.giftCapacity || 600} quà`;
+
+      // Kích cỡ quà tặng (Gift Sizes)
+      const scaleGlobalSlider = document.getElementById('jarGiftScaleGlobalSlider');
+      if (scaleGlobalSlider) scaleGlobalSlider.value = cfg.giftScaleGlobal || 1.0;
+      const lblScaleGlobal = document.getElementById('labelGiftScaleGlobal');
+      if (lblScaleGlobal) lblScaleGlobal.textContent = `${Math.round((cfg.giftScaleGlobal || 1.0) * 100)}%`;
+
+      const sizeSmallSlider = document.getElementById('jarGiftSizeSmallSlider');
+      if (sizeSmallSlider) sizeSmallSlider.value = cfg.giftSizeSmall || 15;
+      const lblSizeSmall = document.getElementById('labelGiftSizeSmall');
+      if (lblSizeSmall) lblSizeSmall.textContent = `${cfg.giftSizeSmall || 15}px`;
+
+      const sizeMediumSlider = document.getElementById('jarGiftSizeMediumSlider');
+      if (sizeMediumSlider) sizeMediumSlider.value = cfg.giftSizeMedium || 24;
+      const lblSizeMedium = document.getElementById('labelGiftSizeMedium');
+      if (lblSizeMedium) lblSizeMedium.textContent = `${cfg.giftSizeMedium || 24}px`;
+
+      const sizeLargeSlider = document.getElementById('jarGiftSizeLargeSlider');
+      if (sizeLargeSlider) sizeLargeSlider.value = cfg.giftSizeLarge || 35;
+      const lblSizeLarge = document.getElementById('labelGiftSizeLarge');
+      if (lblSizeLarge) lblSizeLarge.textContent = `${cfg.giftSizeLarge || 35}px`;
+
+      const sizeVIPSlider = document.getElementById('jarGiftSizeVIPSlider');
+      if (sizeVIPSlider) sizeVIPSlider.value = cfg.giftSizeVIP || 52;
+      const lblSizeVIP = document.getElementById('labelGiftSizeVIP');
+      if (lblSizeVIP) lblSizeVIP.textContent = `${cfg.giftSizeVIP || 52}px`;
+
+      // Decor
+      const posSelect = document.getElementById('jarDecorPosSelect');
+      if (posSelect && cfg.decorPosition) posSelect.value = cfg.decorPosition;
+
+      const decorScaleSliderEl = document.getElementById('jarDecorScaleSlider');
+      if (decorScaleSliderEl && cfg.decorScale) {
+        decorScaleSliderEl.value = cfg.decorScale;
+        const lbl = document.getElementById('labelDecorScale');
+        if (lbl) lbl.textContent = Math.round(cfg.decorScale * 100) + '%';
+      }
+
+      const opSlider = document.getElementById('jarDecorOpacitySlider');
+      if (opSlider && cfg.decorOpacity !== undefined) {
+        opSlider.value = cfg.decorOpacity;
+        const lbl = document.getElementById('labelDecorOpacity');
+        if (lbl) lbl.textContent = Math.round(cfg.decorOpacity * 100) + '%';
+      }
+
+      // Cài đặt mục tiêu xu & Âm thanh
+      const goalChk = document.getElementById('jarGoalEnabled');
+      if (goalChk) goalChk.checked = cfg.goalEnabled !== false;
+      const goalTarget = document.getElementById('jarGoalTargetInput');
+      if (goalTarget) goalTarget.value = cfg.goalTargetCoins || 500;
+      const autoBurst = document.getElementById('jarAutoBurstCheck');
+      if (autoBurst) autoBurst.checked = cfg.autoBurstOnGoal !== false;
+
+      const sndChk = document.getElementById('jarSoundEnabled');
+      if (sndChk) sndChk.checked = cfg.soundEnabled !== false;
+      const sndVol = document.getElementById('jarSoundVolSlider');
+      if (sndVol) sndVol.value = cfg.soundVolume || 0.7;
+      const lblSoundVol = document.getElementById('labelSoundVol');
+      if (lblSoundVol) lblSoundVol.textContent = `${Math.round((cfg.soundVolume || 0.7) * 100)}%`;
+
+      const shakeThreshold = document.getElementById('jarShakeThresholdInput');
+      if (shakeThreshold) shakeThreshold.value = cfg.shakeThreshold || 50;
+    }
+    
+    function switchJarTab(tab) {
+      const tabs = ['actions', 'position', 'sizes', 'styles', 'settings'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtnJar${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.toggle('active', tab === t);
+        const pane = document.getElementById(`jarTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (pane) pane.style.display = tab === t ? 'block' : 'none';
+      });
+    }
+
+    
+    // --- CÁC HÀM ĐIỀU KHIỂN HŨ MỚI (DROP MODE, SIZES, CHROMA, V.V.) ---
+    function setDropMode(mode) {
+      document.getElementById('dropModeStraight').classList.toggle('active', mode === 'straight');
+      document.getElementById('dropModeShower').classList.toggle('active', mode === 'shower');
+      saveJarSettingsField('dropMode', mode);
+    }
+
+    function updateFallSpeed(val) {
+      document.getElementById('labelFallSpeed').textContent = `${val}x`;
+      saveJarSettingsField('fallSpeed', Number(val));
+    }
+
+    function updateGravity(val) {
+      document.getElementById('labelGravity').textContent = val;
+      saveJarSettingsField('gravity', Number(val));
+    }
+
+    function updateGiftCapacity(val) {
+      document.getElementById('labelGiftCapacity').textContent = `${val} quà`;
+      saveJarSettingsField('giftCapacity', Number(val));
+    }
+
+    function updateGiftScaleGlobal(val) {
+      document.getElementById('labelGiftScaleGlobal').textContent = `${Math.round(val * 100)}%`;
+      saveJarSettingsField('giftScaleGlobal', Number(val));
+    }
+
+    function updateGiftSize(type, val) {
+      document.getElementById(`labelGiftSize${type}`).textContent = `${val}px`;
+      saveJarSettingsField(`giftSize${type}`, Number(val));
+    }
+async function setJarPositionPreset(x, y, scale) {
+      document.getElementById('jarPosXSlider').value = x;
+      document.getElementById('labelJarPosX').textContent = `${x}%`;
+      document.getElementById('jarPosYSlider').value = y;
+      document.getElementById('labelJarPosY').textContent = `${y}%`;
+      document.getElementById('jarScaleSlider').value = scale;
+      document.getElementById('labelJarScale').textContent = `${Math.round(scale * 100)}%`;
+
+      await saveJarConfigPartial({ jarPosX: x, jarPosY: y, jarScale: scale });
+    }
+
+    let posTimer = null;
+    function updateJarPosField(field, val) {
+      if (field === 'jarPosX') document.getElementById('labelJarPosX').textContent = `${val}%`;
+      if (field === 'jarPosY') document.getElementById('labelJarPosY').textContent = `${val}%`;
+      if (field === 'jarScale') document.getElementById('labelJarScale').textContent = `${Math.round(val * 100)}%`;
+
+      clearTimeout(posTimer);
+      posTimer = setTimeout(() => {
+        const update = {};
+        update[field] = Number(val);
+        saveJarConfigPartial(update);
+      }, 200);
+    }
+
+    // Chọn điểm xuất phát rơi quà (Drop origin)
+    async function setDropOrigin(origin) {
+      document.getElementById('dropOriginTop').classList.toggle('active', origin === 'top');
+      document.getElementById('dropOriginMiddle').classList.toggle('active', origin === 'middle');
+      document.getElementById('dropOriginMouth').classList.toggle('active', origin === 'mouth');
+
+      await saveJarConfigPartial({ dropOrigin: origin });
+    }
+
+    let spreadTimer = null;
+    function updateDropSpread(val) {
+      document.getElementById('labelDropSpread').textContent = `${Math.round(val * 100)}%`;
+      clearTimeout(spreadTimer);
+      spreadTimer = setTimeout(() => {
+        saveJarConfigPartial({ dropSpread: Number(val) });
+      }, 250);
+    }
+
+    // Chọn mẫu hũ ảnh tùy chỉnh (ví dụ hũ 20/10)
+    async function setJarStyleCustom(url, aspect = 'vertical') {
+      ['mason', 'diamond', 'fishbowl', 'chest'].forEach(s => {
+        const card = document.getElementById(`styleCard${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        if (card) card.classList.remove('active');
+      });
+      const cardTikLive = document.getElementById('styleCardTikLive');
+      if (cardTikLive) cardTikLive.classList.toggle('active', url.includes('hu-qua-live'));
+      const cardOcean = document.getElementById('styleCardOceanWide');
+      if (cardOcean) cardOcean.classList.toggle('active', url.includes('ngang-glass'));
+      const cardCustom = document.getElementById('styleCardCustom');
+      if (cardCustom) cardCustom.classList.toggle('active', !url.includes('hu-qua-live') && !url.includes('ngang-glass'));
+
+      await saveJarConfigPartial({ style: 'custom_image', customJarImage: url, jarAspect: aspect });
+    }
+
+    // Upload file mẫu hũ mới từ ảnh máy tính
+    async function uploadJarSkinFile(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('jarSkin', file);
+
+      try {
+        const res = await fetch('/api/jar/upload-jar-skin', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Đã tải lên và áp dụng Mẫu Hũ Mới từ ảnh thành công!');
+          ['mason', 'diamond', 'fishbowl', 'chest'].forEach(s => {
+            const card = document.getElementById(`styleCard${s.charAt(0).toUpperCase() + s.slice(1)}`);
+            if (card) card.classList.remove('active');
+          });
+          const cardTikLive = document.getElementById('styleCardTikLive');
+          
+          const cardCustom = document.getElementById('styleCardCustom');
+          if (cardCustom) cardCustom.classList.add('active');
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi tải ảnh mẫu hũ: ' + err.message);
+      }
+    }
+
+    function copyJarObsUrl() {
+      const url = `${location.origin}/jar.html`;
+      navigator.clipboard.writeText(url);
+      alert('🏺 Đã sao chép Link OBS Hũ Quà:\n' + url + '\n\n👉 Dán vào OBS: Sources -> Thêm Browser Source -> Nhập link trên (Độ phân giải 1080x1920 hoặc 720x1280, hỗ trợ trong suốt 100%)');
+    }
+
+    async function triggerJarAction(action, intensity = 1.0) {
+      try {
+        await fetch('/api/jar/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, intensity })
+        });
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    async function quickDropGift(giftName, coins, count = 1) {
+      try {
+        await fetch('/api/jar/drop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            giftName,
+            coins,
+            count,
+            sender: 'Đại Gia Elden'
+          })
+        });
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    function populateJarCustomGiftSelect() {
+      const select = document.getElementById('jarCustomGiftSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      TIKTOK_GIFTS_CATALOG.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.name;
+        opt.textContent = `${g.icon || '🎁'} ${g.name} (${g.coins} xu)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onJarGiftSelectChange(giftName) {}
+
+    async function dropCustomJarGift() {
+      const select = document.getElementById('jarCustomGiftSelect');
+      const giftName = select.value || 'Hoa Hồng';
+      const count = Number(document.getElementById('jarCustomGiftCount').value) || 1;
+      const sender = document.getElementById('jarCustomDonorName').value || 'Đại Gia Elden';
+
+      const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === giftName.toLowerCase());
+      const coins = found ? found.coins : 1;
+      const giftId = found ? found.id : '';
+      const iconUrl = found ? found.iconUrl : '';
+
+      try {
+        await fetch('/api/jar/drop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ giftId, giftName, coins, count, sender, iconUrl })
+        });
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    async function setJarStyle(style) {
+      ['mason', 'diamond', 'fishbowl', 'chest'].forEach(s => {
+        const card = document.getElementById(`styleCard${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        if (card) card.classList.toggle('active', s === style);
+      });
+      await saveJarConfigPartial({ style });
+    }
+
+    async function loadJarDecorList() {
+      const container = document.getElementById('decorThumbsList');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/jar/decor-list');
+        const data = await res.json();
+        container.innerHTML = '';
+
+        // Nút xoá decor (không dùng decor)
+        const noneThumb = document.createElement('div');
+        noneThumb.className = `decor-thumb ${!currentJarConfig.decorImage ? 'active' : ''}`;
+        noneThumb.title = 'Không dùng ảnh decor';
+        noneThumb.innerHTML = '<span style="font-size: 1.2rem; color: #94a3b8;">🚫</span>';
+        noneThumb.onclick = () => selectDecor('');
+        container.appendChild(noneThumb);
+
+        if (data.success && Array.isArray(data.decors)) {
+          data.decors.forEach(d => {
+            const thumb = document.createElement('div');
+            thumb.className = `decor-thumb ${currentJarConfig.decorImage === d.url ? 'active' : ''}`;
+            thumb.title = d.name;
+            thumb.innerHTML = `<img src="${d.url}" alt="${d.name}">`;
+            thumb.onclick = () => selectDecor(d.url);
+            container.appendChild(thumb);
+          });
+        }
+      } catch (_) {}
+    }
+
+    async function selectDecor(url) {
+      currentJarConfig.decorImage = url;
+      await saveJarConfigPartial({ decorImage: url });
+      loadJarDecorList();
+    }
+
+    async function uploadDecorFile(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('decor', file);
+
+      try {
+        const res = await fetch('/api/jar/upload-decor', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Đã tải lên ảnh Decor thành công và dán lên Hũ!');
+          await loadJarDecorList();
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi tải ảnh: ' + err.message);
+      }
+    }
+
+    async function updateJarDecorPos(pos) {
+      await saveJarConfigPartial({ decorPosition: pos });
+    }
+
+    let decorScaleTimer = null;
+    function updateJarDecorScale(val) {
+      const lbl = document.getElementById('labelDecorScale');
+      if (lbl) lbl.textContent = Math.round(val * 100) + '%';
+      clearTimeout(decorScaleTimer);
+      decorScaleTimer = setTimeout(() => {
+        saveJarConfigPartial({ decorScale: Number(val) });
+      }, 250);
+    }
+
+    let decorOpacityTimer = null;
+    function updateJarDecorOpacity(val) {
+      const lbl = document.getElementById('labelDecorOpacity');
+      if (lbl) lbl.textContent = Math.round(val * 100) + '%';
+      clearTimeout(decorOpacityTimer);
+      decorOpacityTimer = setTimeout(() => {
+        saveJarConfigPartial({ decorOpacity: Number(val) });
+      }, 250);
+    }
+
+    let soundVolTimer = null;
+    function updateJarSoundVol(val) {
+      const lbl = document.getElementById('labelSoundVol');
+      if (lbl) lbl.textContent = Math.round(val * 100) + '%';
+      clearTimeout(soundVolTimer);
+      soundVolTimer = setTimeout(() => {
+        saveJarConfigPartial({ soundVolume: Number(val) });
+      }, 250);
+    }
+
+    async function toggleJarMasterEnabled(enabled) {
+      await saveJarConfigPartial({ enabled });
+    }
+
+    async function saveJarSettingsField(field, value) {
+      const update = {};
+      update[field] = value;
+      await saveJarConfigPartial(update);
+    }
+
+    async function saveJarConfigPartial(partial) {
+      currentJarConfig = { ...currentJarConfig, ...partial };
+      try {
+        await fetch('/api/jar/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(partial)
+        });
+      } catch (err) {
+        console.error('Lỗi lưu config hũ:', err);
+      }
+    }
+
+    async function saveAllRules(showAlert = false) {
+      try {
+        const res = await fetch('/api/rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rules: currentRules })
+        });
+        const data = await res.json();
+        if (data.success && showAlert) {
+          alert('✅ Đã lưu cấu hình thành công vào hệ thống!');
+        }
+      } catch (err) {
+        if (showAlert) alert('Lỗi: ' + err.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
