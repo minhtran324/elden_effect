@@ -1037,54 +1037,136 @@
           </div>
 
           <!-- TỈ LỆ TỔNG THỂ GLOBAL -->
-          <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">🌐 Tỉ Lệ Toàn Bộ Quà (Global Multiplier):</span>
-              <b id="labelGiftScaleGlobal" style="color: #fbbf24; font-size: 0.9rem;">100%</b>
+          <div style="background: linear-gradient(180deg, #101a30 0%, #090f1d 100%); padding: 14px; border-radius: 10px; border: 1px solid rgba(37, 99, 235, 0.4); margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 800; color: #fff;">🌐 Tỉ Lệ Toàn Bộ Quà (Global Multiplier):</span>
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Co giãn đồng bộ mọi quà trong hũ & trên sàn, tự động nén dồn xuống đáy hũ tức thì</div>
+              </div>
+              <b id="labelGiftScaleGlobal" style="color: #fbbf24; font-size: 1.1rem; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); padding: 3px 12px; border-radius: 6px;">100%</b>
             </div>
-            <input type="range" id="jarGiftScaleGlobalSlider" min="0.25" max="2.5" step="0.05" value="1.0" style="width: 100%; margin-top: 8px;" oninput="updateGiftScaleGlobal(this.value)">
+            <input type="range" id="jarGiftScaleGlobalSlider" min="0.25" max="2.5" step="0.05" value="1.0" style="width: 100%; margin-top: 10px;" oninput="updateGiftScaleGlobal(this.value)">
+
+            <!-- Quick Presets -->
+            <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center;">
+              <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Mẫu tỉ lệ nhanh:</span>
+              <button type="button" class="chip-filter" onclick="applyGiftScalePreset(0.40)">40% (Siêu Nhỏ)</button>
+              <button type="button" class="chip-filter" onclick="applyGiftScalePreset(0.55)">55% (Nhỏ Gọn)</button>
+              <button type="button" class="chip-filter" onclick="applyGiftScalePreset(0.75)">75% (Vừa Vặn)</button>
+              <button type="button" class="chip-filter" onclick="applyGiftScalePreset(1.0)">100% (Chuẩn Gốc)</button>
+              <button type="button" class="chip-filter" onclick="applyGiftScalePreset(1.30)">130% (Lớn)</button>
+              <button type="button" class="chip-filter" style="margin-left: auto; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; font-weight: 700;" onclick="resetStandardGiftHierarchy()">✨ Chuẩn Cấp Bậc (Nhỏ &lt; Vừa &lt; Lớn &lt; VIP)</button>
+            </div>
           </div>
 
           <!-- CÁC NHÓM QUÀ CỤ THỂ -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
             <!-- Nhóm 1: Quà nhỏ 1-9 xu -->
-            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: #f43f5e;">🌹 Quà Nhỏ (1 - 9 xu):</span>
-                <b id="labelGiftSizeSmall" style="color: #fda4af;">15px</b>
+            <div style="background: #090f1d; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #f43f5e;">🌹 Quà Nhỏ (1 - 9 xu)</span>
+                  <span id="giftRealDiamSmall" style="color: #38bdf8; font-weight: 800; font-size: 0.95rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.3);">Ø 14px</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Hoa Hồng, Nốt Nhạc, Kẹo Mút...</div>
+
+                <!-- Preview Box -->
+                <div style="height: 60px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; margin: 8px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #334155; position: relative;">
+                  <div id="giftPreviewCircleSmall" style="width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, #f43f5e 30%, #be123c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); transition: width 0.1s, height 0.1s;">
+                    <span style="font-size: 9px;">🌹</span>
+                  </div>
+                  <span style="position: absolute; bottom: 3px; right: 6px; font-size: 0.65rem; color: #64748b;">Xem trước tỉ lệ</span>
+                </div>
               </div>
-              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Hoa Hồng, Nốt Nhạc, Kẹo Mút...</div>
-              <input type="range" id="jarGiftSizeSmallSlider" min="6" max="36" step="1" value="15" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Small', this.value)">
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 2px;">
+                  <span>Bán kính gốc (Base R): <b id="labelGiftSizeSmall" style="color: #fda4af;">12px</b></span>
+                  <span id="giftRealRadiusSmall" style="color: #94a3b8;">Bán kính thực: 7px</span>
+                </div>
+                <input type="range" id="jarGiftSizeSmallSlider" min="6" max="36" step="1" value="12" style="width: 100%;" oninput="updateGiftSize('Small', this.value)">
+              </div>
             </div>
 
             <!-- Nhóm 2: Quà vừa 10-99 xu -->
-            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: #f59e0b;">🍩 Quà Vừa (10 - 99 xu):</span>
-                <b id="labelGiftSizeMedium" style="color: #fde68a;">24px</b>
+            <div style="background: #090f1d; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #f59e0b;">🍩 Quà Vừa (10 - 99 xu)</span>
+                  <span id="giftRealDiamMedium" style="color: #38bdf8; font-weight: 800; font-size: 0.95rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.3);">Ø 20px</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Bánh Vòng, Trái Tim, Kính Râm...</div>
+
+                <!-- Preview Box -->
+                <div style="height: 60px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; margin: 8px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #334155; position: relative;">
+                  <div id="giftPreviewCircleMedium" style="width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle, #f59e0b 30%, #d97706 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); transition: width 0.1s, height 0.1s;">
+                    <span style="font-size: 11px;">🍩</span>
+                  </div>
+                  <span style="position: absolute; bottom: 3px; right: 6px; font-size: 0.65rem; color: #64748b;">Xem trước tỉ lệ</span>
+                </div>
               </div>
-              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Bánh Vòng, Trái Tim, Kính Râm...</div>
-              <input type="range" id="jarGiftSizeMediumSlider" min="10" max="48" step="1" value="24" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Medium', this.value)">
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 2px;">
+                  <span>Bán kính gốc (Base R): <b id="labelGiftSizeMedium" style="color: #fde68a;">18px</b></span>
+                  <span id="giftRealRadiusMedium" style="color: #94a3b8;">Bán kính thực: 10px</span>
+                </div>
+                <input type="range" id="jarGiftSizeMediumSlider" min="8" max="48" step="1" value="18" style="width: 100%;" oninput="updateGiftSize('Medium', this.value)">
+              </div>
             </div>
 
             <!-- Nhóm 3: Quà lớn 100-999 xu -->
-            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: #8b5cf6;">🚀 Quà Lớn (100 - 999 xu):</span>
-                <b id="labelGiftSizeLarge" style="color: #c4b5fd;">35px</b>
+            <div style="background: #090f1d; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #8b5cf6;">🚀 Quà Lớn (100 - 999 xu)</span>
+                  <span id="giftRealDiamLarge" style="color: #38bdf8; font-weight: 800; font-size: 0.95rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.3);">Ø 30px</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Pháo Hoa, Xe Hơi, Vương Miện...</div>
+
+                <!-- Preview Box -->
+                <div style="height: 60px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; margin: 8px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #334155; position: relative;">
+                  <div id="giftPreviewCircleLarge" style="width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, #8b5cf6 30%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); transition: width 0.1s, height 0.1s;">
+                    <span style="font-size: 14px;">🚀</span>
+                  </div>
+                  <span style="position: absolute; bottom: 3px; right: 6px; font-size: 0.65rem; color: #64748b;">Xem trước tỉ lệ</span>
+                </div>
               </div>
-              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Pháo Hoa, Xe Hơi, Vương Miện...</div>
-              <input type="range" id="jarGiftSizeLargeSlider" min="16" max="68" step="1" value="35" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('Large', this.value)">
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 2px;">
+                  <span>Bán kính gốc (Base R): <b id="labelGiftSizeLarge" style="color: #c4b5fd;">28px</b></span>
+                  <span id="giftRealRadiusLarge" style="color: #94a3b8;">Bán kính thực: 15px</span>
+                </div>
+                <input type="range" id="jarGiftSizeLargeSlider" min="14" max="68" step="1" value="28" style="width: 100%;" oninput="updateGiftSize('Large', this.value)">
+              </div>
             </div>
 
             <!-- Nhóm 4: Quà VIP >= 1000 xu -->
-            <div style="background: #090f1d; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: #ef4444;">🦁 Quà VIP (>= 1,000 xu):</span>
-                <b id="labelGiftSizeVIP" style="color: #fca5a5;">52px</b>
+            <div style="background: #090f1d; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #ef4444;">🦁 Quà VIP (>= 1,000 xu)</span>
+                  <span id="giftRealDiamVIP" style="color: #38bdf8; font-weight: 800; font-size: 0.95rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.3);">Ø 44px</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Sư Tử, Thiên Nga, Vũ Trụ TikTok...</div>
+
+                <!-- Preview Box -->
+                <div style="height: 60px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; margin: 8px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #334155; position: relative;">
+                  <div id="giftPreviewCircleVIP" style="width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, #ef4444 30%, #b91c1c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); transition: width 0.1s, height 0.1s;">
+                    <span style="font-size: 16px;">🦁</span>
+                  </div>
+                  <span style="position: absolute; bottom: 3px; right: 6px; font-size: 0.65rem; color: #64748b;">Xem trước tỉ lệ</span>
+                </div>
               </div>
-              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Sư Tử, Thiên Nga, Vũ Trụ TikTok...</div>
-              <input type="range" id="jarGiftSizeVIPSlider" min="24" max="96" step="1" value="52" style="width: 100%; margin-top: 8px;" oninput="updateGiftSize('VIP', this.value)">
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 2px;">
+                  <span>Bán kính gốc (Base R): <b id="labelGiftSizeVIP" style="color: #fca5a5;">40px</b></span>
+                  <span id="giftRealRadiusVIP" style="color: #94a3b8;">Bán kính thực: 22px</span>
+                </div>
+                <input type="range" id="jarGiftSizeVIPSlider" min="20" max="96" step="1" value="40" style="width: 100%;" oninput="updateGiftSize('VIP', this.value)">
+              </div>
             </div>
           </div>
         </div>
@@ -3492,24 +3574,18 @@
       if (lblScaleGlobal) lblScaleGlobal.textContent = `${Math.round((cfg.giftScaleGlobal || 1.0) * 100)}%`;
 
       const sizeSmallSlider = document.getElementById('jarGiftSizeSmallSlider');
-      if (sizeSmallSlider) sizeSmallSlider.value = cfg.giftSizeSmall || 15;
-      const lblSizeSmall = document.getElementById('labelGiftSizeSmall');
-      if (lblSizeSmall) lblSizeSmall.textContent = `${cfg.giftSizeSmall || 15}px`;
+      if (sizeSmallSlider) sizeSmallSlider.value = cfg.giftSizeSmall || 12;
 
       const sizeMediumSlider = document.getElementById('jarGiftSizeMediumSlider');
-      if (sizeMediumSlider) sizeMediumSlider.value = cfg.giftSizeMedium || 24;
-      const lblSizeMedium = document.getElementById('labelGiftSizeMedium');
-      if (lblSizeMedium) lblSizeMedium.textContent = `${cfg.giftSizeMedium || 24}px`;
+      if (sizeMediumSlider) sizeMediumSlider.value = cfg.giftSizeMedium || 18;
 
       const sizeLargeSlider = document.getElementById('jarGiftSizeLargeSlider');
-      if (sizeLargeSlider) sizeLargeSlider.value = cfg.giftSizeLarge || 35;
-      const lblSizeLarge = document.getElementById('labelGiftSizeLarge');
-      if (lblSizeLarge) lblSizeLarge.textContent = `${cfg.giftSizeLarge || 35}px`;
+      if (sizeLargeSlider) sizeLargeSlider.value = cfg.giftSizeLarge || 28;
 
       const sizeVIPSlider = document.getElementById('jarGiftSizeVIPSlider');
-      if (sizeVIPSlider) sizeVIPSlider.value = cfg.giftSizeVIP || 52;
-      const lblSizeVIP = document.getElementById('labelGiftSizeVIP');
-      if (lblSizeVIP) lblSizeVIP.textContent = `${cfg.giftSizeVIP || 52}px`;
+      if (sizeVIPSlider) sizeVIPSlider.value = cfg.giftSizeVIP || 40;
+
+      renderGiftSizePreviews();
 
       // Decor
       const posSelect = document.getElementById('jarDecorPosSelect');
@@ -3725,9 +3801,75 @@
       saveJarSettingsField('giftCapacity', Number(val));
     }
 
+    function renderGiftSizePreviews() {
+      const global = parseFloat(document.getElementById('jarGiftScaleGlobalSlider')?.value) || 1.0;
+      const types = [
+        { type: 'Small', defaultBase: 12 },
+        { type: 'Medium', defaultBase: 18 },
+        { type: 'Large', defaultBase: 28 },
+        { type: 'VIP', defaultBase: 40 }
+      ];
+
+      types.forEach(item => {
+        const slider = document.getElementById(`jarGiftSize${item.type}Slider`);
+        const baseR = slider ? parseInt(slider.value) || item.defaultBase : item.defaultBase;
+        const realR = Math.max(4, Math.round(baseR * global));
+        const realDiam = realR * 2;
+
+        const lblBase = document.getElementById(`labelGiftSize${item.type}`);
+        if (lblBase) lblBase.textContent = `${baseR}px`;
+
+        const lblDiam = document.getElementById(`giftRealDiam${item.type}`);
+        if (lblDiam) lblDiam.textContent = `Ø ${realDiam}px`;
+
+        const lblRealR = document.getElementById(`giftRealRadius${item.type}`);
+        if (lblRealR) lblRealR.textContent = `Bán kính thực: ${realR}px`;
+
+        const previewCircle = document.getElementById(`giftPreviewCircle${item.type}`);
+        if (previewCircle) {
+          const displayPx = Math.min(52, Math.max(12, realDiam));
+          previewCircle.style.width = `${displayPx}px`;
+          previewCircle.style.height = `${displayPx}px`;
+        }
+      });
+    }
+
+    function applyGiftScalePreset(val) {
+      const slider = document.getElementById('jarGiftScaleGlobalSlider');
+      if (slider) {
+        slider.value = val;
+        updateGiftScaleGlobal(val);
+      }
+    }
+
+    async function resetStandardGiftHierarchy() {
+      const presets = {
+        giftSizeSmall: 12,
+        giftSizeMedium: 18,
+        giftSizeLarge: 28,
+        giftSizeVIP: 40
+      };
+
+      const sSmall = document.getElementById('jarGiftSizeSmallSlider');
+      if (sSmall) sSmall.value = 12;
+      const sMedium = document.getElementById('jarGiftSizeMediumSlider');
+      if (sMedium) sMedium.value = 18;
+      const sLarge = document.getElementById('jarGiftSizeLargeSlider');
+      if (sLarge) sLarge.value = 28;
+      const sVIP = document.getElementById('jarGiftSizeVIPSlider');
+      if (sVIP) sVIP.value = 40;
+
+      renderGiftSizePreviews();
+      await saveJarConfigPartial(presets);
+      if (typeof showToast === 'function') {
+        showToast('Đã đặt lại kích thước chuẩn cấp bậc: Nhỏ (12) < Vừa (18) < Lớn (28) < VIP (40)', 'success');
+      }
+    }
+
     let giftScaleTimer = null;
     function updateGiftScaleGlobal(val) {
       document.getElementById('labelGiftScaleGlobal').textContent = `${Math.round(val * 100)}%`;
+      renderGiftSizePreviews();
       clearTimeout(giftScaleTimer);
       giftScaleTimer = setTimeout(() => {
         saveJarSettingsField('giftScaleGlobal', Number(val));
@@ -3736,7 +3878,7 @@
 
     let giftSizeTimer = null;
     function updateGiftSize(type, val) {
-      document.getElementById(`labelGiftSize${type}`).textContent = `${val}px`;
+      renderGiftSizePreviews();
       clearTimeout(giftSizeTimer);
       giftSizeTimer = setTimeout(() => {
         saveJarSettingsField(`giftSize${type}`, Number(val));

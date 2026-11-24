@@ -707,22 +707,22 @@
         screenBoundaries = [];
       }
       if (jarConfig.enableFloorAccumulation !== false) {
-        // Đáy sàn màn hình ở y = height
-        const floor = Bodies.rectangle(width / 2, height + 15, width * 3, 30, {
+        // Đáy sàn màn hình dày 300px chống xuyên thủng (tunneling) tuyệt đối khi rơi với tốc độ cao
+        const floor = Bodies.rectangle(width / 2, height + 150, width * 4, 300, {
           isStatic: true,
           friction: 0.85,
           restitution: 0.15,
           label: 'screen_floor'
         });
-        // Tường bên trái màn hình
-        const leftWall = Bodies.rectangle(-15, height / 2, 30, height * 4, {
+        // Tường bên trái màn hình dày 200px
+        const leftWall = Bodies.rectangle(-100, height / 2, 200, height * 4, {
           isStatic: true,
           friction: 0.2,
           restitution: 0.2,
           label: 'screen_wall'
         });
-        // Tường bên phải màn hình
-        const rightWall = Bodies.rectangle(width + 15, height / 2, 30, height * 4, {
+        // Tường bên phải màn hình dày 200px
+        const rightWall = Bodies.rectangle(width + 100, height / 2, 200, height * 4, {
           isStatic: true,
           friction: 0.2,
           restitution: 0.2,
@@ -1014,11 +1014,9 @@
           if (oldY >= height - 40) {
             const screenFloorY = height - targetR - 4;
             Body.setPosition(b, { x: oldX, y: Math.min(oldY, screenFloorY) });
-          }
-          // Nếu quà đang ở trong phạm vi lòng hũ
-          else if (oldY >= mouthY - 10) {
-            // Khi co nhỏ lại (ratio < 0.99): Tự động nén dồn tọa độ theo tỷ lệ hướng về đáy hũ và trục giữa
-            // Giúp các món quà co lại lập tức xếp khít chồng lên nhau ở đáy hũ, không bao giờ bị bay lơ lửng trong không trung
+          } else {
+            // Nén dồn TOÀN BỘ quà (cả quà nằm trong lòng hũ lẫn quà đang chất đống trên miệng hũ)
+            // Giúp các món quà co lại lập tức dồn khít vào lòng hũ, không bao giờ bị bay lơ lửng trong không trung
             if (ratio < 0.99) {
               const newX = bowlCx + (oldX - bowlCx) * ratio;
               const newY = floorY - (floorY - oldY) * ratio;
@@ -1043,8 +1041,8 @@
 
           // Cấp vận tốc dồn rơi tự nhiên và đánh thức vật thể
           Body.setVelocity(b, {
-            x: (Math.random() - 0.5) * 0.3,
-            y: Math.max(b.velocity.y, 1.2 + Math.random() * 0.6)
+            x: (Math.random() - 0.5) * 0.4,
+            y: Math.max(b.velocity.y, 2.0 + Math.random() * 0.8)
           });
           Matter.Sleeping.set(b, false);
           b.isSleeping = false;
@@ -2135,6 +2133,18 @@
       // 1. Cập nhật vật lý Matter.js
       Engine.update(engine, dt);
 
+      // Đảm bảo an toàn tuyệt đối: quà rơi xuống sàn màn hình luôn nằm vững trên mặt đất không lọt ra ngoài
+      if (jarConfig.enableFloorAccumulation !== false) {
+        for (let i = 0; i < giftBodies.length; i++) {
+          const b = giftBodies[i];
+          const r = b.giftData?.radius || b.circleRadius || 16;
+          if (b.position.y > height - r) {
+            Matter.Body.setPosition(b, { x: b.position.x, y: height - r });
+            if (b.velocity.y > 0) Matter.Body.setVelocity(b, { x: b.velocity.x * 0.95, y: 0 });
+          }
+        }
+      }
+
       // 2. Xoá canvas trong suốt
       ctx.clearRect(0, 0, width, height);
 
@@ -2177,26 +2187,11 @@
         drawDecorStickers(ctx, jarGeometry, 'behind_glass');
       }
 
-      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG (CÓ MẶT NẠ LÒNG HŨ CHỐNG LỌT QUÀ) ---
+      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
       if (giftBodies.length > 0) {
         ctx.save();
-        if (jarConfig.clipGiftsToJar !== false && currentCavityPoints && currentCavityPoints.length > 3) {
-          const mouthY = currentCavityPoints[0].y;
-          // Mở rộng toàn bộ bầu trời phía trên miệng hũ (-1000 đến width+1000) không bị cắt
-          // Khi quà rơi vào trong miệng hũ, được khóa kín khít theo từng tọa độ lòng kính chống lọt
-          ctx.beginPath();
-          ctx.moveTo(-1000, -1000);
-          ctx.lineTo(width + 1000, -1000);
-          ctx.lineTo(width + 1000, mouthY);
-          ctx.lineTo(currentCavityPoints[0].x, mouthY);
-          for (let i = 1; i < currentCavityPoints.length; i++) {
-            ctx.lineTo(currentCavityPoints[i].x, currentCavityPoints[i].y);
-          }
-          ctx.lineTo(-1000, mouthY);
-          ctx.closePath();
-          ctx.clip();
-        }
-
+        // Quà vật lý được giữ kín bên trong bởi hệ thống 43 bức tường va chạm Matter.js (jarWalls).
+        // Cho phép quà hiển thị trọn vẹn 100% không bị cắt cụt ngang mép miệng hũ khi tràn miệng hoặc rơi xuống sàn.
         giftBodies.forEach(b => drawGiftBody(ctx, b));
         ctx.restore();
       }
