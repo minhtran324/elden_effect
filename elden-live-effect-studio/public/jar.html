@@ -321,7 +321,7 @@
     // ==========================================
     // 2. KHỞI TẠO MATTER.JS & CẤU HÌNH HŨ
     // ==========================================
-    const { Engine, World, Bodies, Body, Composite, Vector, Events } = Matter;
+    const { Engine, World, Bodies, Body, Composite, Vector, Events, Query } = Matter;
 
     const canvas = document.getElementById('physics-canvas');
     const ctx = canvas.getContext('2d');
@@ -560,9 +560,8 @@
     }
 
     function updateGiftCollisionMask(body) {
-      let mask = giftCollisionMask(body.giftData.retainedAfterBreak);
-      if (flipAnimation?.spilled.has(body)) mask &= ~(jarWallCategory | giftCategory);
-      body.collisionFilter.mask = mask;
+      const mask = giftCollisionMask(body.giftData.retainedAfterBreak);
+      body.collisionFilter.mask = releasedJarGifts.has(body) ? mask & ~jarWallCategory : mask;
     }
 
     function rebuildScreenBoundaries() {
@@ -625,7 +624,7 @@
 
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || Math.abs(scaleRatio - 1.0) > 0.005) {
           giftBodies.forEach(b => {
-            if (!isInsideCavity(b.position, oldPoints)) return;
+            if (releasedJarGifts.has(b) || !isInsideCavity(b.position, oldPoints)) return;
             // Co giãn vị trí tương đối quanh tâm lòng hũ
             const relX = (b.position.x - oldCavityCx) * scaleRatio;
             const relY = (b.position.y - oldCavityCy) * scaleRatio;
@@ -646,6 +645,7 @@
     // ==========================================
     let giftBodies = [];
     const airborneGifts = new Set();
+    const releasedJarGifts = new Set();
     let jarHiddenAt;
     const pendingDrops = [];
     const giftInventory = new Map();
@@ -662,7 +662,6 @@
     let goalBurstTimer;
     let assembly;
     let flipAnimation;
-    let settlingPour;
     let shakeAnimation;
     let pendingBreak;
     let bannerTimer;
@@ -712,7 +711,7 @@
         body.giftData.radius = radius;
         body.circleRadius = radius;
         const { x, y } = body.position;
-        if (!jarState.isBurst && jarPose === restPose && ratio < 1 && isInsideCavity(body.position, currentCavityPoints)) {
+        if (!jarState.isBurst && !releasedJarGifts.has(body) && jarPose === restPose && ratio < 1 && isInsideCavity(body.position, currentCavityPoints)) {
           const floor = bowlCy + bowlRy - jarGeometry.wallThickness / 2 - radius;
           Body.setPosition(body, {
             x: bowlCx + (x - bowlCx) * ratio,
@@ -730,6 +729,7 @@
       const capacity = Math.max(1, Math.floor(Number(jarConfig.giftCapacity) || 600));
       while (giftBodies.length > capacity - room) {
         const body = giftBodies.shift();
+        releasedJarGifts.delete(body);
         if (!airborneGifts.delete(body)) World.remove(engine.world, body);
         adjustGiftInventory(body.giftData, -1, 0);
       }
@@ -938,6 +938,7 @@
     function wakeJarGifts() {
       const inside = new Set();
       for (const body of giftBodies) {
+        if (releasedJarGifts.has(body)) continue;
         if (!isInsideCavity(jarPoint(body.position, jarPose, true), currentCavityPoints)) continue;
         Matter.Sleeping.set(body, false);
         inside.add(body);
@@ -974,89 +975,85 @@
       const liftEnd = 640;
       flipAnimation = {
         start: performance.now(), from: jarPose, raised, tilted, carried: wakeJarGifts(),
-        liftEnd, tipEnd: liftEnd + 590 / speed, spilled: new Set()
+        liftEnd, tipEnd: liftEnd + 590 / speed
       };
     }
 
-    function guideGiftPastRestingJar(body, motion) {
-      const { x, y } = body.position;
-      const radius = body.giftData.radius;
-      const margin = radius + jarGeometry.wallThickness / 2 + 8;
-      const left = motion.restBounds.left - margin;
-      const right = motion.restBounds.right + margin;
-      if (y >= motion.restBounds.bottom + margin || x <= left || x >= right) return false;
-
-      // Select a clear side from the outlet so the descending jar can't catch its own spill.
-      const roomLeft = left >= radius;
-      const roomRight = right <= width - radius;
-      if (!roomLeft && !roomRight) return false;
-      const direction = roomLeft && (!roomRight || motion.mouth.x - left < right - motion.mouth.x) ? -1 : 1;
+    function releaseJarGift(body) {
+      if (releasedJarGifts.has(body)) return;
+      releasedJarGifts.add(body);
       Matter.Sleeping.set(body, false);
-      // A small outward step keeps the spill moving even when floor friction absorbs its velocity.
-      Body.setPosition(body, { x: x + direction, y });
-      Body.setVelocity(body, { x: direction * (5.5 + (body.id % 7) * .35), y: body.velocity.y });
-      return true;
+      updateGiftCollisionMask(body);
     }
 
     function pourJarGifts(motion, time) {
       if (!motion.draining) {
         placeJar(motion.tilted, false);
         motion.mouth = jarPoint({ x: jarGeometry.bowlCx, y: jarGeometry.mouthY });
-        motion.restBounds = {
-          left: Math.min(...currentCavityPoints.map(point => point.x)),
-          right: Math.max(...currentCavityPoints.map(point => point.x)),
-          bottom: Math.max(...currentCavityPoints.map(point => point.y))
-        };
         motion.pourStartedAt = time;
         motion.draining = wakeJarGifts();
-        for (const body of motion.carried) {
+        for (const body of giftBodies) {
+          if (!motion.carried.has(body) || motion.draining.has(body)) continue;
           const local = jarPoint(body.position, jarPose, true);
           const radius = body.giftData.radius;
           const touchesOpening = Math.abs(local.y - jarGeometry.mouthY) < radius &&
             Math.abs(local.x - jarGeometry.bowlCx) < jarGeometry.mouthW / 2 + radius;
           if (touchesOpening) motion.draining.add(body);
+          else releaseJarGift(body);
         }
-        motion.spilled = new Set([...motion.carried, ...motion.draining]);
-        for (const body of motion.spilled) updateGiftCollisionMask(body);
       }
 
       const { mouth, draining } = motion;
+      const elapsed = time - motion.pourStartedAt;
       let stillPouring = false;
       for (const body of giftBodies) {
-        if (!motion.spilled.has(body)) continue;
+        if (!draining.has(body)) continue;
         const radius = body.giftData.radius;
-        const clearY = Math.min(height - radius - 2, mouth.y + radius + jarGeometry.wallThickness / 2 + 20);
-        if (!draining.has(body) || body.position.y >= clearY) {
+        const clearY = Math.min(height - radius - 2, mouth.y + radius + jarGeometry.wallThickness / 2);
+        if (body.position.y >= clearY || elapsed >= 2000) {
+          releaseJarGift(body);
           draining.delete(body);
-          if (guideGiftPastRestingJar(body, motion)) stillPouring = true;
           continue;
         }
 
-        // Give jammed gifts a path through the opening, including gifts wider than the neck.
-        const halfOpening = Math.max(0, jarGeometry.mouthW / 2 - radius - jarGeometry.wallThickness / 2);
-        const offset = body.position.x - mouth.x;
-        const steer = Math.sign(offset) * Math.max(0, Math.abs(offset) - halfOpening);
-        Matter.Sleeping.set(body, false);
-        Body.setVelocity(body, {
-          x: Math.max(-9, Math.min(9, -steer * 0.13)),
-          y: Math.abs(steer) > 8 ? Math.min(3, Math.max(1.5, (mouth.y - body.position.y) * .08)) : Math.max(6, Math.min(10, body.velocity.y))
-        });
+        // Let gravity empty the jar first. Only help gifts that are still caught in the neck.
+        if (elapsed >= 850) {
+          releaseJarGift(body);
+          const offset = mouth.x - body.position.x;
+          const halfOpening = Math.max(0, jarGeometry.mouthW / 2 - radius - jarGeometry.wallThickness / 2);
+          const excess = Math.sign(offset) * Math.max(0, Math.abs(offset) - halfOpening);
+          Matter.Sleeping.set(body, false);
+          Body.applyForce(body, body.position, {
+            x: body.mass * Math.max(-.0015, Math.min(.0015, excess * .00004)),
+            y: body.mass * .0008
+          });
+        }
         stillPouring = true;
       }
-      if (stillPouring || motion.clearAt === undefined) motion.clearAt = time;
-      return time - motion.clearAt < 120 || time - motion.pourStartedAt < 730;
+      return stillPouring || elapsed < 360;
     }
 
-    function limitPourMomentum(time) {
-      if (settlingPour && time >= settlingPour.until) settlingPour = undefined;
-      const bodies = (flipAnimation?.draining ? flipAnimation.spilled : flipAnimation?.carried) ?? settlingPour?.bodies;
-      if (!bodies) return;
-      for (const body of bodies) {
-        const { x, y } = body.velocity;
-        // Contain the impulse when many gifts touch the rotating wall or regain collisions at once.
-        if (Math.abs(x) > 16 || y < -5 || y > 30) {
-          Body.setVelocity(body, { x: Math.max(-16, Math.min(16, x)), y: Math.max(-5, Math.min(30, y)) });
+    function updateFlipGiftPhysics() {
+      if (flipAnimation) {
+        // Limit impulses from the rotating wall without changing the momentum of released gifts.
+        for (const body of flipAnimation.carried) {
+          if (releasedJarGifts.has(body)) continue;
+          const { x, y } = body.velocity;
+          if (Math.abs(x) > 16 || y < -5 || y > 30) {
+            Body.setVelocity(body, { x: Math.max(-16, Math.min(16, x)), y: Math.max(-5, Math.min(30, y)) });
+          }
         }
+        return;
+      }
+
+      // The returning glass must not scoop up gifts that are already on the floor.
+      const glassBottom = jarGeometry.bowlCy + jarGeometry.bowlRy + jarGeometry.wallThickness;
+      for (const body of releasedJarGifts) {
+        if (!jarState.isBurst && !body.isSleeping && body.position.y - body.giftData.radius < glassBottom) continue;
+        const local = jarPose === restPose ? body.position : jarPoint(body.position, jarPose, true);
+        if (!jarState.isBurst && (isInsideCavity(local, currentCavityPoints) || Query.collides(body, jarWalls).length)) continue;
+        releasedJarGifts.delete(body);
+        updateGiftCollisionMask(body);
       }
     }
 
@@ -1088,11 +1085,8 @@
             placeJar(mixPose(raised, restPose, (returning - 520) / 570));
           } else {
             placeJar(restPose, false);
-            const { spilled } = flipAnimation;
-            settlingPour = { bodies: spilled, until: time + 900 };
             flipAnimation = undefined;
             jarState.isFlipped = false;
-            for (const body of spilled) updateGiftCollisionMask(body);
             rebuildJarBodies();
             updateGoal();
           }
@@ -1197,7 +1191,7 @@
       // The gift count and goal belong to this live session, not the current glass.
       for (const body of giftBodies) {
         body.giftData.retainedAfterBreak = true;
-        body.collisionFilter.mask = giftCollisionMask(true);
+        updateGiftCollisionMask(body);
       }
       AudioEngine.playShatter();
       if (onGoal) {
@@ -1296,7 +1290,6 @@
       if (assembly) glassShards = assembly.pieces;
       assembly = undefined;
       flipAnimation = undefined;
-      settlingPour = undefined;
       shakeAnimation = undefined;
       jarState.isBurst = false;
       jarState.isFlipped = false;
@@ -1309,6 +1302,7 @@
       World.remove(engine.world, giftBodies);
       giftBodies = [];
       airborneGifts.clear();
+      releasedJarGifts.clear();
       pendingDrops.length = 0;
       queuedGiftCount = 0;
       restoredGiftBatches = [];
@@ -1327,6 +1321,7 @@
       for (const body of giftBodies) {
         if (body.giftData.key === key) {
           airborneGifts.delete(body);
+          releasedJarGifts.delete(body);
           removed.push(body);
           adjustGiftInventory(body.giftData, -1, 0);
         } else {
@@ -1940,7 +1935,7 @@
         const physicsAt = time - physicsTime + step;
         updateJarMotion(physicsAt);
         Engine.update(engine, step);
-        limitPourMomentum(physicsAt);
+        updateFlipGiftPhysics();
         physicsTime -= step;
       }
 
@@ -1949,6 +1944,7 @@
           const body = giftBodies[i];
           if (!body.giftData.retainedAfterBreak && body.position.y - body.giftData.radius > height + 40) {
             World.remove(engine.world, body);
+            releasedJarGifts.delete(body);
             giftBodies.splice(i, 1);
             checkpointDirty = true;
             adjustGiftInventory(body.giftData, -1, 0);
@@ -1999,7 +1995,7 @@
         const radius = body.giftData.radius;
         if (body.position.y + radius < 0 || body.position.y - radius > height) continue;
         const local = cavity && jarPose !== restPose ? jarPoint(body.position, jarPose, true) : body.position;
-        if (cavity && local.y - radius > jarGeometry.mouthY && Math.abs(local.x - cx) < jarGeometry.w * .56 &&
+        if (cavity && !releasedJarGifts.has(body) && local.y - radius > jarGeometry.mouthY && Math.abs(local.x - cx) < jarGeometry.w * .56 &&
             isInsideCavity(local, currentCavityPoints)) {
           ctx.save();
           ctx.clip(cavity);
