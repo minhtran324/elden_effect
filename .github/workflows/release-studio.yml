@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag đã có, ví dụ v1.0.1
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,17 +17,20 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
           persist-credentials: false
 
       - name: Đóng gói bản cập nhật
-        run: node .github/scripts/build-studio-update.mjs "$GITHUB_SHA" "$GITHUB_REF_NAME" "$RUNNER_TEMP/eldeneffect-update.zip"
+        run: node .github/scripts/build-studio-update.mjs "$(git rev-parse HEAD)" "$RELEASE_TAG" "$RUNNER_TEMP/eldeneffect-update.zip"
 
       - name: Đăng GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/eldeneffect-update.zip" \
+          gh release create "$RELEASE_TAG" "$RUNNER_TEMP/eldeneffect-update.zip" \
             --verify-tag --generate-notes --latest
