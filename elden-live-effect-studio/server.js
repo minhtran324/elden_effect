@@ -30,6 +30,7 @@ const JAR_CONFIG_FILE = path.join(__dirname, 'jar_config.json');
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads', 'videos');
 const RENDER_DIR = path.join(UPLOADS_DIR, '.renders');
 const DECOR_DIR = path.join(__dirname, 'public', 'uploads', 'decor');
+const STICKERS_FILE = path.join(__dirname, 'jar_stickers.json');
 const TEMPLATES_FILE = path.join(__dirname, 'jar_templates.json');
 const TEMPLATES_DIR = path.join(__dirname, 'public', 'uploads', 'templates');
 const TIKTOK_SETTINGS_FILE = path.join(__dirname, 'tiktok_settings.json');
@@ -231,6 +232,48 @@ function saveJarConfig(cfg) {
 }
 
 let jarConfig = loadJarConfig();
+
+const uploadedStickerUrl = /^\/uploads\/decor\/decor_[\w-]+_\d{10,}\.(png|jpe?g|svg|webp)$/i;
+
+function saveJarStickers(stickers) {
+  const pending = `${STICKERS_FILE}.${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(pending, JSON.stringify(stickers, null, 2), 'utf8');
+    fs.renameSync(pending, STICKERS_FILE);
+  } catch (error) {
+    fs.rmSync(pending, { force: true });
+    throw error;
+  }
+}
+
+function loadJarStickers() {
+  try {
+    return JSON.parse(fs.readFileSync(STICKERS_FILE, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+
+  // Older Studio uploads shared a folder with jar artwork. Recover the images used as stickers.
+  const designs = [jarConfig, ...loadJarTemplates().map(template => template.stateData?.design)];
+  const stickers = new Map();
+  for (const design of designs) {
+    if (!Array.isArray(design?.stickers)) continue;
+    for (const sticker of design.stickers) {
+      if (!uploadedStickerUrl.test(sticker?.url) || stickers.has(sticker.url)) continue;
+      const file = path.basename(sticker.url);
+      if (!fs.existsSync(path.join(DECOR_DIR, file))) continue;
+      stickers.set(sticker.url, { url: sticker.url, name: sticker.name || 'Sticker' });
+    }
+  }
+  const entries = [...stickers.values()];
+  if (entries.length) saveJarStickers(entries);
+  return entries;
+}
+
+// Capture the old sticker references before edits or template changes can remove them.
+try { loadJarStickers(); } catch (error) {
+  console.error('Lỗi nạp sticker đã lưu:', error.message);
+}
 
 function saveAndPublishJarConfig(config) {
   if (!saveJarConfig(config)) return false;
@@ -1806,7 +1849,20 @@ app.post('/api/jar/upload-decor', decorUpload.single('decor'), (req, res) => {
     return res.status(400).json({ success: false, error: 'Chưa chọn file decor' });
   }
   const fileUrl = `/uploads/decor/${req.file.filename}`;
-  if (req.body.apply !== 'false') {
+  if (typeof req.body.stickerName === 'string' && req.body.apply === 'false') {
+    if (!uploadedStickerUrl.test(fileUrl)) {
+      discardJarUploads({ sticker: [req.file] });
+      return res.status(400).json({ success: false, error: 'Hãy chọn ảnh PNG, JPG, SVG hoặc WebP.' });
+    }
+    const name = req.body.stickerName.trim().slice(0, 255) || 'Sticker';
+    try {
+      saveJarStickers([{ name, url: fileUrl }, ...loadJarStickers()]);
+    } catch (error) {
+      discardJarUploads({ sticker: [req.file] });
+      console.error('Lỗi lưu sticker:', error.message);
+      return res.status(500).json({ success: false, error: 'Không lưu được sticker vào thư viện.' });
+    }
+  } else if (req.body.apply !== 'false') {
     const nextConfig = { ...jarConfig, decorImage: fileUrl };
     if (!saveJarConfig(nextConfig)) return res.status(500).json({ success: false, error: 'Không lưu được ảnh trang trí' });
     jarConfig = nextConfig;
@@ -1814,6 +1870,17 @@ app.post('/api/jar/upload-decor', decorUpload.single('decor'), (req, res) => {
   }
   addLog('info', `Đã tải ảnh trang trí hũ: ${req.file.originalname}`);
   res.json({ success: true, fileUrl, fileName: req.file.originalname });
+});
+
+app.get('/api/jar/stickers', (req, res) => {
+  try {
+    const stickers = loadJarStickers().filter(({ url }) => uploadedStickerUrl.test(url) &&
+      fs.existsSync(path.join(DECOR_DIR, path.basename(url))));
+    res.json({ success: true, stickers });
+  } catch (error) {
+    console.error('Lỗi nạp sticker đã lưu:', error.message);
+    res.status(500).json({ success: false, error: 'Không tải được sticker đã lưu.' });
+  }
 });
 
 // 6. Danh sách các file Decor có sẵn
