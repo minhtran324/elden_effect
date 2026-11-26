@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import {
-  isStudioUpdateFile, parseVersion, RELEASE_MANIFEST, UPDATE_SIZE_LIMIT
+  isStudioUpdateFile, jarLibraryAssets, JAR_LIBRARY_DIR, JAR_LIBRARY_MANIFEST, parseVersion,
+  RELEASE_MANIFEST, UPDATE_SIZE_LIMIT
 } from '../../elden-live-effect-studio/studio-update.js';
 
 const [commit, tag, output] = process.argv.slice(2);
@@ -21,6 +22,16 @@ for (const required of [
   'public/builtin/jar/jar_template_guide.svg'
 ]) {
   if (!files.includes(required)) throw new Error(`Missing a required Studio file: ${required}`);
+}
+
+const libraryManifest = `${JAR_LIBRARY_DIR}/${JAR_LIBRARY_MANIFEST}`;
+if (files.includes(libraryManifest)) {
+  const library = JSON.parse(execFileSync('git', ['show', `${tree}/${libraryManifest}`], { encoding: 'utf8' }));
+  for (const asset of jarLibraryAssets(library)) {
+    if (!files.includes(`${JAR_LIBRARY_DIR}/${asset.name}`)) {
+      throw new Error(`Missing a shared jar library image: ${asset.relativeSource}`);
+    }
+  }
 }
 
 execFileSync('git', [

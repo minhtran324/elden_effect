@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 export const UPDATE_ASSET_NAME = 'eldeneffect-update.zip';
 export const UPDATE_SIZE_LIMIT = 50 * 1024 * 1024;
 export const RELEASE_MANIFEST = 'studio-release.json';
+export const JAR_LIBRARY_DIR = 'public/builtin/jar-library';
+export const JAR_LIBRARY_MANIFEST = 'library.json';
+export const uploadedStickerUrl = /^\/uploads\/decor\/decor_[\w-]+_\d{10,}\.(png|jpe?g|svg|webp)$/i;
 const JOURNAL = 'transaction.json';
 
 const appFiles = new Set([
@@ -18,6 +21,29 @@ const appFiles = new Set([
 
 export function isStudioUpdateFile(file) {
   return appFiles.has(file) || /^public\/(?:builtin|brand|vendor)\/(?:[\w-]+\/)*[\w.-]+\.(?:css|html|js|json|md|png|webp|jpg|svg|ico|woff2)$/.test(file);
+}
+
+export function jarLibraryAssets({ templates, stickers }) {
+  const urls = stickers.map(sticker => sticker.url);
+  for (const template of templates) {
+    const design = template.stateData?.design;
+    urls.push(template.imageUrl, template.frontImageUrl, template.previewUrl,
+      design?.customJarImage, design?.frontOverlayImage, design?.decorImage);
+    for (const sticker of design?.stickers ?? []) urls.push(sticker.url);
+  }
+
+  const assets = [];
+  for (const url of new Set(urls)) {
+    const match = /^\/uploads\/(decor|templates)\/[\w-][\w.-]*\.(png|jpe?g|svg|webp)$/i.exec(url);
+    if (!match) {
+      if (typeof url === 'string' && url.startsWith('/uploads/')) throw new Error(`Đường dẫn ảnh hũ không hợp lệ: ${url}`);
+      continue;
+    }
+    const ext = match[2].toLowerCase().replace('jpeg', 'jpg');
+    const name = `${createHash('sha256').update(url).digest('hex')}.${ext}`;
+    assets.push({ name, relativeSource: `public${url}` });
+  }
+  return assets;
 }
 
 export function parseVersion(value) {

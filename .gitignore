@@ -21,6 +21,7 @@ elden-live-effect-studio/public/uploads/videos/*
 elden-live-effect-studio/public/uploads/audio/*
 !elden-live-effect-studio/public/uploads/audio/.gitkeep
 elden-live-effect-studio/jar_stickers.json*
+elden-live-effect-studio/jar_library_imported.json*
 
 # Temporary update folders
 **/temp_update/

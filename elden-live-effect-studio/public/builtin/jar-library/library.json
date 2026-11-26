@@ -1,0 +1,136 @@
+{
+  "templates": [
+    {
+      "id": "tmpl_1795692054558_1c94n",
+      "name": "hu miao moi",
+      "aspect": "square",
+      "canvasWidth": 480,
+      "canvasHeight": 480,
+      "padding": {
+        "top": 20,
+        "bottom": 20,
+        "left": 15,
+        "right": 15
+      },
+      "imageUrl": "/uploads/templates/tmpl_1795692054558_1c94n.png",
+      "previewUrl": "/uploads/templates/tmpl_1795692054558_1c94n.png",
+      "frontImageUrl": "/uploads/templates/tmpl_1795692054562_mlfgz.png",
+      "createdAt": "2026-11-26T11:20:54.658Z",
+      "stateData": {
+        "design": {
+          "style": "custom_image",
+          "hideDefaultJarOnCustom": true,
+          "jarAspect": "square",
+          "jarPadding": {
+            "top": 20,
+            "bottom": 20,
+            "left": 15,
+            "right": 15
+          },
+          "stickers": [
+            {
+              "id": "stk_1795691267368",
+              "name": "exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7",
+              "url": "/uploads/decor/decor_exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7_75884ddf-535a-475c-b353-683859fe8bef_1795691267299.png",
+              "x": 48.7,
+              "y": 84.98,
+              "scale": 1.15,
+              "rotation": 0,
+              "opacity": 0.95,
+              "layer": "front"
+            }
+          ],
+          "decorImage": "",
+          "decorText": "",
+          "shimmerRimEffect": true,
+          "shimmerRimSpeed": 0.8,
+          "shimmerSparkles": true,
+          "jarPosX": 65,
+          "jarPosY": 78,
+          "jarScale": 0.55,
+          "hitbox": {
+            "shape": "sphere",
+            "radiusX": 0.4,
+            "radiusY": 0.35,
+            "centerY": 0.51,
+            "mouthY": 0.08,
+            "neckWidth": 0.45,
+            "neckHeight": 0.2,
+            "offsetX": -8,
+            "offsetY": 0
+          },
+          "clipGiftsToJar": true,
+          "glassRealism": true,
+          "debugHitbox": false
+        }
+      }
+    },
+    {
+      "id": "tmpl_1795610445223_knko7",
+      "name": "hũ mây hồng",
+      "aspect": "square",
+      "canvasWidth": 480,
+      "canvasHeight": 480,
+      "padding": {
+        "top": 20,
+        "bottom": 20,
+        "left": 15,
+        "right": 15
+      },
+      "imageUrl": "/uploads/templates/tmpl_1795610445223_knko7.png",
+      "previewUrl": "/uploads/templates/tmpl_1795610445223_knko7.png",
+      "createdAt": "2026-11-25T12:40:45.228Z",
+      "stateData": {
+        "design": {
+          "style": "custom_image",
+          "hideDefaultJarOnCustom": true,
+          "jarAspect": "square",
+          "jarPadding": {
+            "top": 20,
+            "bottom": 20,
+            "left": 15,
+            "right": 15
+          },
+          "stickers": [
+            {
+              "id": "stk_1795605583084",
+              "name": "aa",
+              "url": "/uploads/decor/decor_aa-chroma_1795605583048.png",
+              "x": 50,
+              "y": 84.67,
+              "scale": 1.2,
+              "rotation": 0,
+              "opacity": 1,
+              "layer": "front"
+            }
+          ],
+          "decorImage": "",
+          "decorText": "",
+          "shimmerRimEffect": true,
+          "shimmerRimSpeed": 0.8,
+          "shimmerSparkles": true,
+          "jarPosX": 65,
+          "jarPosY": 78,
+          "jarScale": 0.55,
+          "hitbox": {
+            "shape": "sphere"
+          },
+          "clipGiftsToJar": true,
+          "glassRealism": true,
+          "debugHitbox": false,
+          "frontOverlayImage": "/uploads/decor/decor_front-altmmx3_1795610445211.png"
+        }
+      }
+    }
+  ],
+  "stickers": [
+    {
+      "name": "exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7",
+      "url": "/uploads/decor/decor_exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7_75884ddf-535a-475c-b353-683859fe8bef_1795691267299.png"
+    },
+    {
+      "name": "aa",
+      "url": "/uploads/decor/decor_aa-chroma_1795605583048.png"
+    }
+  ]
+}

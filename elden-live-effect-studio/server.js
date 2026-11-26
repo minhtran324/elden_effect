@@ -11,8 +11,9 @@ import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import ffmpegPath from 'ffmpeg-static';
 import {
-  UPDATE_ASSET_NAME, UPDATE_SIZE_LIMIT, installedStudioVersion, installStudioUpdate, isNewerVersion,
-  parseVersion, recoverStudioUpdate, removeUpdateWork, writeUpdateConfig
+  UPDATE_ASSET_NAME, UPDATE_SIZE_LIMIT, JAR_LIBRARY_DIR, JAR_LIBRARY_MANIFEST, installedStudioVersion,
+  installStudioUpdate, isNewerVersion, jarLibraryAssets, parseVersion, recoverStudioUpdate,
+  removeUpdateWork, uploadedStickerUrl, writeUpdateConfig
 } from './studio-update.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +32,7 @@ const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads', 'videos');
 const RENDER_DIR = path.join(UPLOADS_DIR, '.renders');
 const DECOR_DIR = path.join(__dirname, 'public', 'uploads', 'decor');
 const STICKERS_FILE = path.join(__dirname, 'jar_stickers.json');
+const JAR_LIBRARY_IMPORTS = path.join(__dirname, 'jar_library_imported.json');
 const TEMPLATES_FILE = path.join(__dirname, 'jar_templates.json');
 const TEMPLATES_DIR = path.join(__dirname, 'public', 'uploads', 'templates');
 const TIKTOK_SETTINGS_FILE = path.join(__dirname, 'tiktok_settings.json');
@@ -233,17 +235,19 @@ function saveJarConfig(cfg) {
 
 let jarConfig = loadJarConfig();
 
-const uploadedStickerUrl = /^\/uploads\/decor\/decor_[\w-]+_\d{10,}\.(png|jpe?g|svg|webp)$/i;
-
-function saveJarStickers(stickers) {
-  const pending = `${STICKERS_FILE}.${randomUUID()}.tmp`;
+function writeJarLibraryJson(file, value) {
+  const pending = `${file}.${randomUUID()}.tmp`;
   try {
-    fs.writeFileSync(pending, JSON.stringify(stickers, null, 2), 'utf8');
-    fs.renameSync(pending, STICKERS_FILE);
+    fs.writeFileSync(pending, JSON.stringify(value, null, 2), 'utf8');
+    fs.renameSync(pending, file);
   } catch (error) {
     fs.rmSync(pending, { force: true });
     throw error;
   }
+}
+
+function saveJarStickers(stickers) {
+  writeJarLibraryJson(STICKERS_FILE, stickers);
 }
 
 function loadJarStickers() {
@@ -270,9 +274,48 @@ function loadJarStickers() {
   return entries;
 }
 
-// Capture the old sticker references before edits or template changes can remove them.
-try { loadJarStickers(); } catch (error) {
-  console.error('Lỗi nạp sticker đã lưu:', error.message);
+function importBundledJarLibrary(localStickers) {
+  const bundle = path.join(__dirname, JAR_LIBRARY_DIR);
+  const manifest = path.join(bundle, JAR_LIBRARY_MANIFEST);
+  if (!fs.existsSync(manifest)) return;
+  const shared = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  const imports = fs.existsSync(JAR_LIBRARY_IMPORTS)
+    ? JSON.parse(fs.readFileSync(JAR_LIBRARY_IMPORTS, 'utf8'))
+    : { templates: [], stickers: [] };
+  const seenTemplates = new Set(imports.templates);
+  const seenStickers = new Set(imports.stickers);
+  const templates = shared.templates.filter(template => !seenTemplates.has(template.id));
+  const stickers = shared.stickers.filter(sticker => !seenStickers.has(sticker.url));
+  if (!templates.length && !stickers.length) return;
+
+  for (const asset of jarLibraryAssets({ templates, stickers })) {
+    try {
+      fs.copyFileSync(path.join(bundle, asset.name), path.join(__dirname, asset.relativeSource), fs.constants.COPYFILE_EXCL);
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+  }
+
+  const localTemplates = loadJarTemplates();
+  const templateIds = new Set(localTemplates.map(template => template.id));
+  const stickerUrls = new Set(localStickers.map(sticker => sticker.url));
+  const newTemplates = templates.filter(template => !templateIds.has(template.id));
+  const newStickers = stickers.filter(sticker => !stickerUrls.has(sticker.url));
+  if (newTemplates.length && !saveJarTemplates([...newTemplates, ...localTemplates])) {
+    throw new Error('Không lưu được mẫu hũ từ bản cập nhật.');
+  }
+  if (newStickers.length) saveJarStickers([...newStickers, ...localStickers]);
+
+  // Record shared entries so a local deletion stays deleted on the next startup.
+  writeJarLibraryJson(JAR_LIBRARY_IMPORTS, {
+    templates: [...seenTemplates, ...templates.map(template => template.id)],
+    stickers: [...seenStickers, ...stickers.map(sticker => sticker.url)]
+  });
+}
+
+// Recover old sticker references before merging the shared library or serving edits.
+try { importBundledJarLibrary(loadJarStickers()); } catch (error) {
+  console.error('Lỗi nạp thư viện hũ và sticker:', error.message);
 }
 
 function saveAndPublishJarConfig(config) {
