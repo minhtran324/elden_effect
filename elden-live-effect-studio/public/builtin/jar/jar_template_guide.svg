@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="540" viewBox="0 0 400 540">
+  <defs>
+    <style>
+      .guide-line { stroke: #38bdf8; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+      .mouth-line { stroke: #f59e0b; stroke-width: 3; fill: none; }
+      .label-text { font-family: -apple-system, Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #f8fafc; }
+      .sub-text { font-family: -apple-system, Arial, sans-serif; font-size: 11px; fill: #94a3b8; }
+    </style>
+  </defs>
+
+  <!-- Vùng an toàn nền mờ -->
+  <rect x="10" y="10" width="380" height="520" rx="16" fill="rgba(15, 23, 42, 0.4)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+  <!-- MIỆNG HŨ (Mở hở phía trên để quà rơi vào) -->
+  <rect x="70" y="30" width="260" height="60" rx="8" class="mouth-line" fill="rgba(245, 158, 11, 0.15)"/>
+  <text x="200" y="55" class="label-text" text-anchor="middle" fill="#fbbf24">▼ MIỆNG HŨ (RỘNG 260px) ▼</text>
+  <text x="200" y="74" class="sub-text" text-anchor="middle">Quà rơi từ trên qua vùng này</text>
+
+  <!-- VAI HŨ (Nghiêng từ miệng ra thân) -->
+  <path d="M 70 90 L 25 150 M 330 90 L 375 150" class="guide-line"/>
+
+  <!-- THÂN HŨ (Chứa quà) -->
+  <rect x="25" y="150" width="350" height="340" rx="20" class="guide-line" fill="rgba(56, 189, 248, 0.08)"/>
+  <text x="200" y="310" class="label-text" text-anchor="middle">THÂN HŨ CHỨA QUÀ (350 x 340px)</text>
+  <text x="200" y="332" class="sub-text" text-anchor="middle">Vẽ hoặc render bình thủy tinh / nhân vật tại đây</text>
+
+  <!-- ĐÁY HŨ -->
+  <line x1="45" y1="490" x2="355" y2="490" stroke="#10b981" stroke-width="4"/>
+  <text x="200" y="515" class="label-text" text-anchor="middle" fill="#10b981">▲ ĐÁY HŨ BẰNG PHẲNG ▲</text>
+</svg>

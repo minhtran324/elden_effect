@@ -6,8 +6,14 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execFileSync, execSync, spawn } from 'child_process';
+import { execFile, execFileSync, execSync, spawn } from 'child_process';
+import { promisify } from 'node:util';
+import { createHash, randomUUID } from 'node:crypto';
 import ffmpegPath from 'ffmpeg-static';
+import {
+  UPDATE_ASSET_NAME, UPDATE_SIZE_LIMIT, installedStudioVersion, installStudioUpdate, isNewerVersion,
+  parseVersion, recoverStudioUpdate, removeUpdateWork, writeUpdateConfig
+} from './studio-update.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,11 +28,13 @@ const PORT = process.env.PORT || 3000;
 const RULES_FILE = path.join(__dirname, 'rules.json');
 const JAR_CONFIG_FILE = path.join(__dirname, 'jar_config.json');
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads', 'videos');
+const RENDER_DIR = path.join(UPLOADS_DIR, '.renders');
 const DECOR_DIR = path.join(__dirname, 'public', 'uploads', 'decor');
 const TEMPLATES_FILE = path.join(__dirname, 'jar_templates.json');
 const TEMPLATES_DIR = path.join(__dirname, 'public', 'uploads', 'templates');
 const TIKTOK_SETTINGS_FILE = path.join(__dirname, 'tiktok_settings.json');
-if (!fs.existsSync(TEMPLATES_DIR)) fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+const BUILTIN_JAR_DIR = path.join(__dirname, 'public', 'builtin', 'jar');
+const BUILTIN_JAR_ART = new Set(['iridescent_fishbowl_transparent.png', 'iridescent_fishbowl_front_overlay.png']);
 
 function loadTikTokSettings() {
   try {
@@ -61,12 +69,25 @@ function saveTikTokSettings(settings) {
 // ========================================================
 const UPDATE_CONFIG_FILE = path.join(__dirname, 'update_config.json');
 const TEMP_UPDATE_DIR = path.join(__dirname, 'temp_update');
-if (!fs.existsSync(TEMP_UPDATE_DIR)) fs.mkdirSync(TEMP_UPDATE_DIR, { recursive: true });
+fs.mkdirSync(TEMP_UPDATE_DIR, { recursive: true });
+if (!fs.lstatSync(TEMP_UPDATE_DIR).isDirectory()) throw new Error('Thư mục cập nhật không hợp lệ.');
+if (recoverStudioUpdate(__dirname, TEMP_UPDATE_DIR)) {
+  const restored = spawn(process.execPath, process.argv.slice(1), {
+    cwd: __dirname, detached: true, windowsHide: true, stdio: 'ignore'
+  });
+  await new Promise((resolve, reject) => restored.once('spawn', resolve).once('error', reject));
+  restored.unref();
+  process.exit(0);
+}
+let updateInProgress = false;
+let restartingStudio = false;
+let lastGitHubCheckTime;
 
 function loadUpdateConfig() {
   try {
     if (fs.existsSync(UPDATE_CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(UPDATE_CONFIG_FILE, 'utf8'));
+      const config = JSON.parse(fs.readFileSync(UPDATE_CONFIG_FILE, 'utf8').replace(/^\uFEFF/, ''));
+      if (config && typeof config === 'object' && !Array.isArray(config)) return config;
     }
   } catch (err) {
     console.error('Lỗi đọc update_config.json:', err);
@@ -74,27 +95,20 @@ function loadUpdateConfig() {
   return { version: '1.0.0', githubRepo: '', autoCheckOnStartup: true, lastCheckTime: null };
 }
 
-function saveUpdateConfig(cfg) {
-  try {
-    fs.writeFileSync(UPDATE_CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf8');
-  } catch (err) {
-    console.error('Lỗi ghi update_config.json:', err);
-  }
-}
-
 const patchStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, TEMP_UPDATE_DIR),
-  filename: (req, file, cb) => cb(null, `patch_${Date.now()}.zip`)
+  filename: (req, file, cb) => cb(null, `patch_${randomUUID()}.zip`)
 });
 const patchUpload = multer({
   storage: patchStorage,
-  limits: { fileSize: 50 * 1024 * 1024 }
-});
+  limits: { fileSize: UPDATE_SIZE_LIMIT }
+}).single('patchFile');
 
 function loadJarTemplates() {
   try {
     if (fs.existsSync(TEMPLATES_FILE)) {
-      return JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+      const templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+      if (Array.isArray(templates)) return templates;
     }
   } catch (err) {
     console.error('Lỗi đọc jar_templates.json:', err);
@@ -104,37 +118,57 @@ function loadJarTemplates() {
 
 function saveJarTemplates(tmpls) {
   try {
-    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(tmpls, null, 2), 'utf8');
+    const pending = TEMPLATES_FILE + '.tmp';
+    fs.writeFileSync(pending, JSON.stringify(tmpls, null, 2), 'utf8');
+    fs.renameSync(pending, TEMPLATES_FILE);
+    return true;
   } catch (err) {
     console.error('Lỗi ghi jar_templates.json:', err);
+    return false;
   }
 }
 
 const templateStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, TEMPLATES_DIR),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.png';
+    const ext = file.mimetype === 'image/webp' ? '.webp' : '.png';
     cb(null, `tmpl_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`);
   }
 });
 const templateUpload = multer({
   storage: templateStorage,
+  fileFilter: (_req, file, cb) => cb(['image/png', 'image/webp'].includes(file.mimetype) ? null : new Error('Chỉ nhận ảnh PNG hoặc WebP.'), true),
   limits: { fileSize: 30 * 1024 * 1024 }
 });
+const renderUpload = multer({ dest: RENDER_DIR, limits: { fileSize: 250 * 1024 * 1024 } });
+const executeFFmpeg = promisify(execFile);
 const GIFTS_CACHE_FILE = path.join(__dirname, 'public', 'gifts_cache.json');
 
 // Đảm bảo các thư mục lưu trữ tồn tại
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 if (!fs.existsSync(DECOR_DIR)) fs.mkdirSync(DECOR_DIR, { recursive: true });
+fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
 
 // Cấu hình Hũ Quà Rơi Vật Lý (Physics Jar) mặc định
+const FISHBOWL_SKIN = {
+  style: 'fishbowl',
+  customJarImage: '/builtin/jar/iridescent_fishbowl_transparent.png',
+  frontOverlayImage: '/builtin/jar/iridescent_fishbowl_front_overlay.png',
+  hideDefaultJarOnCustom: true,
+  jarAspect: 'square'
+};
+
+const JAR_GIFT_ACTIONS = new Set(['shake', 'crack', 'flip', 'burst', 'assemble', 'clear_shards', 'clear', 'reset']);
+const JAR_ACTIONS = new Set([...JAR_GIFT_ACTIONS, 'remove_gift_type']);
 const DEFAULT_JAR_CONFIG = {
   enabled: true,
   style: 'mason', // 'mason' | 'diamond' | 'fishbowl' | 'chest' | 'custom_image'
-  customJarImage: '/uploads/decor/hu-qua-live.webp', // URL ảnh hũ riêng biệt từ ảnh (có sẵn mẫu 20/10)
+  customJarImage: '',
+  frontOverlayImage: '',
+  jarAspect: 'vertical',
   hideDefaultJarOnCustom: true, // Ẩn hũ gốc khi chọn ảnh riêng để không bị trùng lặp
-  decorImage: '/uploads/decor/decor_eldenmedia_badge.svg',
-  decorText: '@eldenmedia',
+  decorImage: '',
+  decorText: '',
   decorPosition: 'center', // 'center' | 'top' | 'bottom' | 'neck'
   decorScale: 1.0,
   decorOpacity: 0.95,
@@ -150,9 +184,12 @@ const DEFAULT_JAR_CONFIG = {
   gravity: 1.0, // trọng lực vật lý (0.5 - 2.0)
   // RUNG LẮC THEO MỐC KIM CƯƠNG
   shakeThreshold: 50, // Chỉ rung lắc hũ khi quà từ số xu này trở lên
+  flipSpeed: 1,
   // VẬT LÝ TRÀN HŨ & TÍCH TỤ DƯỚI ĐẤT
   enableFloorAccumulation: true, // Khi đầy hũ hoặc rơi ra ngoài thì rơi xuống đất và chồng chất lên nhau quanh hũ
   giftCapacity: 300, // Số lượng quà tối đa lưu trên màn hình
+  giftCapacityUnlimited: false,
+  giftActions: {},
   // KÍCH THƯỚC QUÀ TẶNG (TOÀN BỘ & TỪNG LOẠI)
   giftScaleGlobal: 1.0, // Tỉ lệ phóng to/thu nhỏ chung cho toàn bộ quà (0.5 - 1.6)
   giftSizeSmall: 15, // Quà nhỏ (1-9 xu: Hoa hồng, Thả tim, TikTok...)
@@ -168,8 +205,7 @@ const DEFAULT_JAR_CONFIG = {
   // MỤC TIÊU & TỰ ĐỘNG NỔ
   goalEnabled: true,
   goalTargetCoins: 500,
-  autoBurstOnGoal: true,
-  autoResetSeconds: 5
+  autoBurstOnGoal: true
 };
 
 function loadJarConfig() {
@@ -195,6 +231,82 @@ function saveJarConfig(cfg) {
 }
 
 let jarConfig = loadJarConfig();
+
+function saveAndPublishJarConfig(config) {
+  if (!saveJarConfig(config)) return false;
+  jarConfig = config;
+  io.emit('jar_config_updated', config);
+  return true;
+}
+
+// Session data survives Browser Source reloads and is rebuilt only when Studio starts.
+const jarSession = { id: randomUUID(), sequence: 0, coins: 0, gifts: new Map(), checkpoints: new Map() };
+const jarInventories = new Map();
+const JAR_INVENTORY_ROOM = 'jar_inventory_watchers';
+let jarInventoryTimer;
+
+function isGiftKey(key) {
+  return typeof key === 'string' && key.length <= 240 && /^(id|name):.+$/s.test(key);
+}
+
+function getJarInventory() {
+  const queuedByKey = new Map();
+  for (const inventory of jarInventories.values()) {
+    for (const { key, queued } of inventory) {
+      queuedByKey.set(key, Math.max(queuedByKey.get(key) || 0, queued));
+    }
+  }
+  return [...jarSession.gifts.values()].map(gift => {
+    const queued = Math.min(gift.count, queuedByKey.get(gift.giftKey) || 0);
+    return { key: gift.giftKey, name: gift.inventoryName, count: gift.count - queued, queued };
+  });
+}
+
+function scheduleJarInventory() {
+  if (jarInventoryTimer) return;
+  jarInventoryTimer = setTimeout(() => {
+    jarInventoryTimer = undefined;
+    io.to(JAR_INVENTORY_ROOM).emit('jar_inventory_updated', getJarInventory());
+  }, 80);
+}
+
+function nextJarSessionEvent() {
+  return { sessionId: jarSession.id, sequence: ++jarSession.sequence };
+}
+
+io.on('connection', socket => {
+  socket.on('jar_watch_inventory', () => {
+    socket.join(JAR_INVENTORY_ROOM);
+    socket.emit('jar_inventory_updated', getJarInventory());
+  });
+  socket.on('jar_report_inventory', inventory => {
+    if (!Array.isArray(inventory)) return;
+    jarInventories.set(socket.id, inventory.filter(gift => isGiftKey(gift?.key) &&
+      Number.isSafeInteger(gift.queued) && gift.queued > 0));
+    scheduleJarInventory();
+  });
+  socket.on('jar_sync_session', (view, respond) => {
+    if (typeof respond !== 'function' || !['obs', 'preview'].includes(view)) return;
+    socket.data.jarView = view;
+    respond({
+      sessionId: jarSession.id, sequence: jarSession.sequence, coins: jarSession.coins,
+      gifts: [...jarSession.gifts.values()], positions: jarSession.checkpoints.get(view)
+    });
+  });
+  socket.on('jar_checkpoint', snapshot => {
+    const view = socket.data.jarView;
+    if (!view || snapshot?.sessionId !== jarSession.id || snapshot.sequence !== jarSession.sequence ||
+        !Array.isArray(snapshot.positions) || snapshot.positions.length > 1800) return;
+    const positions = snapshot.positions.filter(item =>
+      Array.isArray(item) && item.length === 5 && jarSession.gifts.has(item[0]) &&
+      item.slice(1, 4).every(Number.isFinite) && typeof item[4] === 'boolean' &&
+      item[1] >= 0 && item[1] <= 1 && item[2] >= 0 && item[2] <= 1);
+    jarSession.checkpoints.set(view, positions);
+  });
+  socket.on('disconnect', () => {
+    if (jarInventories.delete(socket.id)) scheduleJarInventory();
+  });
+});
 
 // Bộ nhớ cache danh mục quà TikTok kèm icon ảnh
 let liveGiftsCache = [];
@@ -225,7 +337,7 @@ const decorStorage = multer.diskStorage({
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase() || '.png';
     const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_\-]/g, '_');
-    cb(null, `decor_${base}_${Date.now()}${ext}`);
+    cb(null, `decor_${base}_${randomUUID()}_${Date.now()}${ext}`);
   }
 });
 const decorUpload = multer({
@@ -235,6 +347,12 @@ const decorUpload = multer({
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+// Keep old saved template URLs usable even if the bundled art was not in the uploads folder.
+app.get('/uploads/decor/:file', (req, res, next) => {
+  const file = req.params.file;
+  if (!BUILTIN_JAR_ART.has(file) && file !== 'jar_template_guide.svg') return next();
+  res.sendFile(file, { root: BUILTIN_JAR_DIR }, error => { if (error) next(error); });
+});
 
 // Endpoint kiểm tra máy chủ còn sống (Watchdog Ping cho OBS Browser Source tự động kết nối lại)
 app.get('/api/ping', (req, res) => {
@@ -508,13 +626,8 @@ function parseGiftPayload(data) {
   }
 
   // 8. Combo
-  const isComboGift = Boolean(giftDetails.combo || giftDetails.giftType === 1 || data.giftType === 1);
-  const isComboFinished = Boolean(
-    data.repeatEnd === 1 || 
-    data.repeatEnd === true || 
-    giftDetails.repeat_end === 1 || 
-    !isComboGift
-  );
+  const isComboGift = Boolean(giftDetails.combo || Number(giftDetails.giftType ?? giftDetails.gift_type) === 1 || Number(data.giftType) === 1);
+  const isComboFinished = !isComboGift || Number(data.repeatEnd ?? data.repeat_end ?? giftDetails.repeat_end) === 1;
 
   return {
     _isParsed: true,
@@ -529,7 +642,9 @@ function parseGiftPayload(data) {
     giftId,
     iconUrl,
     isComboGift,
-    isComboFinished
+    isComboFinished,
+    comboGroup: String(data.groupId || data.group_id || '').replace(/^0$/, ''),
+    messageId: String(data.common?.msgId || data.msgId || '')
   };
 }
 
@@ -564,13 +679,65 @@ function isRuleMatchingGift(rule, parsed) {
   return false;
 }
 
+function sendGiftToJar(parsed, count, runAction = true, autoShakeCoins) {
+  const found = findJarGift(parsed.giftId, parsed.giftName);
+  publishJarGift({
+    giftId: parsed.giftId || found?.id || '',
+    inventoryName: found?.name || parsed.giftName,
+    giftName: parsed.giftName,
+    diamondCount: parsed.diamondCount,
+    count,
+    iconUrl: parsed.iconUrl || found?.iconUrl,
+    autoShakeCoins
+  }, runAction);
+}
+
+const liveJarCombos = new Map();
+
+function handleLiveGift(data) {
+  const parsed = parseGiftPayload(data);
+  if (!parsed) return;
+  if (!parsed.isComboGift) {
+    handleGift(parsed);
+    return;
+  }
+
+  const now = Date.now();
+  for (const [key, item] of liveJarCombos) {
+    if (now - item.updatedAt < 120_000) break;
+    liveJarCombos.delete(key);
+  }
+  const key = JSON.stringify([parsed.sender, parsed.giftId || parsed.giftName, parsed.comboGroup || '']);
+  let previous = liveJarCombos.get(key);
+  if (!parsed.comboGroup && previous?.finished &&
+      (!parsed.isComboFinished || (previous.messageId !== parsed.messageId && now - previous.updatedAt > 1000))) {
+    previous = undefined;
+  }
+  const rawCount = Math.max(1, Math.trunc(parsed.repeatCount));
+  const sent = previous?.sent || 0;
+  const delta = rawCount - sent;
+  if (delta > 0) {
+    const threshold = Number(jarConfig.shakeThreshold);
+    const cumulativeCoins = rawCount * parsed.diamondCount;
+    const shakeCoins = sent * parsed.diamondCount < threshold && cumulativeCoins >= threshold ? cumulativeCoins : 0;
+    sendGiftToJar(parsed, delta, sent === 0, shakeCoins);
+  }
+  const finished = Boolean(previous?.finished || parsed.isComboFinished);
+  liveJarCombos.delete(key);
+  liveJarCombos.set(key, {
+    sent: Math.max(sent, rawCount), finished, updatedAt: now, messageId: parsed.messageId
+  });
+  if (parsed.isComboFinished && !previous?.finished) handleGift(parsed, false);
+}
+
 // ---------- THUẬT TOÁN XỬ LÝ QUÀ & TỈ LỆ TRÚNG/XỊT ----------
-function handleGift(giftData) {
+function handleGift(giftData, includeJar = true) {
   const parsed = parseGiftPayload(giftData);
   if (!parsed) return;
 
   const { sender, nickname, giftName, rawGiftName, localizedName, diamondCount, repeatCount, avatar, iconUrl, giftId } = parsed;
   const coins = diamondCount * repeatCount;
+  if (includeJar) sendGiftToJar(parsed, repeatCount);
 
   // Tên quà hiển thị đầy đủ, rõ ràng cho streamer xem trong nhật ký
   const displayGiftName = (localizedName && rawGiftName && localizedName.toLowerCase() !== rawGiftName.toLowerCase())
@@ -586,27 +753,6 @@ function handleGift(giftData) {
   });
 
   console.log(`🎁 [NHẬN QUÀ] ${nickname} (@${sender}) tặng ${repeatCount}x "${displayGiftName}" [ID: ${giftId}] (${coins} xu)`);
-
-  // BẮN QUÀ VÀO HŨ QUÀ RƠI VẬT LÝ (NẾU HŨ ĐANG BẬT)
-  if (jarConfig.enabled) {
-    let finalIcon = iconUrl;
-    if (!finalIcon && Array.isArray(liveGiftsCache)) {
-      const found = (giftId ? liveGiftsCache.find(g => String(g.id) === String(giftId)) : null) ||
-                    liveGiftsCache.find(g => matchGiftName(g.name, giftName));
-      if (found && found.iconUrl) finalIcon = found.iconUrl;
-    }
-
-    io.emit('jar_drop_gift', {
-      giftId,
-      giftName: displayGiftName,
-      coins,
-      diamondCount,
-      count: repeatCount,
-      sender: nickname || sender,
-      avatar,
-      iconUrl: finalIcon
-    });
-  }
 
   // Tìm rule phù hợp theo thứ tự ưu tiên:
   // ƯU TIÊN 1: Đúng loại quà chỉ định (Specific Gift Rule hoặc Random Pool cho quà đó)
@@ -739,7 +885,7 @@ function probeVideoInfo(filePath) {
     const roundedFps = Math.round(rawFps);
     return {
       fps: rawFps,
-      roundedFps: roundedFps > 45 ? 60 : (roundedFps > 20 ? 30 : roundedFps),
+      roundedFps,
       width: resMatch ? parseInt(resMatch[1]) : 720,
       height: resMatch ? parseInt(resMatch[2]) : 1280,
       duration
@@ -761,8 +907,45 @@ app.get('/api/probe-video', (req, res) => {
   res.json({ success: true, info });
 });
 
+// Chuẩn hóa track âm thanh để Web Audio có thể dựng và trộn trên timeline.
+async function sendEditorAudio(filePath, res) {
+  try {
+    const { stdout } = await executeFFmpeg(ffmpegPath, [
+      '-hide_banner', '-loglevel', 'error', '-i', filePath, '-map', '0:a:0',
+      '-vn', '-c:a', 'libopus', '-b:a', '128k', '-f', 'ogg', 'pipe:1'
+    ], { encoding: 'buffer', maxBuffer: 24 * 1024 * 1024, windowsHide: true });
+    res.type('audio/ogg').send(stdout);
+  } catch (error) {
+    if (/matches no streams/i.test(String(error.stderr || ''))) {
+      res.status(204).end();
+    } else {
+      res.status(422).json({ success: false, error: 'Không đọc được âm thanh trong video.' });
+    }
+  }
+}
+
+app.get('/api/editor/source-audio', async (req, res) => {
+  if (typeof req.query.url !== 'string' || !req.query.url.startsWith('/uploads/videos/')) {
+    return res.status(400).json({ success: false, error: 'Chưa chọn video trong Studio.' });
+  }
+  const filePath = path.join(UPLOADS_DIR, path.basename(req.query.url));
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return res.status(404).json({ success: false, error: 'Không tìm thấy video.' });
+  }
+  await sendEditorAudio(filePath, res);
+});
+
+app.post('/api/editor/source-audio', renderUpload.single('video'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: 'Chưa chọn video.' });
+  try {
+    await sendEditorAudio(req.file.path, res);
+  } finally {
+    try { fs.rmSync(req.file.path, { force: true }); } catch (_) {}
+  }
+});
+
 // API Xuất video đã chỉnh sửa với FPS tùy chọn & Tên chỉ định
-app.post('/api/render-export', upload.single('video'), (req, res) => {
+app.post('/api/render-export', renderUpload.single('video'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, error: 'Chưa nhận được file video' });
   }
@@ -780,14 +963,15 @@ app.post('/api/render-export', upload.single('video'), (req, res) => {
     } else {
       targetFps = '30';
     }
-  } else if (targetFps !== '60' && targetFps !== '30') {
-    targetFps = '30';
   }
+  const fps = Number(targetFps);
+  targetFps = Number.isInteger(fps) && fps >= 1 && fps <= 120 ? String(fps) : '30';
 
   // Tên file sạch đẹp giữ nguyên tên do user nhập, không thêm dãy ID
   const sanitized = customName.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1EA0-\u1EF9]/g, '_').substring(0, 80) || 'Effect_Idol';
   const finalFilename = sanitized.toLowerCase().endsWith('.webm') ? sanitized : `${sanitized}.webm`;
   const finalPath = path.join(UPLOADS_DIR, finalFilename);
+  const renderPath = req.file.path + '.render.webm';
 
   try {
     // Xây dựng chuỗi filter FFmpeg: khử nền xanh (nếu có khoảng trống) -> chuẩn yuva420p -> Fade In/Out trực tiếp trên kênh Alpha
@@ -814,8 +998,8 @@ app.post('/api/render-export', upload.single('video'), (req, res) => {
     } catch (_) {}
 
     // Dùng FFmpeg chuẩn hóa FPS, chuyển phông xanh/khoảng trống & hiệu ứng mờ dần thành TRONG SUỐT (yuva420p)
-    execFileSync(ffmpegPath, [
-      '-y',
+    await executeFFmpeg(ffmpegPath, [
+      '-y', '-hide_banner', '-loglevel', 'error',
       '-i', req.file.path,
       '-r', targetFps,
       '-vf', vfParts.join(','),
@@ -826,17 +1010,18 @@ app.post('/api/render-export', upload.single('video'), (req, res) => {
       '-b:v', '8M',
       '-c:a', 'libopus',
       '-b:a', '128k',
-      finalPath
-    ], { stdio: ['pipe', 'pipe', 'pipe'] });
-
-    if (fs.existsSync(req.file.path) && req.file.path !== finalPath) {
-      try { fs.unlinkSync(req.file.path); } catch (_) {}
-    }
+      renderPath
+    ], { windowsHide: true });
+    fs.renameSync(renderPath, finalPath);
   } catch (err) {
-    console.warn('FFmpeg encode warning, dùng file gốc:', err.message);
-    try {
-      fs.renameSync(req.file.path, finalPath);
-    } catch (_) {}
+    console.warn('FFmpeg không xuất được video:', err.message);
+    return res.status(422).json({ success: false, error: 'Không xuất được WebM trong suốt. Kiểm tra video nguồn và thử lại.' });
+  } finally {
+    for (const file of [req.file.path, renderPath]) {
+      if (file !== finalPath) {
+        try { fs.rmSync(file, { force: true }); } catch (_) {}
+      }
+    }
   }
 
   const fileUrl = `/uploads/videos/${finalFilename}`;
@@ -1194,12 +1379,9 @@ async function performConnectTikTok(cleanUser, options = {}) {
   });
 
   // Bắt sự kiện Quà tặng từ TikTok Live thật
-  conn.on('gift', (data) => {
+  conn.on('gift', data => {
     try {
-      const parsed = parseGiftPayload(data);
-      if (!parsed) return;
-      if (parsed.isComboGift && !parsed.isComboFinished) return;
-      handleGift(parsed);
+      handleLiveGift(data);
     } catch (err) {
       console.error('Lỗi xử lý sự kiện quà tặng:', err);
     }
@@ -1426,48 +1608,194 @@ app.get('/api/tiktok/status', (req, res) => res.json(currentLiveStatus));
 
 // 1. Lấy cấu hình hũ
 app.get('/api/jar/config', (req, res) => {
+  res.json({ success: true, config: jarConfig, actions: [...JAR_ACTIONS], supportsJarLayers: true });
+});
+
+function discardJarUploads(files) {
+  for (const file of Object.values(files).flat()) {
+    try { fs.rmSync(file.path, { force: true }); } catch (error) {
+      console.warn('Không dọn được ảnh hũ tải tạm:', error.message);
+    }
+  }
+}
+
+function receiveJarArtwork(receive) {
+  return (req, res, next) => receive(req, res, error => {
+    if (!error) return next();
+    const message = error.code === 'LIMIT_FILE_SIZE' ? 'Ảnh hũ vượt quá dung lượng cho phép.' : error.message;
+    res.status(400).json({ success: false, error: message });
+  });
+}
+
+async function getJarArtworkSize(file) {
+  try {
+    const { stderr } = await executeFFmpeg(ffmpegPath, [
+      '-hide_banner', '-nostdin', '-i', file, '-map', '0:v:0', '-frames:v', '1', '-f', 'null', '-'
+    ], { windowsHide: true });
+    const size = stderr.match(/Stream [^\r\n]*?Video: (?:png|webp)\b[^\r\n]*?\b(\d+)x(\d+)\b/);
+    if (size) return size[1] + ' × ' + size[2];
+  } catch (_) {}
+  throw new Error('Không đọc được ảnh PNG hoặc WebP của hũ.');
+}
+
+async function validateJarArtworkPair(rearPath, frontPath) {
+  const [rear, front] = await Promise.all([
+    rearPath && getJarArtworkSize(rearPath),
+    frontPath && getJarArtworkSize(frontPath)
+  ]);
+  if (front && rear && front !== rear) throw new Error('Mặt trước cần đúng ' + rear + ' px như mặt sau.');
+}
+
+function findStoredJarArtwork(url) {
+  if (typeof url !== 'string') return;
+  const file = path.posix.basename(url);
+  if (BUILTIN_JAR_ART.has(file) && url === `/builtin/jar/${file}`) return path.join(BUILTIN_JAR_DIR, file);
+  if (!/^\/uploads\/(decor|templates)\/[\w.-]+\.(png|webp)$/i.test(url)) return;
+  const local = path.join(__dirname, 'public', url);
+  if (url === `/uploads/decor/${file}` && BUILTIN_JAR_ART.has(file) && !fs.existsSync(local)) {
+    return path.join(BUILTIN_JAR_DIR, file);
+  }
+  return local;
+}
+
+const receiveJarConfigLayers = receiveJarArtwork(decorUpload.fields([
+  { name: 'jarRear', maxCount: 1 }, { name: 'jarFront', maxCount: 1 }
+]));
+
+app.post('/api/jar/config', (req, res, next) => {
+  if (req.is('multipart/form-data')) return receiveJarConfigLayers(req, res, next);
+  next();
+}, async (req, res) => {
+  const files = req.files || {};
+  const rear = files.jarRear?.[0];
+  const front = files.jarFront?.[0];
+  let patch = req.body;
+  try {
+    if (req.files) patch = JSON.parse(req.body.config ?? 'null');
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new Error('Cấu hình hũ không hợp lệ');
+    if (Object.hasOwn(patch, 'flipSpeed') && (!Number.isFinite(patch.flipSpeed) || patch.flipSpeed < 0.5 || patch.flipSpeed > 2)) {
+      throw new Error('Tốc độ lật hũ phải từ 0,5× đến 2,0×');
+    }
+    if (front || rear) {
+      const rearPath = rear?.path || findStoredJarArtwork(patch.customJarImage ?? jarConfig.customJarImage);
+      if (front && !rearPath) throw new Error('Hãy nhập ảnh mặt sau PNG hoặc WebP trước.');
+      await validateJarArtworkPair(rearPath, front?.path);
+      if (rear) patch.customJarImage = '/uploads/decor/' + rear.filename;
+      if (front) patch.frontOverlayImage = '/uploads/decor/' + front.filename;
+    }
+  } catch (error) {
+    discardJarUploads(files);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+  const nextConfig = { ...jarConfig, ...patch };
+  if (!saveAndPublishJarConfig(nextConfig)) {
+    discardJarUploads(files);
+    return res.status(500).json({ success: false, error: 'Không lưu được cài đặt hũ' });
+  }
+  addLog('info', 'Đã lưu cài đặt Hũ Quà Rơi Vật Lý');
   res.json({ success: true, config: jarConfig });
 });
 
-// 2. Lưu cập nhật cấu hình hũ
-app.post('/api/jar/config', (req, res) => {
-  jarConfig = { ...jarConfig, ...req.body };
-  saveJarConfig(jarConfig);
-  io.emit('jar_config_updated', jarConfig);
-  addLog('info', 'Đã lưu cài đặt Hũ Quà Rơi Vật Lý');
+app.post('/api/jar/gift-action', (req, res) => {
+  const { giftKey, giftName, action } = req.body || {};
+  if (!isGiftKey(giftKey) || (action !== '' && !JAR_GIFT_ACTIONS.has(action))) {
+    return res.status(400).json({ success: false, error: 'Loại quà hoặc thao tác không hợp lệ' });
+  }
+  const giftActions = { ...jarConfig.giftActions };
+  if (action === '') delete giftActions[giftKey];
+  else {
+    const name = typeof giftName === 'string' ? giftName.trim().slice(0, 160) : '';
+    if (!name) return res.status(400).json({ success: false, error: 'Chọn loại quà trước khi lưu' });
+    giftActions[giftKey] = { name, action };
+  }
+  if (!saveAndPublishJarConfig({ ...jarConfig, giftActions })) {
+    return res.status(500).json({ success: false, error: 'Không lưu được thao tác theo quà' });
+  }
   res.json({ success: true, config: jarConfig });
 });
 
 // 3. Kích hoạt hành động tương tác (Lắc, Nứt, Lật, Nổ, Dọn, Reset)
 app.post('/api/jar/action', (req, res) => {
-  const { action, intensity } = req.body;
-  if (!action) return res.status(400).json({ success: false, error: 'Thiếu action' });
-  io.emit('jar_action', { action, intensity: Number(intensity) || 1.0 });
+  const { action, intensity, giftKey } = req.body || {};
+  if (!JAR_ACTIONS.has(action)) return res.status(400).json({ success: false, error: 'Thao tác hũ không hợp lệ' });
+  if (!jarConfig.enabled) return res.status(409).json({ success: false, error: 'Bật hũ trước khi gửi thao tác' });
+  if (action === 'remove_gift_type' && !isGiftKey(giftKey)) {
+    return res.status(400).json({ success: false, error: 'Loại quà không hợp lệ' });
+  }
+  // Persistent session actions also affect OBS sources that are closed.
+  let sessionEvent = {};
+  if (action === 'clear') {
+    jarSession.gifts.clear();
+    jarSession.checkpoints.clear();
+    sessionEvent = nextJarSessionEvent();
+  } else if (action === 'remove_gift_type') {
+    jarSession.gifts.delete(giftKey);
+    for (const [view, positions] of jarSession.checkpoints) {
+      jarSession.checkpoints.set(view, positions.filter(item => item[0] !== giftKey));
+    }
+    sessionEvent = nextJarSessionEvent();
+  } else if (action === 'reset') {
+    jarSession.coins = 0;
+    sessionEvent = nextJarSessionEvent();
+  }
+  if (sessionEvent.sessionId) scheduleJarInventory();
+  io.emit('jar_action', { ...sessionEvent, action, intensity: Math.max(0.1, Math.min(2, Number(intensity) || 1)), giftKey });
   addLog('info', `Kích hoạt hiệu ứng hũ: [${action.toUpperCase()}]`);
   res.json({ success: true, action });
 });
 
+function findJarGift(giftId, giftName) {
+  if (!Array.isArray(liveGiftsCache)) return;
+  return (giftId && liveGiftsCache.find(gift => String(gift.id) === String(giftId))) ||
+    (giftName && liveGiftsCache.find(gift => matchGiftName(gift.name, giftName)));
+}
+
+function publishJarGift({ sender, avatar, ...gift }, runAction = true) {
+  const count = Math.max(1, Math.trunc(Number(gift.count)) || 1);
+  const unitCoins = Math.max(1, Math.trunc(Number(gift.diamondCount ?? gift.coins)) || 1);
+  if (!Number.isSafeInteger(count) || !Number.isSafeInteger(unitCoins)) return;
+  const id = String(gift.giftId ?? '').trim().slice(0, 180);
+  const name = String(gift.inventoryName || gift.giftName || 'Quà tặng').trim().slice(0, 160) || 'Quà tặng';
+  const giftKey = id && id !== 'custom' ? 'id:' + id : 'name:' + name.normalize('NFC').toLocaleLowerCase('vi');
+  const action = runAction ? jarConfig.giftActions?.[giftKey]?.action : undefined;
+  if (action === 'clear') {
+    jarSession.gifts.clear();
+    jarSession.checkpoints.clear();
+  } else if (action === 'reset') {
+    jarSession.coins = 0;
+  }
+  const retained = {
+    giftKey, inventoryName: name, giftName: gift.giftName || name, iconUrl: gift.iconUrl,
+    diamondCount: unitCoins, count: (jarSession.gifts.get(giftKey)?.count || 0) + count
+  };
+  jarSession.gifts.set(giftKey, retained);
+  jarSession.coins += count * unitCoins;
+  io.emit('jar_drop_gift', {
+    ...retained, count, autoShakeCoins: gift.autoShakeCoins,
+    ...nextJarSessionEvent(), jarAction: JAR_GIFT_ACTIONS.has(action) ? action : undefined
+  });
+  scheduleJarInventory();
+}
+
 // 4. Bắn test quà rơi vào hũ
 app.post('/api/jar/drop', (req, res) => {
-  const { giftId, giftName, coins, count, sender, avatar, iconUrl } = req.body;
-  let finalIcon = iconUrl;
-  if (!finalIcon && (giftId || giftName) && Array.isArray(liveGiftsCache)) {
-    const f = liveGiftsCache.find(g => String(g.id) === String(giftId)) ||
-              liveGiftsCache.find(g => matchGiftName(g.name, giftName));
-    if (f && f.iconUrl) finalIcon = f.iconUrl;
-  }
+  if (!jarConfig.enabled) return res.status(409).json({ success: false, error: 'Bật hũ trước khi thả thử' });
+  const { giftId, giftName, coins, count, sender, avatar, iconUrl } = req.body || {};
+  const resolvedId = giftId === 'custom' ? '' : giftId;
+  const found = findJarGift(resolvedId, giftName);
 
   const dropData = {
-    giftId: giftId || 'custom',
+    giftId: resolvedId || found?.id || 'custom',
+    inventoryName: found?.name || giftName || 'Quà Test',
     giftName: giftName || 'Quà Test',
-    coins: Number(coins) || 1,
-    count: Math.min(Number(count) || 1, 50),
+    coins: Math.max(1, Math.min(1_000_000, Math.trunc(Number(coins)) || 1)),
+    count: Math.max(1, Math.min(50, Math.trunc(Number(count)) || 1)),
     sender: sender || 'Đại Gia Test',
     avatar: avatar || '',
-    iconUrl: finalIcon
+    iconUrl: iconUrl || found?.iconUrl
   };
 
-  io.emit('jar_drop_gift', dropData);
+  publishJarGift(dropData);
   addLog('gift', `[TEST HŨ] Đã bắn ${dropData.count}x ${dropData.giftName} (${dropData.coins} xu) vào hũ`);
   res.json({ success: true, dropped: dropData });
 });
@@ -1478,10 +1806,13 @@ app.post('/api/jar/upload-decor', decorUpload.single('decor'), (req, res) => {
     return res.status(400).json({ success: false, error: 'Chưa chọn file decor' });
   }
   const fileUrl = `/uploads/decor/${req.file.filename}`;
-  jarConfig.decorImage = fileUrl;
-  saveJarConfig(jarConfig);
-  io.emit('jar_config_updated', jarConfig);
-  addLog('info', `Đã tải lên ảnh Decor mới cho hũ: ${req.file.originalname}`);
+  if (req.body.apply !== 'false') {
+    const nextConfig = { ...jarConfig, decorImage: fileUrl };
+    if (!saveJarConfig(nextConfig)) return res.status(500).json({ success: false, error: 'Không lưu được ảnh trang trí' });
+    jarConfig = nextConfig;
+    io.emit('jar_config_updated', jarConfig);
+  }
+  addLog('info', `Đã tải ảnh trang trí hũ: ${req.file.originalname}`);
   res.json({ success: true, fileUrl, fileName: req.file.originalname });
 });
 
@@ -1489,7 +1820,7 @@ app.post('/api/jar/upload-decor', decorUpload.single('decor'), (req, res) => {
 app.get('/api/jar/decor-list', (req, res) => {
   try {
     const files = fs.readdirSync(DECOR_DIR)
-      .filter(f => /\.(png|svg|webp|jpg|jpeg)$/i.test(f))
+      .filter(f => /_\d{10,}\.(png|svg|webp|jpg|jpeg)$/i.test(f))
       .map(f => ({
         name: f,
         url: `/uploads/decor/${f}`
@@ -1504,22 +1835,55 @@ app.get('/api/jar/decor-list', (req, res) => {
 // --- API QUẢN LÝ THƯ VIỆN MẪU HŨ (JAR TEMPLATES) ---
 // 1. Lấy danh sách mẫu hũ đã lưu
 app.get('/api/jar/templates', (req, res) => {
-  const tmpls = loadJarTemplates();
-  res.json({ success: true, templates: tmpls });
+  const templates = loadJarTemplates().map(template => ({
+    ...template,
+    isActive: template.imageUrl === jarConfig.customJarImage && getJarTemplateFront(template) === (jarConfig.frontOverlayImage || '')
+  }));
+  res.json({ success: true, templates });
 });
 
+function getJarTemplateFront(template) {
+  return template.frontImageUrl || template.stateData?.design?.frontOverlayImage || '';
+}
+
+function jarConfigForTemplate(template) {
+  const design = template.stateData?.design;
+  const fields = ['hitbox', 'hideDefaultJarOnCustom', 'shimmerRimEffect', 'shimmerRimSpeed', 'shimmerSparkles', 'clipGiftsToJar', 'glassRealism', 'stickers', 'decorImage', 'decorText'];
+  const settings = design && typeof design === 'object'
+    ? Object.fromEntries(fields.filter(field => Object.hasOwn(design, field)).map(field => [field, design[field]]))
+    : {};
+  return {
+    ...jarConfig, style: 'custom_image', customJarImage: template.imageUrl, frontOverlayImage: getJarTemplateFront(template),
+    jarAspect: template.aspect || 'vertical', jarPadding: template.padding || { top: 0, bottom: 0, left: 0, right: 0 },
+    hideDefaultJarOnCustom: true, ...settings
+  };
+}
+
 // 2. Lưu mẫu hũ mới vào thư viện
-app.post('/api/jar/save-template', templateUpload.single('templateImage'), (req, res) => {
+const receiveJarTemplateLayers = receiveJarArtwork(templateUpload.fields([
+  { name: 'templateImage', maxCount: 1 }, { name: 'frontImage', maxCount: 1 }
+]));
+
+app.post('/api/jar/save-template', receiveJarTemplateLayers, async (req, res) => {
+  const files = req.files || {};
+  const rear = files.templateImage?.[0];
+  const front = files.frontImage?.[0];
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'Chưa nhận được ảnh template' });
-    }
-    const fileUrl = `/uploads/templates/${req.file.filename}`;
+    if (!rear) throw new Error('Hãy nhập ảnh mặt sau của hũ.');
+    await validateJarArtworkPair(rear.path, front?.path);
+  } catch (error) {
+    discardJarUploads(files);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+  let committed = false;
+  try {
+    const fileUrl = '/uploads/templates/' + rear.filename;
+    const frontImageUrl = front ? '/uploads/templates/' + front.filename : '';
     const tmpls = loadJarTemplates();
 
-    const id = `tmpl_${Date.now()}`;
-    const name = req.body.name || `Mẫu Hũ ${new Date().toLocaleDateString('vi-VN')}`;
-    const aspect = req.body.aspect || 'vertical';
+    const id = path.parse(rear.filename).name;
+    const name = String(req.body.name || '').trim().slice(0, 80) || 'Mẫu hũ';
+    const aspect = ['square', 'horizontal', 'vertical'].includes(req.body.aspect) ? req.body.aspect : 'vertical';
     const canvasWidth = Number(req.body.canvasWidth) || 500;
     const canvasHeight = Number(req.body.canvasHeight) || 640;
     let padding = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -1543,26 +1907,23 @@ app.post('/api/jar/save-template', templateUpload.single('templateImage'), (req,
       padding,
       imageUrl: fileUrl,
       previewUrl: fileUrl,
+      frontImageUrl,
       isActive: applyNow,
       createdAt: new Date().toISOString(),
       stateData
     };
 
-    if (applyNow) {
-      tmpls.forEach(t => t.isActive = false);
-    }
-
     tmpls.unshift(newTemplate);
-    saveJarTemplates(tmpls);
+    if (!saveJarTemplates(tmpls)) {
+      discardJarUploads(files);
+      return res.status(500).json({ success: false, error: 'Không ghi được thư viện mẫu hũ' });
+    }
+    committed = true;
 
     if (applyNow) {
-      jarConfig.style = 'custom_image';
-      jarConfig.customJarImage = fileUrl;
-      jarConfig.jarAspect = aspect;
-      jarConfig.jarPadding = padding;
-      jarConfig.hideDefaultJarOnCustom = true;
-      saveJarConfig(jarConfig);
-      io.emit('jar_config_updated', jarConfig);
+      if (!saveAndPublishJarConfig(jarConfigForTemplate(newTemplate))) {
+        return res.status(500).json({ success: false, error: 'Mẫu đã lưu vào thư viện. Studio chưa áp dụng được lên OBS.' });
+      }
       addLog('info', `Đã lưu & áp dụng mẫu hũ mới: "${name}" (${aspect})`);
     } else {
       addLog('info', `Đã lưu mẫu hũ vào thư viện: "${name}"`);
@@ -1570,6 +1931,7 @@ app.post('/api/jar/save-template', templateUpload.single('templateImage'), (req,
 
     res.json({ success: true, template: newTemplate });
   } catch (err) {
+    if (!committed) discardJarUploads(files);
     console.error('Lỗi lưu template:', err);
     res.status(500).json({ success: false, error: err.message });
   }
@@ -1584,16 +1946,26 @@ app.delete('/api/jar/template/:id', (req, res) => {
     return res.status(404).json({ success: false, error: 'Không tìm thấy mẫu hũ' });
   }
 
-  // Xoá file ảnh nếu trong uploads/templates
-  if (target.imageUrl && target.imageUrl.startsWith('/uploads/templates/')) {
-    const filePath = path.join(__dirname, 'public', target.imageUrl);
-    try {
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    } catch (_) {}
+  if (jarConfig.customJarImage === target.imageUrl) {
+    const fallback = { ...jarConfig, ...FISHBOWL_SKIN, hitbox: { shape: 'sphere' } };
+    if (!saveJarConfig(fallback)) return res.status(500).json({ success: false, error: 'Không thể chuyển về mẫu hũ mặc định' });
+    jarConfig = fallback;
+    io.emit('jar_config_updated', jarConfig);
   }
 
   tmpls = tmpls.filter(t => t.id !== id);
-  saveJarTemplates(tmpls);
+  if (!saveJarTemplates(tmpls)) return res.status(500).json({ success: false, error: 'Không ghi được thư viện mẫu hũ' });
+  const referenced = new Set([
+    jarConfig.customJarImage,
+    jarConfig.frontOverlayImage,
+    ...tmpls.flatMap(template => [template.imageUrl, getJarTemplateFront(template)])
+  ]);
+  for (const url of new Set([target.imageUrl, target.frontImageUrl])) {
+    if (!url?.startsWith('/uploads/templates/') || referenced.has(url)) continue;
+    const file = findStoredJarArtwork(url);
+    if (file) discardJarUploads({ deleted: [{ path: file }] });
+  }
+
   addLog('info', `Đã xoá mẫu hũ khỏi thư viện: "${target.name}"`);
   res.json({ success: true, id });
 });
@@ -1607,19 +1979,12 @@ app.post('/api/jar/apply-template/:id', (req, res) => {
     return res.status(404).json({ success: false, error: 'Không tìm thấy mẫu hũ' });
   }
 
-  tmpls.forEach(t => t.isActive = (t.id === id));
-  saveJarTemplates(tmpls);
-
-  jarConfig.style = 'custom_image';
-  jarConfig.customJarImage = target.imageUrl;
-  jarConfig.jarAspect = target.aspect || 'vertical';
-  jarConfig.jarPadding = target.padding || { top: 0, bottom: 0, left: 0, right: 0 };
-  jarConfig.hideDefaultJarOnCustom = true;
-  saveJarConfig(jarConfig);
-  io.emit('jar_config_updated', jarConfig);
+  if (!saveAndPublishJarConfig(jarConfigForTemplate(target))) {
+    return res.status(500).json({ success: false, error: 'Không áp dụng được mẫu hũ' });
+  }
 
   addLog('info', `Đã áp dụng mẫu hũ "${target.name}" (${target.aspect}) lên OBS`);
-  res.json({ success: true, config: jarConfig, template: target });
+  res.json({ success: true, config: jarConfig, template: { ...target, isActive: true } });
 });
 
 
@@ -1628,108 +1993,112 @@ app.post('/api/jar/upload-jar-skin', decorUpload.single('jarSkin'), (req, res) =
     return res.status(400).json({ success: false, error: 'Chưa chọn file ảnh hũ' });
   }
   const fileUrl = `/uploads/decor/${req.file.filename}`;
-  jarConfig.style = 'custom_image';
-  jarConfig.customJarImage = fileUrl;
-  saveJarConfig(jarConfig);
-  io.emit('jar_config_updated', jarConfig);
-  addLog('info', `Đã tải lên và áp dụng Mẫu Hũ Mới từ ảnh: ${req.file.originalname}`);
+  if (req.body.apply !== 'false') {
+    const nextConfig = {
+      ...jarConfig, style: 'custom_image', customJarImage: fileUrl,
+      frontOverlayImage: '', hideDefaultJarOnCustom: true
+    };
+    if (!saveJarConfig(nextConfig)) return res.status(500).json({ success: false, error: 'Không lưu được mẫu hũ' });
+    jarConfig = nextConfig;
+    io.emit('jar_config_updated', jarConfig);
+  }
+  addLog('info', `Đã tải ảnh mẫu hũ: ${req.file.originalname}`);
   res.json({ success: true, fileUrl, fileName: req.file.originalname });
 });
 
 // ========================================================
 // CÁC HÀM XỬ LÝ NÂNG CẤP VÀ BẢO VỆ DỮ LIỆU STREAMER
 // ========================================================
-function isPathProtected(relPath) {
-  const norm = relPath.replace(/\\/g, '/').toLowerCase();
-  const protectedPrefixes = [
-    'rules.json',
-    'jar_config.json',
-    'jar_templates.json',
-    'tiktok_settings.json',
-    'update_config.json',
-    'runtime',
-    'node_modules',
-    'temp_update',
-    'public/uploads',
-    '.git'
-  ];
-  return protectedPrefixes.some(p => norm === p || norm.startsWith(p + '/'));
+const GITHUB_HEADERS = { 'User-Agent': 'EldenEffect-Studio-Updater' };
+
+function updateError(status, message) {
+  return Object.assign(new Error(message), { status });
 }
 
-function extractZip(zipFilePath, targetDir) {
-  if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+async function getLatestStudioRelease(repo) {
+  if (typeof repo !== 'string' || !/^[\w-]+\/[\w.-]+$/.test(repo) || /\/\.{1,2}$/.test(repo)) {
+    throw updateError(400, 'Nhập GitHub Repo theo định dạng username/repository.');
+  }
+
+  const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+    headers: { ...GITHUB_HEADERS, Accept: 'application/vnd.github+json' },
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (response.status === 404) throw updateError(404, `Repo ${repo} chưa có bản phát hành công khai.`);
+  if (!response.ok) throw updateError(502, `Không đọc được bản phát hành từ GitHub (HTTP ${response.status}).`);
+
+  const release = await response.json();
+  const version = parseVersion(release.tag_name);
+  if (!version) throw updateError(422, 'Bản phát hành GitHub cần có tag dạng v1.0.1.');
+  const expectedUrl = `https://github.com/${repo}/releases/download/${release.tag_name}/${UPDATE_ASSET_NAME}`;
+  const asset = release.assets?.find(file => file.name === UPDATE_ASSET_NAME &&
+    file.browser_download_url?.toLowerCase() === expectedUrl.toLowerCase());
+  return { release, version, asset };
+}
+
+async function downloadStudioRelease(asset, zip) {
+  if (asset.size > UPDATE_SIZE_LIMIT) throw updateError(413, 'Gói cập nhật vượt quá 50 MB.');
+  const response = await fetch(asset.browser_download_url, {
+    headers: GITHUB_HEADERS,
+    signal: AbortSignal.timeout(90_000)
+  });
+  if (!response.ok || !response.body) throw updateError(502, `Không tải được gói cập nhật (HTTP ${response.status}).`);
+
+  const fd = fs.openSync(zip, 'wx');
+  const hash = createHash('sha256');
+  let size = 0;
   try {
-    execSync(`tar -xf "${zipFilePath}" -C "${targetDir}"`, { stdio: 'pipe' });
-    return true;
-  } catch (err) {
-    const psCmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipFilePath}' -DestinationPath '${targetDir}' -Force"`;
-    execSync(psCmd, { stdio: 'pipe' });
-    return true;
+    for await (const chunk of response.body) {
+      size += chunk.length;
+      if (size > UPDATE_SIZE_LIMIT) throw updateError(413, 'Gói cập nhật vượt quá 50 MB.');
+      hash.update(chunk);
+      fs.writeFileSync(fd, chunk);
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+  const digest = `sha256:${hash.digest('hex')}`;
+  if (!size || (typeof asset.size === 'number' && asset.size !== size) || (asset.digest && asset.digest !== digest)) {
+    throw updateError(422, 'Gói tải về không khớp với bản phát hành GitHub. Hãy thử lại.');
   }
 }
 
-function findPayloadRoot(baseDir) {
-  const items = fs.readdirSync(baseDir, { withFileTypes: true });
-  if (items.some(i => i.name === 'server.js' || i.name === 'public')) {
-    return baseDir;
+async function applyStudioUpdate(res, getPackage, uploadedZip) {
+  if (updateInProgress || restartingStudio) {
+    if (uploadedZip) removeUpdateWork(uploadedZip);
+    return res.status(409).json({ success: false, error: 'Studio đang cập nhật hoặc khởi động lại.' });
   }
-  const dirs = items.filter(i => i.isDirectory());
-  if (dirs.length === 1) {
-    const sub = path.join(baseDir, dirs[0].name);
-    const subItems = fs.readdirSync(sub);
-    if (subItems.includes('server.js') || subItems.includes('public')) {
-      return sub;
-    }
-  }
-  return baseDir;
-}
 
-function safeCopyRecursive(srcDir, destDir, relBase = '', updatedList = []) {
-  const items = fs.readdirSync(srcDir, { withFileTypes: true });
-  for (const item of items) {
-    const itemRel = relBase ? `${relBase}/${item.name}` : item.name;
-    if (isPathProtected(itemRel)) {
-      continue;
-    }
-    const srcPath = path.join(srcDir, item.name);
-    const destPath = path.join(destDir, item.name);
-
-    if (item.isDirectory()) {
-      if (!fs.existsSync(destPath)) fs.mkdirSync(destPath, { recursive: true });
-      safeCopyRecursive(srcPath, destPath, itemRel, updatedList);
-    } else if (item.isFile()) {
-      const parent = path.dirname(destPath);
-      if (!fs.existsSync(parent)) fs.mkdirSync(parent, { recursive: true });
-      fs.copyFileSync(srcPath, destPath);
-      updatedList.push(itemRel);
-    }
-  }
-  return updatedList;
-}
-
-function cleanTempDir(dir) {
+  updateInProgress = true;
+  let work;
   try {
-    if (fs.existsSync(dir)) {
-      fs.rmSync(dir, { recursive: true, force: true });
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  } catch (_) {}
+    recoverStudioUpdate(__dirname, TEMP_UPDATE_DIR);
+    work = fs.mkdtempSync(path.join(TEMP_UPDATE_DIR, 'update-'));
+    const current = installedStudioVersion(__dirname, loadUpdateConfig().version);
+    const pkg = await getPackage(work, current);
+    const result = installStudioUpdate({ ...pkg, current, work, appDir: __dirname, tempDir: TEMP_UPDATE_DIR });
+    const message = `Đã cập nhật ${result.updatedFiles.length} tệp ứng dụng. Dữ liệu trên máy được giữ nguyên.`;
+    addLog('info', message);
+    return res.json({ success: true, message, ...result });
+  } catch (error) {
+    console.error('Lỗi cập nhật Studio:', error.message);
+    return res.status(error.status || 500).json({ success: false, error: error.message });
+  } finally {
+    if (work) removeUpdateWork(work);
+    if (uploadedZip) removeUpdateWork(uploadedZip);
+    updateInProgress = false;
+  }
 }
 
-// ENDPOINTS CẬP NHẬT ỨNG DỤNG
 app.get('/api/app/version', (req, res) => {
   const cfg = loadUpdateConfig();
-  let pkgVer = '1.0.0';
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
-    pkgVer = pkg.version || pkgVer;
-  } catch (_) {}
   res.json({
     success: true,
-    version: cfg.version || pkgVer,
+    instanceId: jarSession.id,
+    version: installedStudioVersion(__dirname, cfg.version),
     githubRepo: cfg.githubRepo || '',
     autoCheckOnStartup: cfg.autoCheckOnStartup !== false,
-    lastCheckTime: cfg.lastCheckTime
+    lastCheckTime: lastGitHubCheckTime ?? cfg.lastCheckTime ?? null
   });
 });
 
@@ -1737,165 +2106,75 @@ app.post('/api/app/config', (req, res) => {
   const cfg = loadUpdateConfig();
   if (typeof req.body?.githubRepo === 'string') cfg.githubRepo = req.body.githubRepo.trim();
   if (typeof req.body?.autoCheckOnStartup === 'boolean') cfg.autoCheckOnStartup = req.body.autoCheckOnStartup;
-  saveUpdateConfig(cfg);
-  res.json({ success: true, config: cfg });
+  try {
+    writeUpdateConfig(UPDATE_CONFIG_FILE, cfg);
+    res.json({ success: true, config: cfg });
+  } catch (error) {
+    console.error('Lỗi lưu cấu hình cập nhật:', error.message);
+    res.status(500).json({ success: false, error: 'Không lưu được cấu hình cập nhật trên máy này.' });
+  }
 });
 
 app.post('/api/app/check-github', async (req, res) => {
   const cfg = loadUpdateConfig();
-  const repo = (req.body?.githubRepo || cfg.githubRepo || '').trim();
-  if (!repo || !repo.includes('/')) {
-    return res.status(400).json({ success: false, error: 'Chưa cấu hình GitHub Repo (định dạng: username/repository)' });
-  }
-
+  const repo = req.body?.githubRepo ?? cfg.githubRepo;
   try {
-    const ghRes = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
-      headers: { 'User-Agent': 'LiveEffect-Studio-Updater' }
-    });
-    if (!ghRes.ok) {
-      if (ghRes.status === 404) {
-        return res.status(404).json({ success: false, error: `Không tìm thấy bản Release nào trên GitHub repo: ${repo}` });
-      }
-      return res.status(ghRes.status).json({ success: false, error: `GitHub API trả về lỗi: ${ghRes.statusText}` });
-    }
-
-    const data = await ghRes.json();
-    const latestTag = (data.tag_name || '').replace(/^v/, '');
-    const currentVer = (cfg.version || '1.0.0').replace(/^v/, '');
-
-    let downloadUrl = data.zipball_url;
-    if (Array.isArray(data.assets) && data.assets.length > 0) {
-      const zipAsset = data.assets.find(a => a.name.endsWith('.zip'));
-      if (zipAsset) downloadUrl = zipAsset.browser_download_url;
-    }
-
-    const hasUpdate = latestTag && latestTag !== currentVer;
-
-    cfg.lastCheckTime = new Date().toISOString();
-    saveUpdateConfig(cfg);
-
+    const { release, version, asset } = await getLatestStudioRelease(typeof repo === 'string' ? repo.trim() : repo);
+    const currentVersion = installedStudioVersion(__dirname, cfg.version);
+    const hasUpdate = isNewerVersion(version, currentVersion);
+    if (hasUpdate && !asset) throw updateError(422, `Bản phát hành chưa đính kèm gói ${UPDATE_ASSET_NAME}.`);
+    lastGitHubCheckTime = new Date().toISOString();
     res.json({
       success: true,
-      currentVersion: currentVer,
-      latestVersion: latestTag,
+      currentVersion,
+      latestVersion: version,
       hasUpdate,
-      releaseName: data.name || data.tag_name,
-      releaseNotes: data.body || '',
-      downloadUrl,
-      publishedAt: data.published_at
+      releaseName: release.name || release.tag_name,
+      releaseNotes: release.body || '',
+      downloadUrl: asset?.browser_download_url,
+      publishedAt: release.published_at
     });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Lỗi kiểm tra GitHub: ' + err.message });
+  } catch (error) {
+    res.status(error.status || 502).json({ success: false, error: error.message });
   }
 });
 
-// Cập nhật bằng file patch .zip kéo thả
-app.post('/api/app/apply-patch', patchUpload.single('patchFile'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ success: false, error: 'Chưa chọn file cập nhật .zip' });
-  }
-
-  const zipPath = req.file.path;
-  const extractDir = path.join(TEMP_UPDATE_DIR, `extracted_${Date.now()}`);
-
-  try {
-    extractZip(zipPath, extractDir);
-    const payloadRoot = findPayloadRoot(extractDir);
-
-    const updatedList = [];
-    safeCopyRecursive(payloadRoot, __dirname, '', updatedList);
-
-    const cfg = loadUpdateConfig();
-    try {
-      const patchPkgPath = path.join(payloadRoot, 'package.json');
-      if (fs.existsSync(patchPkgPath)) {
-        const patchPkg = JSON.parse(fs.readFileSync(patchPkgPath, 'utf8'));
-        if (patchPkg.version) {
-          cfg.version = patchPkg.version;
-          saveUpdateConfig(cfg);
-        }
-      }
-    } catch (_) {}
-
-    cleanTempDir(TEMP_UPDATE_DIR);
-    addLog('info', `✅ Cập nhật ứng dụng thành công: Đã cập nhật ${updatedList.length} files (Dữ liệu cũ được bảo vệ an toàn).`);
-    res.json({
-      success: true,
-      message: `Đã cập nhật thành công ${updatedList.length} tệp tin!`,
-      version: cfg.version,
-      updatedFiles: updatedList
-    });
-  } catch (err) {
-    cleanTempDir(TEMP_UPDATE_DIR);
-    console.error('Lỗi áp dụng patch:', err);
-    res.status(500).json({ success: false, error: 'Lỗi giải nén cập nhật: ' + err.message });
-  }
-});
-
-// Cập nhật online tự động từ GitHub
-app.post('/api/app/apply-github', async (req, res) => {
-  const downloadUrl = req.body?.downloadUrl;
-  if (!downloadUrl) {
-    return res.status(400).json({ success: false, error: 'Thiếu đường dẫn tải bản cập nhật' });
-  }
-
-  const zipPath = path.join(TEMP_UPDATE_DIR, `gh_download_${Date.now()}.zip`);
-  const extractDir = path.join(TEMP_UPDATE_DIR, `gh_extracted_${Date.now()}`);
-
-  try {
-    const ghRes = await fetch(downloadUrl, {
-      headers: { 'User-Agent': 'LiveEffect-Studio-Updater' }
-    });
-    if (!ghRes.ok) throw new Error(`Tải file thất bại: ${ghRes.statusText}`);
-
-    const buffer = Buffer.from(await ghRes.arrayBuffer());
-    fs.writeFileSync(zipPath, buffer);
-
-    extractZip(zipPath, extractDir);
-    const payloadRoot = findPayloadRoot(extractDir);
-
-    const updatedList = [];
-    safeCopyRecursive(payloadRoot, __dirname, '', updatedList);
-
-    const cfg = loadUpdateConfig();
-    if (req.body?.newVersion) {
-      cfg.version = req.body.newVersion;
-      saveUpdateConfig(cfg);
-    } else {
-      try {
-        const patchPkgPath = path.join(payloadRoot, 'package.json');
-        if (fs.existsSync(patchPkgPath)) {
-          const patchPkg = JSON.parse(fs.readFileSync(patchPkgPath, 'utf8'));
-          if (patchPkg.version) {
-            cfg.version = patchPkg.version;
-            saveUpdateConfig(cfg);
-          }
-        }
-      } catch (_) {}
+app.post('/api/app/apply-patch', (req, res) => {
+  patchUpload(req, res, error => {
+    if (error) {
+      const message = error.code === 'LIMIT_FILE_SIZE' ? 'Gói cập nhật vượt quá 50 MB.' : 'Không tải được gói ZIP lên Studio.';
+      return res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ success: false, error: message });
     }
-
-    cleanTempDir(TEMP_UPDATE_DIR);
-    addLog('info', `✅ Cập nhật online thành công từ GitHub: Đã cập nhật ${updatedList.length} files.`);
-    res.json({
-      success: true,
-      message: `Đã cập nhật tự động thành công ${updatedList.length} tệp tin!`,
-      version: cfg.version,
-      updatedFiles: updatedList
-    });
-  } catch (err) {
-    cleanTempDir(TEMP_UPDATE_DIR);
-    console.error('Lỗi cập nhật online:', err);
-    res.status(500).json({ success: false, error: 'Lỗi cập nhật online: ' + err.message });
-  }
+    if (!req.file) return res.status(400).json({ success: false, error: 'Chưa chọn file cập nhật .zip.' });
+    return applyStudioUpdate(res, () => ({ zip: req.file.path }), req.file.path);
+  });
 });
+
+app.post('/api/app/apply-github', (req, res) => applyStudioUpdate(res, async (work, current) => {
+  const repo = req.body?.githubRepo ?? loadUpdateConfig().githubRepo;
+  const { version, asset } = await getLatestStudioRelease(typeof repo === 'string' ? repo.trim() : repo);
+  if (!asset || req.body?.downloadUrl !== asset.browser_download_url || parseVersion(req.body?.newVersion) !== version) {
+    throw updateError(409, 'Thông tin bản phát hành đã thay đổi. Hãy kiểm tra GitHub lại.');
+  }
+  if (!isNewerVersion(version, current)) throw updateError(409, 'Studio đã cài phiên bản này hoặc mới hơn.');
+
+  const zip = path.join(work, UPDATE_ASSET_NAME);
+  await downloadStudioRelease(asset, zip);
+  return { zip, onlineVersion: version };
+}));
 
 // Khởi động lại Server
 app.post('/api/app/restart', (req, res) => {
+  if (updateInProgress || restartingStudio) {
+    return res.status(409).json({ success: false, error: 'Studio đang cập nhật hoặc khởi động lại.' });
+  }
+  restartingStudio = true;
   addLog('info', '🔄 Đang khởi động lại máy chủ LiveEffect Studio...');
-  res.json({ success: true, message: 'Server đang khởi động lại trong 2 giây...' });
+  res.json({ success: true, instanceId: jarSession.id, message: 'Studio đang khởi động lại.' });
 
   setTimeout(() => {
-    try {
+    io.disconnectSockets(true);
+    httpServer.close(() => {
       const nodeBin = fs.existsSync(path.join(__dirname, 'runtime', 'node.exe'))
         ? path.join(__dirname, 'runtime', 'node.exe')
         : process.execPath;
@@ -1903,13 +2182,20 @@ app.post('/api/app/restart', (req, res) => {
       const child = spawn(nodeBin, ['server.js'], {
         cwd: __dirname,
         detached: true,
+        windowsHide: true,
         stdio: 'ignore'
       });
-      child.unref();
-      process.exit(0);
-    } catch (err) {
-      console.error('Lỗi restart server:', err);
-    }
+      child.once('spawn', () => {
+        child.unref();
+        process.exit(0);
+      });
+      child.once('error', error => {
+        console.error('Lỗi khởi động lại Studio:', error);
+        restartingStudio = false;
+        httpServer.listen(PORT);
+      });
+    });
+    httpServer.closeAllConnections?.();
   }, 800);
 });
 

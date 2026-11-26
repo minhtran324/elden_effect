@@ -723,74 +723,151 @@
       gap: 8px;
     }
 
+    #jarSection {
+      --jar-surface: #141e31;
+      --jar-line: #2c3d56;
+      --jar-muted: #b0c0d6;
+      --jar-mint: #a1ebd7;
+      border: 1px solid var(--jar-line);
+      border-radius: 14px;
+      background: #101829;
+      color: #edf4ff;
+      padding: clamp(14px, 2vw, 26px);
+    }
+    #jarSection::before { content: none; }
+    .jar-view .obs-link-box { display: none !important; }
+    .jar-heading, .jar-links, .jar-links label, .jar-preview-heading, .jar-preview-stats { display: flex; align-items: center; }
+    .jar-heading { justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
+    .jar-heading h1 { font-size: 1.55rem; font-weight: 750; letter-spacing: -.025em; margin: 0; }
+    .jar-links { gap: 8px; flex-wrap: wrap; }
+    .jar-links label { min-height: 36px; gap: 7px; margin-right: 5px; font-size: .85rem; }
+    .jar-links input { accent-color: var(--jar-mint); width: 17px; height: 17px; }
+    #jarSection .btn { min-height: 36px; text-decoration: none; }
+    #jarSection .jar-primary { background: var(--jar-mint); color: #132a27; border-color: var(--jar-mint); }
+    #jarSection .jar-primary:hover:not(:disabled) { background: #c3f7e9; }
+    .jar-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(238px, 290px); align-items: start; gap: clamp(16px, 2vw, 30px); }
+    .jar-controls { min-width: 0; }
+    .jar-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--jar-line); padding-bottom: 10px; margin-bottom: 20px; }
+    #jarSection .jar-tab-btn { min-height: 36px; padding: 7px 11px; border: 1px solid transparent; border-radius: 6px; color: var(--jar-muted); }
+    #jarSection .jar-tab-btn:hover { background: var(--jar-surface); color: #fff; }
+    #jarSection .jar-tab-btn.active { background: #263c45; color: #d1f8eb; border-color: #456664; box-shadow: none; }
+    #jarSection h2 { font-size: 1rem; font-weight: 700; margin: 0 0 10px; }
+    .jar-actions-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    #jarSection .jar-action-btn { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; min-height: 66px; border: 1px solid var(--jar-line); background: var(--jar-surface); border-radius: 8px; padding: 10px 12px; color: #edf4ff; }
+    #jarSection .jar-action-btn:not(:disabled):hover { background: #203048; transform: none; border-color: #506179; }
+    #jarSection .jar-action-btn strong, #jarSection .jar-action-btn span { display: block; line-height: 1.35; }
+    #jarSection .jar-action-btn strong { font-size: .87rem; }
+    #jarSection .jar-action-btn span { font-size: .75rem; font-weight: 400; margin-top: 4px; color: var(--jar-muted); }
+    #jarSection .jar-action-burst strong { color: #f3cc8c; }
+    #jarSection :focus-visible { outline: 2px solid var(--jar-mint); outline-offset: 3px; }
+    #jarTabActions :disabled { opacity: .55; cursor: not-allowed; }
+    .jar-flip-setting { display: grid; gap: 5px; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--jar-line); border-radius: 8px; }
+    .jar-flip-setting div { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .jar-flip-setting label { font-size: .85rem; font-weight: 650; }
+    .jar-flip-setting output { color: var(--jar-mint); white-space: nowrap; font-size: .8rem; font-variant-numeric: tabular-nums; }
+    .jar-flip-setting input { width: 100%; min-height: 24px; margin: 0; accent-color: var(--jar-mint); }
+    .jar-flip-setting p { margin: 0; color: var(--jar-muted); font-size: .76rem; }
+    .jar-test { padding-top: 16px; margin-top: 18px; border-top: 1px solid var(--jar-line); }
+    .jar-test p { margin: -4px 0 10px; color: var(--jar-muted); font-size: .8rem; }
+    .jar-test-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .jar-gift-form { display: grid; grid-template-columns: minmax(130px, 1.35fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    #jarTestForm { grid-template-columns: minmax(130px, 1fr) 88px auto; }
+    .jar-gift-form label { display: grid; gap: 5px; color: var(--jar-muted); font-size: .76rem; min-width: 0; }
+    .jar-gift-form input, .jar-gift-form select { width: 100%; min-width: 0; min-height: 36px; font: inherit; font-size: .85rem; }
+    .jar-gift-form button { justify-content: center; }
+    #jarGiftActionList { margin-top: 10px; }
+    #jarGiftActionFeedback { margin-top: 8px; }
+    #jarPreviewCondition { margin-top: 8px; font-size: .78rem; color: var(--jar-muted); }
+    .jar-guide, .jar-feedback { color: var(--jar-muted); font-size: .8rem; margin: 12px 0 0; }
+    .jar-guide { display: inline-block; text-underline-offset: .2em; }
+    .jar-feedback { min-height: 1.1em; color: var(--jar-mint); }
+    .jar-feedback[data-error=true] { color: #ffc1bb; }
+    .jar-preview { border: 1px solid var(--jar-line); border-radius: 12px; padding: 12px; background: #111c2e; }
+    .jar-preview-heading { justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    #jarSection .jar-preview-heading h2 { margin: 0; }
+    #jarPreviewStatus { font-size: .72rem; color: var(--jar-muted); white-space: nowrap; }
+    #jarPreviewStatus::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin: 0 5px 2px 0; }
+    #jarPreviewStatus[data-state=ready] { color: var(--jar-mint); }
+    .jar-preview-frame { aspect-ratio: 9 / 16; position: relative; overflow: hidden; border-radius: 6px; background: radial-gradient(ellipse at 50% 74%, #293c59, #132037 60%, #0b1425 100%); }
+    .jar-preview-frame::before { content: ''; position: absolute; inset: 6%; border: 1px dashed #60718b68; pointer-events: none; }
+    #jarPreviewFrame { position: absolute; inset: 0 auto auto 0; width: 720px; height: 1280px; border: 0; transform-origin: top left; transform: scale(var(--preview-scale, .35)); pointer-events: none; }
+    #jarPreviewEmpty { position: absolute; inset: 47% 0 auto; text-align: center; font-size: .82rem; color: var(--jar-muted); }
+    .jar-preview-stats { justify-content: space-between; gap: 10px; border-top: 1px solid var(--jar-line); margin-top: 10px; padding-top: 9px; color: var(--jar-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+    .jar-preview-stats strong { color: #edf4ff; }
+    .jar-inventory-list { list-style: none; display: grid; gap: 6px; max-height: 240px; overflow: auto; }
+    .jar-inventory-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px 6px 12px; border: 1px solid var(--jar-line); border-radius: 6px; background: var(--jar-surface); }
+    .jar-inventory-item strong { display: block; font-size: .84rem; overflow-wrap: anywhere; }
+    .jar-inventory-item small { display: block; margin-top: 2px; color: var(--jar-muted); font-variant-numeric: tabular-nums; }
+    .jar-inventory-item .btn { color: #ffd4ce; }
+    .jar-capacity-settings { display: grid; gap: 8px; font-size: .82rem; }
+    .jar-capacity-settings label { display: flex; align-items: center; gap: 8px; }
+    .jar-capacity-settings input[type=checkbox] { accent-color: var(--jar-mint); }
+    .jar-capacity-settings input[type=range] { width: 100%; }
+    .jar-capacity-settings input:disabled { opacity: .45; }
+    @media (max-width: 980px) {
+      .jar-actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .jar-gift-form, #jarTestForm { grid-template-columns: minmax(0, 1fr) 84px; }
+      #jarGiftActionForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .jar-gift-form .btn { grid-column: 1 / -1; width: 100%; }
+    }
+    @media (max-width: 700px) {
+      .jar-workspace { grid-template-columns: minmax(0, 1fr); }
+      .jar-preview { width: min(292px, 100%); justify-self: center; }
+      .jar-tabs { gap: 4px; }
+      .jar-view header { padding: 10px; gap: 7px; }
+      .jar-view header .brand > a, .jar-view header .brand > button, .jar-view #headerAutoSaveTag { display: none; }
+      .jar-view .app-nav-container { gap: 4px; padding: 7px 10px; }
+      .jar-view .app-nav-tabs { width: 100%; padding: 3px; flex-wrap: nowrap; overflow-x: auto; border-radius: 8px; }
+      .jar-view .app-nav-tab { flex: none; white-space: nowrap; padding: 7px 9px; }
+      .jar-view .app-nav-tab .nav-tab-badge, .jar-view .app-nav-actions a[href="/jar-studio.html"] { display: none; }
+      .jar-view .app-nav-actions { flex-wrap: wrap; }
+      .jar-view .footer-bar { position: static; flex-wrap: wrap; }
+    }
   </style>
   <script src="/socket.io/socket.io.js"></script>
   <!-- Nạp dữ liệu quà tặng TikTok chuẩn Việt Nam -->
   <script src="/gifts-data.js?v=20261115_clean"></script>
+  <link rel="icon" href="/brand/elden-media.png" type="image/png">
+  <link rel="stylesheet" href="/studio-ui.css">
 </head>
-<body>
+<body data-studio-page="admin" data-view="rules">
 
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <span>🎬 Elden Media</span>
-      <span class="brand-badge">TikTok LIVE Pro</span>
-      <a href="#jarSection" class="btn btn-sm btn-warning" style="margin-left: 8px; color: #000; font-weight: 700;">🏺 Hũ Quà Vật Lý (Mới)</a>
-      <a href="/editor.html" class="btn btn-sm btn-primary" style="margin-left: 8px;">✂️ Mở Trình Edit Video (CapCut)</a>
-      <button class="btn btn-sm" onclick="openMediaManager()">📁 Kho Lưu Trữ Media</button>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span id="headerAutoSaveTag" class="auto-save-tag">✓ Đã đồng bộ OBS</span>
-      <div class="status-pill">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">Chưa kết nối Live</span>
-      </div>
+  <header class="studio-header">
+    <a class="studio-brand" href="/" aria-label="Elden Media Studio"><img src="/brand/elden-media.png" alt=""><span><strong>Elden Media</strong><small>Live Studio</small></span></a>
+    <nav class="studio-nav" aria-label="Không gian làm việc">
+      <a href="/admin.html?view=rules" aria-current="page">Điều khiển</a>
+      <a href="/editor.html">Dựng video</a><a href="/jar-studio.html">Thiết kế hũ</a>
+    </nav>
+    <div class="studio-header-actions">
+      <span id="headerAutoSaveTag" class="auto-save-tag">Đã đồng bộ OBS</span>
+      <div class="status-pill"><span class="status-dot" id="statusDot"></span><span id="statusText">Chưa kết nối LIVE</span></div>
     </div>
   </header>
 
-  <!-- TOP APP NAVIGATION BAR (MODULE SWITCHER) -->
-  <div class="app-nav-bar">
-    <div class="app-nav-container">
-      <div class="app-nav-tabs">
-        <button class="app-nav-tab active" id="navBtnJar" onclick="switchMainView('jar')">
-          <span>🏺</span>
-          <span>Hũ Quà Vật Lý</span>
-          <span class="nav-tab-badge">60fps</span>
-        </button>
-        <button class="app-nav-tab" id="navBtnRules" onclick="switchMainView('rules')">
-          <span>🎬</span>
-          <span>Video & Hiệu Ứng Quà</span>
-        </button>
-        <button class="app-nav-tab" id="navBtnSim" onclick="switchMainView('sim')">
-          <span>🎮</span>
-          <span>Bắn Test & Giả Lập</span>
-        </button>
-        <button class="app-nav-tab" id="navBtnMedia" onclick="switchMainView('media')">
-          <span>📁</span>
-          <span>Kho Video</span>
-        </button>
-        <button class="app-nav-tab" id="navBtnLogs" onclick="switchMainView('logs')">
-          <span>📜</span>
-          <span>Nhật Ký</span>
-        </button>
+  <div class="studio-admin-shell">
+    <nav class="app-nav-bar" aria-label="Chức năng điều khiển">
+      <div class="app-nav-container">
+        <div class="app-nav-tabs">
+          <button class="app-nav-tab active" id="navBtnRules" onclick="switchMainView('rules')">Hiệu ứng quà</button>
+          <button class="app-nav-tab" id="navBtnJar" onclick="switchMainView('jar')">Hũ quà trực tiếp</button>
+          <button class="app-nav-tab" id="navBtnSim" onclick="switchMainView('sim')">Giả lập quà</button>
+          <button class="app-nav-tab" id="navBtnMedia" onclick="switchMainView('media')">Kho video</button>
+          <button class="app-nav-tab" id="navBtnLogs" onclick="switchMainView('logs')">Nhật ký</button>
+        </div>
+        <div class="app-nav-actions">
+          <button class="btn btn-sm" id="btnOpenUpdateModal" onclick="openUpdateModal()"><span>Cập nhật</span><span id="appVersionBadge">v1.0.0</span></button>
+          <button class="btn btn-sm" id="navBtnAll" onclick="switchMainView(currentMainView === 'all' ? 'rules' : 'all')">Xem toàn bộ</button>
+        </div>
       </div>
-
-      <div class="app-nav-actions">
-        <button class="btn btn-sm" id="btnOpenUpdateModal" onclick="openUpdateModal()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px;" title="Kiểm tra & Cập nhật phiên bản">
-          <span>⚡ Cập Nhật</span>
-          <span id="appVersionBadge" style="background: #059669; color: #fff; padding: 1px 6px; border-radius: 999px; font-size: 0.72rem;">v1.0.0</span>
-        </button>
-        <button class="btn btn-sm" id="navBtnAll" onclick="switchMainView(currentMainView === 'all' ? 'jar' : 'all')" title="Chuyển chế độ xem gọn từng tab hoặc xem toàn bộ trang">
-          📋 Xem Toàn Bộ
-        </button>
-        <a href="/jar-studio.html" target="_blank" class="btn btn-sm btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none; font-weight: 700; text-decoration: none;">
-          🎨 Studio Chỉnh Hũ
-        </a>
+    </nav>
+    <main class="studio-admin-content">
+      <div class="studio-page-heading">
+        <div><h1 id="studioPageTitle">Hiệu ứng quà</h1><p id="studioPageHint">Gán video cho quà TikTok và kiểm tra trên nguồn OBS.</p></div>
+        <div class="studio-panel-actions" id="studioObsActions">
+          <button class="btn btn-sm" onclick="copyObsUrl()">Sao chép nguồn video</button>
+          <a class="btn btn-sm" href="/overlay.html" target="_blank" rel="noopener">Mở nguồn video</a>
+        </div>
       </div>
-    </div>
-  </div>
-
 
   <!-- MAIN RESPONSIVE CONTAINER -->
   <div class="container">
@@ -822,111 +899,81 @@
       </div>
 
       <!-- Card: Hũ Quà Rơi Vật Lý TikTok (Interactive Physics Jar) -->
-      <div class="card jar-card" id="jarSection">
-        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.25rem;">🏺</span>
-            <span style="color: #fbbf24; font-weight: 800;">Hũ Quà Rơi Vật Lý TikTok Pro</span>
-            <span class="brand-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;">Matter.js 60fps</span>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #f8fafc; cursor: pointer; margin-right: 4px;">
-              <input type="checkbox" id="jarMasterEnabled" checked onchange="toggleJarMasterEnabled(this.checked)" style="width: 18px; height: 18px; accent-color: #f59e0b;">
-              Bật Hũ Quà
-            </label>
-            <a href="/jar.html" target="_blank" class="btn btn-sm btn-warning" style="color: #000; font-weight: 700; text-decoration: none;">
-              🔗 Mở Hũ OBS
-            </a>
-            <button class="btn btn-sm" onclick="copyJarObsUrl()">📋 Copy Link</button>
-            <a href="/jar-studio.html" target="_blank" class="btn btn-sm btn-primary" style="background: #8b5cf6; border-color: #7c3aed; font-weight: 700; text-decoration: none;">
-              🎨 Studio Chỉnh Hũ
-            </a>
-            <a href="/uploads/decor/jar_template_guide.svg" download="jar_template_guide.svg" class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fbbf24; text-decoration: none;" title="Tải khung mẫu chuẩn để render hũ bằng AI">
-              📥 Khung Hũ AI
-            </a>
+      <section class="card jar-card" id="jarSection" aria-labelledby="jarHeading" style="display:none">
+        <div class="jar-heading">
+          <h1 id="jarHeading">Hũ quà trực tiếp</h1>
+          <div class="jar-links">
+            <label title="Ẩn hoặc hiện hũ. Quà được giữ trong phiên Studio."><input type="checkbox" id="jarMasterEnabled" checked onchange="toggleJarMasterEnabled(this.checked)"> Bật hũ</label>
+            <button class="btn btn-sm" onclick="copyJarObsUrl()">Sao chép link OBS</button>
+            <a href="/jar.html" target="_blank" rel="noopener" class="btn btn-sm">Mở nguồn OBS</a>
+            <a href="/jar-studio.html" target="_blank" rel="noopener" class="btn btn-sm jar-primary">Chỉnh mẫu trong Studio</a>
           </div>
         </div>
-
-        <!-- TABS ĐIỀU KHIỂN HŨ -->
-        <div style="display: flex; gap: 6px; background: #090f1d; padding: 4px; border-radius: 8px; border: 1px solid #1e293b; margin-top: 10px; margin-bottom: 14px; flex-wrap: wrap;">
-          <button class="jar-tab-btn active" id="tabBtnJarActions" onclick="switchJarTab('actions')">⚡ Thao Tác & Bắn Test</button>
-          <button class="jar-tab-btn" id="tabBtnJarPosition" onclick="switchJarTab('position')">📍 Vị Trí & Chế Độ Rơi</button>
-          <button class="jar-tab-btn" id="tabBtnJarSizes" onclick="switchJarTab('sizes')">📏 Kích Cỡ Quà (Realtime)</button>
-          <button class="jar-tab-btn" id="tabBtnJarStyles" onclick="switchJarTab('styles')">🎨 Kiểu Dáng & Mẫu Hũ</button>
-          <button class="jar-tab-btn" id="tabBtnJarSettings" onclick="switchJarTab('settings')">⚙️ Rung Lắc & Mục Tiêu</button>
-        </div>
-
-        <!-- TAB 1: THAO TÁC KỊCH TÍNH & BẮN QUÀ TEST -->
-        <div id="jarTabActions">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; margin-bottom: 6px;">
-            💥 1. Kích hoạt hiệu ứng kịch tính tức thì:
-          </div>
-          <div class="jar-actions-grid">
-            <button class="jar-action-btn jar-btn-shake" onclick="triggerJarAction('shake', 1.0)">
-              📳 Rung Lắc Hũ
-            </button>
-            <button class="jar-action-btn jar-btn-crack" onclick="triggerJarAction('crack', 1.0)">
-              ⚡ Làm Nứt Hũ
-            </button>
-            <button class="jar-action-btn jar-btn-flip" onclick="triggerJarAction('flip', 1.0)">
-              🔄 Lật Đổ Hũ (Xả Quà)
-            </button>
-            <button class="jar-action-btn jar-btn-burst" onclick="triggerJarAction('burst', 1.0)">
-              🎆 Nổ Tung Hũ
-            </button>
-            <button class="jar-action-btn jar-btn-clear" onclick="triggerJarAction('clear', 1.0)">
-              🧹 Dọn Sạch
-            </button>
-            <button class="jar-action-btn jar-btn-reset" onclick="triggerJarAction('reset', 1.0)">
-              🔄 Reset Mục Tiêu
-            </button>
-          </div>
-
-          <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-top: 16px; margin-bottom: 6px;">
-            🎯 2. Bắn test quà rơi vào hũ (Physics Drop):
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-sm" style="background: #1e293b; border-color: #f43f5e; color: #fda4af;" onclick="quickDropGift('Hoa Hồng', 1, 10)">
-              🌹 10x Hoa Hồng
-            </button>
-            <button class="btn btn-sm" style="background: #1e293b; border-color: #f43f5e; color: #f43f5e; font-weight: 800;" onclick="quickDropGift('Hoa Hồng', 1, 50)">
-              🌹 50x Mưa Hoa Hồng (Tràn Hũ)
-            </button>
-            <button class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fde68a;" onclick="quickDropGift('Bánh Vòng', 30, 1)">
-              🍩 1x Bánh Vòng (30 xu)
-            </button>
-            <button class="btn btn-sm" style="background: #1e293b; border-color: #f59e0b; color: #fbbf24; font-weight: 800;" onclick="quickDropGift('Sư Tử', 29999, 1)">
-              🦁 1x Sư Tử VIP (29,999 xu)
-            </button>
-            <button class="btn btn-sm" style="background: #1e293b; border-color: #8b5cf6; color: #c4b5fd; font-weight: 800;" onclick="quickDropGift('Vũ Trụ TikTok', 44999, 1)">
-              🌌 1x Vũ Trụ TikTok
-            </button>
-          </div>
-
-          <!-- Bắn quà tuỳ chọn từ 763 quà -->
-          <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px; background: #090f1d; padding: 10px; border-radius: 8px; border: 1px solid #1e293b; flex-wrap: wrap;">
-            <div style="flex: 2; min-width: 180px;">
-              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Tên quà tuỳ chọn:</span>
-              <select id="jarCustomGiftSelect" style="width: 100%; font-size: 0.85rem;" onchange="onJarGiftSelectChange(this.value)">
-                <!-- Nạp danh mục quà -->
-              </select>
+        <div class="jar-workspace">
+          <div class="jar-controls">
+            <nav class="jar-tabs" aria-label="Cài đặt hũ">
+              <button class="jar-tab-btn active" id="tabBtnJarActions" aria-pressed="true" onclick="switchJarTab('actions')">Điều khiển</button>
+              <button class="jar-tab-btn" id="tabBtnJarPosition" aria-pressed="false" onclick="switchJarTab('position')">Vị trí &amp; cách rơi</button>
+              <button class="jar-tab-btn" id="tabBtnJarSizes" aria-pressed="false" onclick="switchJarTab('sizes')">Kích cỡ quà</button>
+              <button class="jar-tab-btn" id="tabBtnJarStyles" aria-pressed="false" onclick="switchJarTab('styles')">Mẫu &amp; trang trí</button>
+              <button class="jar-tab-btn" id="tabBtnJarSettings" aria-pressed="false" onclick="switchJarTab('settings')">Mục tiêu &amp; âm thanh</button>
+            </nav>
+            <div id="jarTabActions">
+              <h2>Thao tác với hũ</h2>
+              <div class="jar-actions-grid">
+                <button class="jar-action-btn" onclick="triggerJarAction('shake')"><strong>Rung hũ</strong><span>Làm quà trong hũ nảy lên</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('crack')"><strong>Làm nứt</strong><span>Tăng một mức nứt kính</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('flip')"><strong>Lật đổ</strong><span>Nâng lên giữa màn hình rồi đổ quà</span></button>
+                <button class="jar-action-btn jar-action-burst" onclick="triggerJarAction('burst')"><strong>Làm vỡ hũ</strong><span>Tung quà và giữ lại mảnh vỡ</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('assemble')"><strong>Ráp hũ mới</strong><span>Gom mảnh vỡ để ráp lại hũ</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('clear_shards')"><strong>Dọn mảnh vỡ</strong><span>Chỉ dọn các mảnh kính</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('clear')"><strong>Dọn quà</strong><span>Dọn cả quà đang chờ rơi</span></button>
+                <button class="jar-action-btn" onclick="triggerJarAction('reset')"><strong>Đặt lại mục tiêu</strong><span>Đưa xu và vết nứt về 0</span></button>
+              </div>
+              <div class="jar-flip-setting">
+                <div>
+                  <label for="jarFlipSpeedSlider">Tốc độ lật hũ</label>
+                  <output for="jarFlipSpeedSlider" id="jarFlipSpeedValue">1,0×</output>
+                </div>
+                <input type="range" id="jarFlipSpeedSlider" min="0.5" max="2" step="0.1" value="1"
+                  aria-describedby="jarFlipSpeedHelp" aria-valuetext="1,0 lần"
+                  oninput="updateFlipSpeedLabel(this)" onchange="saveJarConfigPartial({ flipSpeed: this.valueAsNumber })">
+                <p id="jarFlipSpeedHelp">Chỉ chỉnh tốc độ xoay khi hũ ở giữa màn hình. Hũ úp đến khi quà đã thoát ra.</p>
+              </div>
+              <div class="jar-test">
+                <h2>Thả quà thử</h2>
+                <p id="jarTestHelp">Quà thử xuất hiện trong bản xem trước và trên nguồn OBS đang mở.</p>
+                <div class="jar-test-presets">
+                  <button class="btn btn-sm" onclick="quickDropGift('Hoa Hồng', 1, 10)">10 hoa hồng</button>
+                  <button class="btn btn-sm" onclick="quickDropGift('Hoa Hồng', 1, 50)">50 hoa hồng</button>
+                  <button class="btn btn-sm" onclick="quickDropGift('Bánh Vòng', 30, 1)">1 bánh vòng</button>
+                  <button class="btn btn-sm" onclick="quickDropGift('Sư Tử', 29999, 1)">1 sư tử</button>
+                  <button class="btn btn-sm" onclick="quickDropGift('Vũ Trụ TikTok', 44999, 1)">1 vũ trụ</button>
+                </div>
+                <form id="jarTestForm" class="jar-gift-form" onsubmit="event.preventDefault(); dropCustomJarGift();" aria-describedby="jarTestHelp">
+                  <label>Quà tặng<select id="jarCustomGiftSelect" required></select></label>
+                  <label>Số lượng<input type="number" id="jarCustomGiftCount" value="5" min="1" max="50" required></label>
+                  <button type="submit" class="btn jar-primary">Thả thử</button>
+                </form>
+              </div>
+              <p id="jarFeedback" class="jar-feedback" role="status"></p>
+              <section class="jar-test" aria-labelledby="jarGiftActionHeading">
+                <h2 id="jarGiftActionHeading">Quà kích hoạt thao tác</h2>
+                <form id="jarGiftActionForm" class="jar-gift-form">
+                  <label>Loại quà<select id="jarActionGiftSelect" required><option value="">Chọn quà TikTok</option></select></label>
+                  <label>Thao tác<select id="jarGiftActionSelect" required><option value="">Chọn thao tác</option></select></label>
+                  <button type="submit" class="btn jar-primary">Lưu thao tác</button>
+                </form>
+                <ul id="jarGiftActionList" class="jar-inventory-list" aria-labelledby="jarGiftActionHeading"></ul>
+                <p id="jarGiftActionFeedback" class="jar-feedback" role="status"></p>
+              </section>
+              <section class="jar-test" aria-labelledby="jarInventoryHeading">
+                <h2 id="jarInventoryHeading">Quà đang giữ</h2>
+                <p id="jarInventoryEmpty">Hũ đang trống.</p>
+                <ul id="jarInventoryList" class="jar-inventory-list" aria-labelledby="jarInventoryHeading"></ul>
+                <p id="jarInventoryFeedback" class="jar-feedback" role="status"></p>
+              </section>
             </div>
-            <div style="width: 80px;">
-              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Số lượng:</span>
-              <input type="number" id="jarCustomGiftCount" value="5" min="1" max="50" style="width: 100%; font-size: 0.85rem; font-weight: 700;">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-              <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-bottom: 2px;">Người gửi:</span>
-              <input type="text" id="jarCustomDonorName" value="Đại Gia Elden" style="width: 100%; font-size: 0.85rem;">
-            </div>
-            <div style="padding-top: 16px;">
-              <button class="btn btn-primary" onclick="dropCustomJarGift()" style="height: 38px;">
-                🚀 Bắn Rơi Vào Hũ
-              </button>
-            </div>
-          </div>
-        </div>
 
         <!-- TAB 2: VỊ TRÍ HŨ & CHẾ ĐỘ RƠI QUÀ -->
         <div id="jarTabPosition" style="display: none;">
@@ -951,7 +998,7 @@
             </div>
             <div>
               <span style="font-size: 0.76rem; color: #94a3b8;">🔍 Kích Thước Hũ (Scale): <b id="labelJarScale" style="color: #fbbf24;">100%</b></span>
-              <input type="range" id="jarScaleSlider" min="0.6" max="1.4" step="0.05" value="1.0" style="width: 100%; margin-top: 6px;" oninput="updateJarPosField('jarScale', this.value)">
+              <input type="range" id="jarScaleSlider" min="0.15" max="1.4" step="0.05" value="1.0" aria-label="Kích thước hũ" style="width: 100%; margin-top: 6px;" oninput="updateJarPosField('jarScale', this.value)">
             </div>
           </div>
 
@@ -1006,18 +1053,11 @@
           </div>
 
           <!-- HIỆU ỨNG TRÀN HŨ RƠI XUỐNG ĐẤT CHỒNG CHẤT -->
-          <div style="background: #090f1d; padding: 14px; border-radius: 8px; border: 1px solid #1e293b;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; color: #fbbf24; cursor: pointer;">
-                <input type="checkbox" id="jarFloorAccCheck" checked onchange="saveJarSettingsField('enableFloorAccumulation', this.checked)">
-                🧱 Bật Hiệu Ứng Tràn Hũ Rơi Xuống Đất Chồng Chất
-              </label>
-              <span style="font-size: 0.74rem; color: #94a3b8;">Sức chứa: <b id="labelGiftCapacity" style="color: #38bdf8;">600 quà</b></span>
-            </div>
-            <p style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">
-              Khi quà đầy tràn khỏi miệng hũ hoặc rơi chệch mép ngoài, các món quà sẽ rớt xuống sàn đáy màn hình và chất đống xếp lớp cao dần lên 2 bên hũ giống hệt live stream TikTok thực tế!
-            </p>
-            <input type="range" id="jarGiftCapacitySlider" min="150" max="1000" step="50" value="600" style="width: 100%;" oninput="updateGiftCapacity(this.value)">
+          <div class="jar-capacity-settings" style="background: #090f1d; padding: 14px; border-radius: 8px; border: 1px solid #1e293b;">
+            <label><input type="checkbox" id="jarFloorAccCheck" checked onchange="saveJarSettingsField('enableFloorAccumulation', this.checked)"> Giữ quà rơi ra ngoài trên sàn</label>
+            <label><input type="checkbox" id="jarUnlimitedCapacity" onchange="saveJarSettingsField('giftCapacityUnlimited', this.checked)"> Giữ quà không giới hạn</label>
+            <label for="jarGiftCapacitySlider">Sức chứa <b id="labelGiftCapacity">600 quà</b></label>
+            <input type="range" id="jarGiftCapacitySlider" min="150" max="1000" step="50" value="600" oninput="updateGiftCapacity(this.value)">
           </div>
         </div>
 
@@ -1216,7 +1256,7 @@
           </div>
 
           <div class="jar-style-grid">
-            <div class="jar-style-card active" id="styleCardFishbowl" onclick="setJarStyleCustom('/uploads/decor/iridescent_fishbowl_transparent.png', 'square')">
+            <div class="jar-style-card active" id="styleCardFishbowl" onclick="setJarStyleCustom('/builtin/jar/iridescent_fishbowl_transparent.png', 'square')">
               <div class="jar-style-icon">🔮</div>
               <div class="jar-style-name">Bể Cầu Pha Lê Cầu Vồng (Iridescent Fishbowl)</div>
               <div class="jar-style-desc">Mẫu 8K 3 lớp kính: Mặt sau -> Quà rơi -> Nơ cổ bèo mặt trước + Viền sáng 60fps</div>
@@ -1430,7 +1470,7 @@
 
               <div style="margin-bottom: 10px;">
                 <span style="font-size: 0.76rem; color: #94a3b8;">Âm lượng âm thanh: <span id="labelSoundVol">70%</span></span>
-                <input type="range" id="jarSoundVolSlider" min="0.1" max="1.0" step="0.05" value="0.7" style="width: 100%; margin-top: 6px;" oninput="updateJarSoundVol(this.value)">
+                <input type="range" id="jarSoundVolSlider" min="0" max="1.0" step="0.05" value="0.7" style="width: 100%; margin-top: 6px;" oninput="updateJarSoundVol(this.value)">
               </div>
 
               <div>
@@ -1441,12 +1481,30 @@
             </div>
           </div>
         </div>
-      </div>
+            <a class="jar-guide" href="/builtin/jar/jar_template_guide.svg" download>Tải khung thiết kế mẫu hũ</a>
+          </div>
+          <aside class="jar-preview" aria-labelledby="jarPreviewTitle">
+            <div class="jar-preview-heading">
+              <h2 id="jarPreviewTitle">Xem trước OBS</h2>
+              <span id="jarPreviewStatus" data-state="loading">Đang kết nối</span>
+            </div>
+            <div class="jar-preview-frame" id="jarPreviewViewport">
+              <iframe id="jarPreviewFrame" title="Bản xem trước hũ quà OBS" tabindex="-1"></iframe>
+              <p id="jarPreviewEmpty" hidden>Hũ đang tắt</p>
+            </div>
+            <div class="jar-preview-stats">
+              <span><strong id="jarPreviewGifts">0</strong> quà</span>
+              <span><strong id="jarPreviewCoins">0</strong> xu</span>
+            </div>
+            <p id="jarPreviewCondition" hidden></p>
+          </aside>
+        </div>
+      </section>
 
       <div id="rulesSection">
       <!-- Card 1: Kết Nối TikTok Live -->
       <div class="card">
-        <div class="card-title">1. Kết Nối Kênh TikTok Live</div>
+        <div class="card-title">Kết nối TikTok LIVE</div>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="tiktokUsernameInput" value="" placeholder="Nhập ID kênh TikTok (vd: eldenmedia hoặc @id)" style="flex: 1; min-width: 220px;">
           <button class="btn btn-primary" id="btnConnect" onclick="toggleConnect()">Kết Nối</button>
@@ -1488,18 +1546,23 @@
       <div class="card">
         <div class="card-title">
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <span>2. Danh Sách Hiệu Ứng & Tỉ Lệ Quà</span>
+            <span>Quy tắc phát video</span>
             <div class="view-toggle">
-              <button class="view-toggle-btn active" id="btnViewTable" onclick="switchView('table')">📋 Bảng GGTT (Chuẩn)</button>
-              <button class="view-toggle-btn" id="btnViewCard" onclick="switchView('card')">🗂️ Thẻ Chi Tiết</button>
+              <button class="view-toggle-btn active" id="btnViewTable" onclick="switchView('table')">Bảng</button>
+              <button class="view-toggle-btn" id="btnViewCard" onclick="switchView('card')">Thẻ</button>
             </div>
           </div>
 
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-primary btn-sm" onclick="addNewRule()">+ Thêm Hàng Mới</button>
+            <button class="btn btn-primary btn-sm" onclick="addNewRule()">+ Thêm quy tắc</button>
           </div>
         </div>
 
+        <div class="studio-rule-toolbar">
+          <label>Tìm quy tắc<input type="search" id="studioRuleSearch" placeholder="Tên quy tắc, quà hoặc video" oninput="renderCurrentView()"></label>
+          <label>Trạng thái<select id="studioRuleStatus" onchange="renderCurrentView()"><option value="all">Tất cả</option><option value="enabled">Đang bật</option><option value="disabled">Đang tắt</option></select></label>
+          <output id="studioRulesCount" aria-live="polite"></output>
+        </div>
         <!-- BẢNG GGTT CHUẨN (RESPONSIVE TABLE VIEW) -->
         <div id="viewTableWrapper" class="ggtt-table-wrapper">
           <table class="ggtt-table">
@@ -1612,7 +1675,10 @@
         </div>
       </div>
 
-  <!-- FIXED FOOTER -->
+    </main>
+  </div>
+
+  <!-- STUDIO FOOTER -->
   <div class="footer-bar">
     <div style="font-size: 0.85rem; color: #94a3b8;">
       ⚡ Tự động lưu & đồng bộ OBS ngay khi bạn thay đổi bất kỳ trường nào.
@@ -1741,7 +1807,7 @@
 
       <!-- Khung cam kết bảo vệ an toàn dữ liệu -->
       <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem; color: #a7f3d0; line-height: 1.45;">
-        🛡️ <b>Bảo Toàn Dữ Liệu 100%:</b> Quá trình cập nhật chỉ thay thế các tệp code/giao diện mới. Toàn bộ <b>Kho Video, Sticker hũ quà, Tỉ lệ xu và Cài đặt cá nhân</b> của bạn được bảo vệ nguyên vẹn và không bao giờ bị ghi đè!
+        Bản cập nhật chỉ cài mã ứng dụng, giao diện và mẫu đi kèm Studio. Cài đặt TikTok, quy tắc quà, mẫu hũ đã lưu và tệp bạn tải lên vẫn giữ nguyên. Hãy cập nhật giữa các buổi LIVE vì Studio sẽ khởi động lại.
       </div>
 
       <!-- TABS CẬP NHẬT -->
@@ -1823,16 +1889,33 @@
 
   <script>
     // --- CHẾ ĐỘ XEM MODULE / TAB GIAO DIỆN (FRONTEND DESIGN REDESIGN) ---
-    let currentMainView = 'jar'; // 'jar' | 'rules' | 'sim' | 'media' | 'logs' | 'all'
+    const studioViews = {
+      rules: ['Hiệu ứng quà', 'Gán video cho quà TikTok và kiểm tra trên nguồn OBS.'],
+      jar: ['Điều khiển hũ', 'Xem trước, thử quà và điều khiển hũ trong phiên LIVE.'],
+      sim: ['Giả lập quà', 'Kiểm tra quy tắc video và hũ với quà thử.'],
+      media: ['Kho video', 'Tải lên, xem trước và quản lý tệp hiệu ứng.'],
+      logs: ['Nhật ký LIVE', 'Theo dõi sự kiện quà và kết quả kích hoạt.'],
+      all: ['Điều khiển LIVE', 'Theo dõi các công cụ trong cùng một trang.']
+    };
+    let currentMainView = 'rules';
 
     function switchMainView(view) {
+      if (!Object.hasOwn(studioViews, view)) view = 'rules';
       currentMainView = view;
+      document.body.dataset.view = view;
+      const [title, hint] = studioViews[view];
+      document.getElementById('studioPageTitle').textContent = title;
+      document.getElementById('studioPageHint').textContent = hint;
+      document.getElementById('studioObsActions').hidden = !['rules','sim','all'].includes(view);
       localStorage.setItem('elden_admin_view', view);
 
       const navTabs = ['jar', 'rules', 'sim', 'media', 'logs', 'all'];
       navTabs.forEach(v => {
         const btn = document.getElementById(`navBtn${v.charAt(0).toUpperCase() + v.slice(1)}`);
-        if (btn) btn.classList.toggle('active', v === view);
+        if (btn) {
+          btn.classList.toggle('active', v === view);
+          btn.setAttribute('aria-pressed', String(v === view));
+        }
       });
 
       const secJar = document.getElementById('jarSection');
@@ -1845,7 +1928,7 @@
         if (secJar) secJar.style.display = 'block';
         if (secRules) secRules.style.display = 'block';
         if (secSim) secSim.style.display = 'block';
-        if (secMedia) secMedia.style.display = 'none';
+        if (secMedia) secMedia.style.display = 'block';
         if (secLogs) secLogs.style.display = 'block';
       } else {
         if (secJar) secJar.style.display = view === 'jar' ? 'block' : 'none';
@@ -1855,6 +1938,8 @@
         if (secLogs) secLogs.style.display = view === 'logs' ? 'block' : 'none';
       }
 
+      document.body.classList.toggle('jar-view', view === 'jar');
+      if (view === 'jar' || view === 'all') startJarPreview();
       if (view === 'media') {
         fetchVideos();
       }
@@ -1871,6 +1956,7 @@
       }
 
       const toast = document.createElement('div');
+      toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
       toast.style.cssText = 'background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 10px; pointer-events: auto; transform: translateY(-20px); opacity: 0; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);';
       if (type === 'success') toast.style.borderColor = '#10b981';
       if (type === 'error') toast.style.borderColor = '#ef4444';
@@ -1909,6 +1995,8 @@
 
     // Khởi tạo
     async function init() {
+      const requestedView = new URLSearchParams(location.search).get('view');
+      switchMainView(requestedView || localStorage.getItem('elden_admin_view') || 'rules');
       await fetchVideos();
       await fetchRules();
       await checkLiveStatus();
@@ -1926,15 +2014,17 @@
       initJarPanel();
       await loadTikTokSettings();
       await fetchAppVersion();
-      const savedView = localStorage.getItem('elden_admin_view') || 'jar';
-      switchMainView(savedView);
     }
 
     // Sao chép link OBS
-    function copyObsUrl() {
-      const url = `${location.origin}/overlay.html`;
-      navigator.clipboard.writeText(url);
-      alert('Đã sao chép link OBS vào bộ nhớ tạm:\n' + url);
+    async function copyObsUrl() {
+      const url = location.origin + '/overlay.html';
+      try {
+        await navigator.clipboard.writeText(url);
+        showAppToast('', 'Đã sao chép nguồn video OBS', 'success');
+      } catch {
+        window.prompt('Sao chép nguồn video OBS', url);
+      }
     }
 
     // Tự động lưu cấu hình (Debounced Auto-save)
@@ -1975,12 +2065,21 @@
       renderCurrentView();
     }
 
+    function normalizeRuleSearch(value) {
+      return String(value || '').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+    }
+
     function renderCurrentView() {
-      if (currentView === 'table') {
-        renderTableView();
-      } else {
-        renderCardView();
-      }
+      const query = normalizeRuleSearch(document.getElementById('studioRuleSearch').value.trim());
+      const status = document.getElementById('studioRuleStatus').value;
+      const rows = currentRules.map((rule, index) => ({ rule, index })).filter(({ rule }) => {
+        const fields = [rule.name, rule.giftName, rule.giftId, ...(rule.videoPool || []).map(video => video.name)];
+        return (status === 'all' || Boolean(rule.enabled) === (status === 'enabled')) &&
+          (!query || normalizeRuleSearch(fields.join(' ')).includes(query));
+      });
+      document.getElementById('studioRulesCount').value = rows.length + ' / ' + currentRules.length + ' quy tắc';
+      if (currentView === 'table') renderTableView(rows);
+      else renderCardView(rows);
     }
 
     // Lấy danh sách video từ server
@@ -2177,16 +2276,16 @@
       return `<span>${gift ? (gift.icon || '🎁') : '🎁'}</span>`;
     }
 
-    function renderTableView() {
+    function renderTableView(rows) {
       const tbody = document.getElementById('rulesTableBody');
       tbody.innerHTML = '';
 
-      if (currentRules.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 30px;">Chưa có hàng quy tắc nào. Bấm "+ Thêm Hàng Mới".</td></tr>`;
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 30px;">Không có quy tắc phù hợp.</td></tr>`;
         return;
       }
 
-      currentRules.forEach((rule, rIdx) => {
+      rows.forEach(({ rule, index: rIdx }) => {
         const tr = document.createElement('tr');
         tr.className = rule.enabled ? '' : 'row-disabled';
 
@@ -2308,17 +2407,17 @@
     // ========================================================
     // RENDER THẺ CHI TIẾT (CARD VIEW)
     // ========================================================
-    function renderCardView() {
+    function renderCardView(rows) {
       const container = document.getElementById('rulesContainer');
       if (!container) return;
       container.innerHTML = '';
 
-      if (currentRules.length === 0) {
-        container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px; background: #0f182b; border-radius: 10px;">Chưa có quy tắc nào. Bấm "+ Thêm Hàng Mới" để tạo.</div>';
+      if (rows.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px; background: #0f182b; border-radius: 10px;">Không có quy tắc phù hợp.</div>';
         return;
       }
 
-      currentRules.forEach((rule, rIdx) => {
+      rows.forEach(({ rule, index: rIdx }) => {
         const isRandom = (rule.videoPool && rule.videoPool.length > 1) || rule.ruleType === 'random_pool';
         const isMinCoins = rule.ruleType === 'min_coins';
         const displayType = isMinCoins ? 'min_coins' : (isRandom ? 'random_pool' : 'specific_gift');
@@ -3157,8 +3256,30 @@
     // ========================================================
     let currentAppVersion = '1.0.0';
     let selectedPatchFile = null;
-    let pendingGitHubDownloadUrl = '';
-    let pendingGitHubVersion = '';
+    let pendingGitHubRelease = null;
+
+    async function restartAfterUpdate() {
+      const failureMessage = 'Đã cài bản cập nhật. Nếu Studio chưa mở lại, hãy dùng nút Khởi động lại hoặc mở lại Studio.';
+      const request = await fetch('/api/app/restart', { method: 'POST' }).catch(() => null);
+      const restart = await request?.json().catch(() => null);
+      if (!restart?.success) throw new Error(failureMessage);
+      if (!restart.instanceId) {
+        setTimeout(() => location.reload(), 2500);
+        return;
+      }
+
+      const deadline = Date.now() + 20_000;
+      while (Date.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, 750));
+        const running = await fetch('/api/app/version', { cache: 'no-store', signal: AbortSignal.timeout(2000) })
+          .then(response => response.json()).catch(() => null);
+        if (running?.success && running.instanceId !== restart.instanceId) {
+          location.reload();
+          return;
+        }
+      }
+      throw new Error(failureMessage);
+    }
 
     function openUpdateModal() {
       const modal = document.getElementById('updateModal');
@@ -3278,6 +3399,7 @@
 
       const formData = new FormData();
       formData.append('patchFile', selectedPatchFile);
+      let installed = false;
 
       try {
         if (progressBar) progressBar.style.width = '60%';
@@ -3291,20 +3413,19 @@
         const data = await res.json();
 
         if (data.success) {
+          installed = true;
+          selectedPatchFile = null;
           if (progressBar) progressBar.style.width = '100%';
           if (progressPercent) progressPercent.textContent = '100%';
-          if (progressText) progressText.innerHTML = `✅ ${data.message} Đang khởi động lại...`;
-          showAppToast('success', 'Nâng cấp thành công! Đang tự động tải lại trang...');
-
-          await fetch('/api/app/restart', { method: 'POST' }).catch(() => {});
-          setTimeout(() => location.reload(), 2500);
+          if (progressText) progressText.textContent = `${data.message} Đang khởi động lại Studio…`;
+          await restartAfterUpdate();
         } else {
           throw new Error(data.error || 'Cập nhật thất bại');
         }
       } catch (err) {
-        if (btn) btn.disabled = false;
-        if (progressText) progressText.innerHTML = `<span style="color: #ef4444;">Lỗi: ${err.message}</span>`;
-        showAppToast('error', 'Lỗi cập nhật: ' + err.message);
+        if (btn && !installed) btn.disabled = false;
+        if (progressText) progressText.textContent = err.message;
+        showAppToast('error', err.message);
       }
     }
 
@@ -3337,6 +3458,7 @@
       const msg = document.getElementById('githubStatusMsg');
       const notes = document.getElementById('githubReleaseNotes');
       const applyBtn = document.getElementById('btnApplyGitHub');
+      pendingGitHubRelease = null;
 
       if (btn) btn.disabled = true;
       if (box) box.style.display = 'block';
@@ -3356,61 +3478,64 @@
 
         if (data.success) {
           if (data.hasUpdate) {
-            pendingGitHubDownloadUrl = data.downloadUrl;
-            pendingGitHubVersion = data.latestVersion;
-            msg.innerHTML = `🎉 <span style="color: #34d399;">Phát hiện bản mới: v${data.latestVersion}</span> (Bản hiện tại: v${data.currentVersion})`;
+            pendingGitHubRelease = { githubRepo: repo, downloadUrl: data.downloadUrl, newVersion: data.latestVersion };
+            msg.textContent = `Có bản v${data.latestVersion}. Bạn đang dùng v${data.currentVersion}.`;
             if (data.releaseNotes && notes) {
               notes.style.display = 'block';
               notes.textContent = data.releaseNotes;
             }
             if (applyBtn) {
+              applyBtn.disabled = false;
               applyBtn.style.display = 'inline-block';
               applyBtn.textContent = `⚡ Nâng Cấp Tự Động Lên v${data.latestVersion}`;
             }
           } else {
-            msg.innerHTML = `✅ <span style="color: #38bdf8;">Bạn đang dùng phiên bản mới nhất (v${data.currentVersion}).</span>`;
+            msg.textContent = `Bạn đang dùng v${data.currentVersion}. Chưa có bản mới hơn.`;
           }
         } else {
-          msg.innerHTML = `<span style="color: #ef4444;">${data.error}</span>`;
+          msg.textContent = data.error;
         }
       } catch (err) {
         if (btn) btn.disabled = false;
-        if (msg) msg.innerHTML = `<span style="color: #ef4444;">Lỗi kết nối GitHub: ${err.message}</span>`;
+        if (msg) msg.textContent = `Lỗi kết nối GitHub: ${err.message}`;
       }
     }
 
     async function applyGitHubUpdate() {
-      if (!pendingGitHubDownloadUrl) {
-        showAppToast('warning', 'Không tìm thấy link tải');
+      if (!pendingGitHubRelease?.downloadUrl) {
+        showAppToast('warning', 'Hãy kiểm tra bản cập nhật trên GitHub.');
         return;
       }
 
       const applyBtn = document.getElementById('btnApplyGitHub');
+      const checkBtn = document.getElementById('btnCheckGitHub');
       const msg = document.getElementById('githubStatusMsg');
+      let installed = false;
       if (applyBtn) applyBtn.disabled = true;
-      if (msg) msg.innerHTML = '⏳ Đang tải bản cập nhật từ GitHub và bảo vệ dữ liệu...';
+      if (checkBtn) checkBtn.disabled = true;
+      if (msg) msg.textContent = 'Đang tải và kiểm tra gói cập nhật từ GitHub…';
 
       try {
         const res = await fetch('/api/app/apply-github', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            downloadUrl: pendingGitHubDownloadUrl,
-            newVersion: pendingGitHubVersion
-          })
+          body: JSON.stringify(pendingGitHubRelease)
         });
         const data = await res.json();
         if (data.success) {
-          msg.innerHTML = '✅ Cập nhật thành công! Đang khởi động lại...';
-          showAppToast('success', 'Đã cập nhật tự động thành công! Đang tải lại trang...');
-          await fetch('/api/app/restart', { method: 'POST' }).catch(() => {});
-          setTimeout(() => location.reload(), 2500);
+          installed = true;
+          pendingGitHubRelease = null;
+          if (applyBtn) applyBtn.style.display = 'none';
+          msg.textContent = `Đã cài v${data.version}. Đang khởi động lại Studio…`;
+          await restartAfterUpdate();
         } else {
           throw new Error(data.error || 'Cập nhật thất bại');
         }
       } catch (err) {
-        if (applyBtn) applyBtn.disabled = false;
-        if (msg) msg.innerHTML = `<span style="color: #ef4444;">Lỗi: ${err.message}</span>`;
+        if (applyBtn && !installed) applyBtn.disabled = false;
+        if (msg) msg.textContent = err.message;
+      } finally {
+        if (checkBtn) checkBtn.disabled = false;
         showAppToast('error', 'Lỗi cập nhật: ' + err.message);
       }
     }
@@ -3433,6 +3558,10 @@
     // ========================================================
     function setupSocket() {
       socket.on('tiktok_status', updateLiveStatusUI);
+      socket.on('jar_config_updated', cfg => {
+        currentJarConfig = cfg;
+        if (document.activeElement?.type !== 'range') applyJarConfigToUI(cfg);
+      });
 
       socket.on('new_log', (log) => {
         const box = document.getElementById('logBox');
@@ -3454,6 +3583,7 @@
           TIKTOK_GIFTS_CATALOG.push(...gifts);
           renderCurrentView();
           populateSimulatorDropdown();
+          populateJarCustomGiftSelect();
           filterGiftPicker();
         }
       });
@@ -3488,6 +3618,13 @@
       if (!cfg) return;
       const chk = document.getElementById('jarMasterEnabled');
       if (chk) chk.checked = cfg.enabled !== false;
+      document.querySelectorAll('.jar-actions-grid button, .jar-test-presets button, #jarTestForm button, #jarTestForm input, #jarTestForm select, #jarInventoryList button').forEach(control => {
+        control.disabled = cfg.enabled === false;
+      });
+      renderJarGiftActions(cfg.giftActions);
+      const flipSpeedSlider = document.getElementById('jarFlipSpeedSlider');
+      flipSpeedSlider.value = Number.isFinite(cfg.flipSpeed) ? cfg.flipSpeed : 1;
+      updateFlipSpeedLabel(flipSpeedSlider);
 
       // Kiểu dáng
       const isFishbowl = (cfg.style === 'fishbowl' || (cfg.customJarImage || '').includes('fishbowl'));
@@ -3563,9 +3700,12 @@
       if (floorAccChk) floorAccChk.checked = cfg.enableFloorAccumulation !== false;
 
       const capacitySlider = document.getElementById('jarGiftCapacitySlider');
-      if (capacitySlider) capacitySlider.value = cfg.giftCapacity || 600;
+      const unlimited = cfg.giftCapacityUnlimited === true;
+      document.getElementById('jarUnlimitedCapacity').checked = unlimited;
+      capacitySlider.value = cfg.giftCapacity || 600;
+      capacitySlider.disabled = unlimited;
       const lblCapacity = document.getElementById('labelGiftCapacity');
-      if (lblCapacity) lblCapacity.textContent = `${cfg.giftCapacity || 600} quà`;
+      if (lblCapacity) lblCapacity.textContent = unlimited ? 'Không giới hạn' : `${cfg.giftCapacity || 600} quà`;
 
       // Kích cỡ quà tặng (Gift Sizes)
       const scaleGlobalSlider = document.getElementById('jarGiftScaleGlobalSlider');
@@ -3616,9 +3756,9 @@
       const sndChk = document.getElementById('jarSoundEnabled');
       if (sndChk) sndChk.checked = cfg.soundEnabled !== false;
       const sndVol = document.getElementById('jarSoundVolSlider');
-      if (sndVol) sndVol.value = cfg.soundVolume || 0.7;
+      if (sndVol) sndVol.value = cfg.soundVolume ?? 0.7;
       const lblSoundVol = document.getElementById('labelSoundVol');
-      if (lblSoundVol) lblSoundVol.textContent = `${Math.round((cfg.soundVolume || 0.7) * 100)}%`;
+      if (lblSoundVol) lblSoundVol.textContent = `${Math.round((cfg.soundVolume ?? 0.7) * 100)}%`;
 
       const shakeThreshold = document.getElementById('jarShakeThresholdInput');
       if (shakeThreshold) shakeThreshold.value = cfg.shakeThreshold || 50;
@@ -3772,7 +3912,10 @@
       const tabs = ['actions', 'position', 'sizes', 'styles', 'settings'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tabBtnJar${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (btn) btn.classList.toggle('active', tab === t);
+        if (btn) {
+          btn.classList.toggle('active', tab === t);
+          btn.setAttribute('aria-pressed', String(tab === t));
+        }
         const pane = document.getElementById(`jarTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         if (pane) pane.style.display = tab === t ? 'block' : 'none';
       });
@@ -3784,6 +3927,12 @@
       document.getElementById('dropModeStraight').classList.toggle('active', mode === 'straight');
       document.getElementById('dropModeShower').classList.toggle('active', mode === 'shower');
       saveJarSettingsField('dropMode', mode);
+    }
+
+    function updateFlipSpeedLabel(input) {
+      const value = input.valueAsNumber.toLocaleString('vi-VN', { minimumFractionDigits: 1 });
+      document.getElementById('jarFlipSpeedValue').value = value + '×';
+      input.setAttribute('aria-valuetext', value + ' lần');
     }
 
     function updateFallSpeed(val) {
@@ -3935,7 +4084,7 @@ async function setJarPositionPreset(x, y, scale) {
       const cardCustom = document.getElementById('styleCardCustom');
       if (cardCustom) cardCustom.classList.toggle('active', !isFishbowl);
 
-      const overlay = isFishbowl ? '/uploads/decor/iridescent_fishbowl_front_overlay.png' : '';
+      const overlay = isFishbowl ? '/builtin/jar/iridescent_fishbowl_front_overlay.png' : '';
       await saveJarConfigPartial({
         style: isFishbowl ? 'fishbowl' : 'custom_image',
         customJarImage: url,
@@ -3975,76 +4124,285 @@ async function setJarPositionPreset(x, y, scale) {
       }
     }
 
-    function copyJarObsUrl() {
-      const url = `${location.origin}/jar.html`;
-      navigator.clipboard.writeText(url);
-      alert('🏺 Đã sao chép Link OBS Hũ Quà:\n' + url + '\n\n👉 Dán vào OBS: Sources -> Thêm Browser Source -> Nhập link trên (Độ phân giải 1080x1920 hoặc 720x1280, hỗ trợ trong suốt 100%)');
+    function startJarPreview() {
+      const frame = document.getElementById('jarPreviewFrame');
+      if (frame.hasAttribute('src')) return;
+      const viewport = document.getElementById('jarPreviewViewport');
+      const fit = () => frame.style.setProperty('--preview-scale', viewport.clientWidth / 720);
+      new ResizeObserver(fit).observe(viewport);
+      fit();
+      frame.src = '/jar.html?preview=1';
     }
 
-    async function triggerJarAction(action, intensity = 1.0) {
-      try {
-        await fetch('/api/jar/action', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, intensity })
-        });
-      } catch (err) {
-        alert('Lỗi: ' + err.message);
+    let previewJarInventory = [];
+    let obsJarInventory = null;
+    const jarInventoryRows = new Map();
+
+    function renderJarInventory() {
+      const list = document.getElementById('jarInventoryList');
+      const inventory = obsJarInventory ?? previewJarInventory;
+      const locale = new Intl.NumberFormat('vi-VN');
+      const keys = new Set(inventory.map(gift => gift.key));
+      document.getElementById('jarInventoryEmpty').hidden = inventory.length > 0;
+      for (const [key, entry] of jarInventoryRows) {
+        if (keys.has(key)) continue;
+        entry.row.remove();
+        jarInventoryRows.delete(key);
+      }
+      for (const { key, name, count, queued } of inventory) {
+        let entry = jarInventoryRows.get(key);
+        if (!entry) {
+          const row = document.createElement('li');
+          row.className = 'jar-inventory-item';
+          const info = document.createElement('div');
+          const label = document.createElement('strong');
+          const quantity = document.createElement('small');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-sm';
+          button.textContent = 'Xóa loại này';
+          button.addEventListener('click', async () => {
+            button.disabled = true;
+            try {
+              await sendJarCommand('action', { action: 'remove_gift_type', giftKey: key },
+                () => 'Đã gửi lệnh xóa ' + label.textContent + '.', 'jarInventoryFeedback');
+            } finally {
+              button.disabled = false;
+            }
+          });
+          info.append(label, quantity);
+          row.append(info, button);
+          list.append(row);
+          entry = { row, label, quantity, button };
+          jarInventoryRows.set(key, entry);
+        }
+        entry.label.textContent = name;
+        entry.button.setAttribute('aria-label', 'Xóa loại quà ' + name);
+        entry.quantity.textContent = locale.format(count) + ' quà' + (queued ? ' · ' + locale.format(queued) + ' đang chờ' : '');
       }
     }
 
-    async function quickDropGift(giftName, coins, count = 1) {
-      try {
-        await fetch('/api/jar/drop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            giftName,
-            coins,
-            count,
-            sender: 'Đại Gia Elden'
-          })
-        });
-      } catch (err) {
-        alert('Lỗi: ' + err.message);
+    socket.on('connect', () => socket.emit('jar_watch_inventory'));
+    socket.on('jar_inventory_updated', inventory => {
+      obsJarInventory = inventory;
+      renderJarInventory();
+    });
+    socket.on('disconnect', () => {
+      obsJarInventory = null;
+      renderJarInventory();
+    });
+
+    window.addEventListener('message', event => {
+      const frame = document.getElementById('jarPreviewFrame');
+      if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.type !== 'jar-preview-state') return;
+      const { connected, ready, enabled, count, coins, condition, shardCount, inventory } = event.data;
+      if (inventory) {
+        previewJarInventory = inventory;
+        if (obsJarInventory === null) renderJarInventory();
       }
+      const status = document.getElementById('jarPreviewStatus');
+      status.dataset.state = connected && ready ? (enabled ? 'ready' : 'off') : 'loading';
+      status.textContent = connected && ready ? (enabled ? 'Đã kết nối' : 'Đang tắt') : 'Đang kết nối';
+      document.getElementById('jarPreviewEmpty').hidden = !ready || enabled;
+      document.getElementById('jarPreviewGifts').textContent = Number(count).toLocaleString('vi-VN');
+      document.getElementById('jarPreviewCoins').textContent = Number(coins).toLocaleString('vi-VN');
+      const detail = document.getElementById('jarPreviewCondition');
+      const message = condition === 'assembling' ? 'Đang ráp hũ mới' : condition === 'broken' ? 'Hũ đang vỡ' : '';
+      const fragments = shardCount ? Number(shardCount).toLocaleString('vi-VN') + ' mảnh vỡ' : '';
+      detail.textContent = [message, fragments].filter(Boolean).join(' · ');
+      detail.hidden = !enabled || !detail.textContent;
+    });
+
+    async function copyJarObsUrl() {
+      const url = location.origin + '/jar.html';
+      try {
+        await navigator.clipboard.writeText(url);
+        showAppToast('', 'Đã sao chép link hũ OBS', 'success');
+      } catch {
+        window.prompt('Sao chép link hũ OBS', url);
+      }
+    }
+
+    async function jarRequest(endpoint, payload) {
+      const response = await fetch('/api/jar/' + endpoint, payload === undefined ? { cache: 'no-store' } : {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const contentType = response.headers.get('content-type') || '';
+      if (!/\bjson\b/i.test(contentType)) {
+        throw Object.assign(new Error('Studio trả về một trang web thay cho dữ liệu. Hãy mở bảng điều khiển từ máy chủ Studio.'), {
+          status: response.status, nonJson: true
+        });
+      }
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Studio trả về dữ liệu không hợp lệ. Hãy tải lại trang và thử lại.');
+      }
+      if (!response.ok || !data?.success) {
+        if (endpoint === 'action' && ['assemble', 'clear_shards'].includes(payload?.action) &&
+            response.status === 400 && data?.error === 'Thao tác hũ không hợp lệ') {
+          throw new Error('Máy chủ Studio chưa nạp thao tác này. Hãy khởi động lại Studio rồi thử lại.');
+        }
+        throw Object.assign(new Error(data?.error || 'Yêu cầu chưa được lưu'), { status: response.status });
+      }
+      return data;
+    }
+
+    async function sendJarCommand(endpoint, payload, successText, statusId = 'jarFeedback') {
+      const status = document.getElementById(statusId);
+      status.dataset.error = 'false';
+      status.textContent = 'Đang gửi…';
+      try {
+        const result = await jarRequest(endpoint, payload);
+        status.textContent = successText(result);
+      } catch (error) {
+        status.dataset.error = 'true';
+        status.textContent = error.message;
+      }
+    }
+
+    async function triggerJarAction(action, intensity = 1) {
+      if (action === 'flip') await jarSaveQueue;
+      return sendJarCommand('action', { action, intensity }, () => 'Đã gửi thao tác đến nguồn hũ.');
+    }
+
+    function quickDropGift(giftName, coins, count = 1) {
+      return sendJarCommand('drop', { giftName, coins, count },
+        ({ dropped }) => 'Đã gửi ' + dropped.count + ' × ' + dropped.giftName + '.');
     }
 
     function populateJarCustomGiftSelect() {
       const select = document.getElementById('jarCustomGiftSelect');
-      if (!select) return;
-      select.innerHTML = '';
-      TIKTOK_GIFTS_CATALOG.forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g.name;
-        opt.textContent = `${g.icon || '🎁'} ${g.name} (${g.coins} xu)`;
-        select.appendChild(opt);
-      });
+      const selected = select.value;
+      select.replaceChildren(...TIKTOK_GIFTS_CATALOG.map((gift, index) =>
+        new Option(gift.name + ' (' + gift.coins + ' xu)', String(gift.id ?? index))));
+      if (Array.from(select.options).some(option => option.value === selected)) select.value = selected;
+      populateJarGiftActionSelect();
     }
 
-    function onJarGiftSelectChange(giftName) {}
-
-    async function dropCustomJarGift() {
+    function dropCustomJarGift() {
       const select = document.getElementById('jarCustomGiftSelect');
-      const giftName = select.value || 'Hoa Hồng';
-      const count = Number(document.getElementById('jarCustomGiftCount').value) || 1;
-      const sender = document.getElementById('jarCustomDonorName').value || 'Đại Gia Elden';
+      const gift = TIKTOK_GIFTS_CATALOG[select.selectedIndex];
+      if (!gift) return;
+      return sendJarCommand('drop', {
+        giftId: gift.id, giftName: gift.name, coins: gift.coins, iconUrl: gift.iconUrl,
+        count: Number(document.getElementById('jarCustomGiftCount').value)
+      }, ({ dropped }) => 'Đã gửi ' + dropped.count + ' × ' + dropped.giftName + '.');
+    }
 
-      const found = TIKTOK_GIFTS_CATALOG.find(g => g.name.toLowerCase() === giftName.toLowerCase());
-      const coins = found ? found.coins : 1;
-      const giftId = found ? found.id : '';
-      const iconUrl = found ? found.iconUrl : '';
+    const giftActionLabels = {
+      shake: 'Rung hũ', crack: 'Làm nứt', flip: 'Lật đổ', burst: 'Làm vỡ hũ',
+      assemble: 'Ráp hũ mới', clear_shards: 'Dọn mảnh vỡ', clear: 'Dọn quà', reset: 'Đặt lại mục tiêu'
+    };
+    const giftActionForm = document.getElementById('jarGiftActionForm');
+    const actionGiftSelect = document.getElementById('jarActionGiftSelect');
+    const actionSelect = document.getElementById('jarGiftActionSelect');
+    let renderedGiftActions;
+    let giftActionSaveQueue = Promise.resolve();
 
+    function populateJarGiftActionSelect() {
+      const selected = actionGiftSelect.value;
+      const options = new Map();
+      for (const gift of TIKTOK_GIFTS_CATALOG) {
+        const name = String(gift.name || '').trim();
+        if (!name) continue;
+        const id = String(gift.id ?? '').trim();
+        const key = id && id !== 'custom' ? 'id:' + id : 'name:' + name.normalize('NFC').toLocaleLowerCase('vi');
+        if (options.has(key)) continue;
+        const option = new Option(name + ' (' + gift.coins + ' xu)', key);
+        option.dataset.giftName = name;
+        options.set(key, option);
+      }
+      actionGiftSelect.replaceChildren(new Option('Chọn quà TikTok', ''), ...options.values());
+      if (options.has(selected)) actionGiftSelect.value = selected;
+      updateGiftActionSelection();
+    }
+
+    function updateGiftActionSelection() {
+      actionSelect.value = currentJarConfig.giftActions?.[actionGiftSelect.value]?.action || '';
+    }
+
+    async function saveGiftAction(payload) {
+      let result;
+      let savedOnOlderServer = false;
       try {
-        await fetch('/api/jar/drop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ giftId, giftName, coins, count, sender, iconUrl })
-        });
-      } catch (err) {
-        alert('Lỗi: ' + err.message);
+        result = await jarRequest('gift-action', payload);
+      } catch (error) {
+        if (error.status !== 404 && error.status !== 405 && !(error.status === 200 && error.nonJson)) throw error;
+        // Older Studio servers can store the same rules through their original config endpoint.
+        const { config } = await jarRequest('config');
+        const giftActions = { ...config.giftActions };
+        const { giftKey, giftName, action } = payload;
+        if (action) giftActions[giftKey] = { name: giftName, action };
+        else delete giftActions[giftKey];
+        result = await jarRequest('config', { giftActions });
+        savedOnOlderServer = true;
+      }
+      currentJarConfig = result.config;
+      renderJarGiftActions(result.config.giftActions);
+      return savedOnOlderServer;
+    }
+
+    function renderJarGiftActions(rules = {}) {
+      const signature = JSON.stringify(rules);
+      if (signature === renderedGiftActions) return;
+      renderedGiftActions = signature;
+      const list = document.getElementById('jarGiftActionList');
+      list.replaceChildren();
+      for (const [giftKey, rule] of Object.entries(rules || {})) {
+        if (!rule || !Object.hasOwn(giftActionLabels, rule.action)) continue;
+        const { name, action } = rule;
+        const row = document.createElement('li');
+        row.className = 'jar-inventory-item';
+        const description = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = name;
+        const label = document.createElement('small');
+        label.textContent = giftActionLabels[action];
+        description.append(title, label);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-sm';
+        remove.textContent = 'Bỏ gán';
+        remove.setAttribute('aria-label', 'Bỏ gán thao tác cho ' + name);
+        remove.addEventListener('click', () => updateGiftActionRule({ giftKey, action: '' }, remove, 'Đã bỏ gán ' + name + '.'));
+        row.append(description, remove);
+        list.append(row);
+      }
+      list.hidden = !list.childElementCount;
+      updateGiftActionSelection();
+    }
+
+    async function updateGiftActionRule(payload, button, confirmation) {
+      const status = document.getElementById('jarGiftActionFeedback');
+      button.disabled = true;
+      status.dataset.error = 'false';
+      status.textContent = 'Đang lưu…';
+      try {
+        const save = giftActionSaveQueue.then(() => saveGiftAction(payload));
+        giftActionSaveQueue = save.catch(() => {});
+        const savedOnOlderServer = await save;
+        status.textContent = savedOnOlderServer ? confirmation + ' Khởi động lại Studio để máy chủ nạp bản mới.' : confirmation;
+      } catch (error) {
+        status.dataset.error = 'true';
+        status.textContent = error.message;
+      } finally {
+        button.disabled = false;
       }
     }
+
+    actionSelect.append(...Object.entries(giftActionLabels).map(([value, label]) => new Option(label, value)));
+    actionGiftSelect.addEventListener('change', updateGiftActionSelection);
+    giftActionForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const giftKey = actionGiftSelect.value;
+      const giftName = actionGiftSelect.selectedOptions[0].dataset.giftName;
+      const action = actionSelect.value;
+      updateGiftActionRule({ giftKey, giftName, action }, giftActionForm.querySelector('button'), 'Đã gán thao tác cho ' + giftName + '.');
+    });
 
     async function setJarStyle(style) {
       ['mason', 'diamond', 'fishbowl', 'chest'].forEach(s => {
@@ -4156,17 +4514,19 @@ async function setJarPositionPreset(x, y, scale) {
       await saveJarConfigPartial(update);
     }
 
-    async function saveJarConfigPartial(partial) {
-      currentJarConfig = { ...currentJarConfig, ...partial };
-      try {
-        await fetch('/api/jar/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(partial)
-        });
-      } catch (err) {
-        console.error('Lỗi lưu config hũ:', err);
-      }
+    let jarSaveQueue = Promise.resolve();
+    function saveJarConfigPartial(partial) {
+      jarSaveQueue = jarSaveQueue.then(async () => {
+        try {
+          const { config } = await jarRequest('config', partial);
+          currentJarConfig = config;
+          if (document.activeElement?.type !== 'range') applyJarConfigToUI(config);
+        } catch (error) {
+          applyJarConfigToUI(currentJarConfig);
+          showAppToast('', 'Không lưu được cài đặt hũ. ' + error.message, 'error');
+        }
+      });
+      return jarSaveQueue;
     }
 
     async function saveAllRules(showAlert = false) {

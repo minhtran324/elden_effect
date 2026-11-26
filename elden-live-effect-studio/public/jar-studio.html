@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>🏺 Jar Studio Pro · Thiết Kế Hũ Pha Lê & Dán Sticker 8K</title>
+  <title>Jar Studio · Elden Media Studio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -362,33 +362,47 @@
       transform: translateY(0);
       opacity: 1;
     }
+    .workspace { grid-template-columns: minmax(300px, 370px) minmax(0, 1fr); }
+    .canvas-stage.bg-checker { background: conic-gradient(#111b2d 25%, #152238 0 50%, #111b2d 0 75%, #152238 0) 0 0 / 20px 20px; }
+    .canvas-wrapper { flex: none; }
+    .studio-aspects { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; }
+    .studio-aspects button { flex: 1; justify-content: center; white-space: nowrap; min-height: 38px; }
+    canvas#stageCanvas { touch-action: none; }
+    .floating-toolbar { width: max-content; max-width: calc(100% - 20px); border-radius: 12px; flex-wrap: wrap; justify-content: center; gap: 6px; }
+    .floating-toolbar .btn { min-height: 32px; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid #a1ebd7; outline-offset: 3px; }
+    .btn-gold { background: #a1ebd7; color: #132a27; border-color: #a1ebd7; }
+    .btn-gold:hover { box-shadow: none; }
+    .btn:disabled { opacity: .55; cursor: wait; }
+    @media (max-width: 740px) {
+      body { height: auto; min-height: 100vh; overflow: auto; }
+      .workspace { grid-template-columns: minmax(0, 1fr); overflow: visible; }
+      .canvas-stage { grid-row: 1; min-height: 425px; padding-bottom: 70px; }
+      .sidebar { border-right: 0; border-top: 1px solid var(--border); }
+      .floating-toolbar { bottom: 9px; padding: 6px; }
+      header .brand { flex-wrap: wrap; }
+    }
   </style>
+  <link rel="stylesheet" href="/studio-ui.css">
+  <link rel="icon" href="/brand/elden-media.png" type="image/png">
 </head>
-<body>
+<body data-studio-page="jar-studio">
 
   <!-- TOP HEADER -->
-  <header>
-    <div class="brand">
-      <span style="font-size: 1.35rem;">🔮</span>
-      <span>Jar Studio Pro</span>
-      <span class="brand-badge">8K Physics</span>
-      <span style="font-size: 0.74rem; color: #94a3b8; margin-left: 6px;">Bể Cầu Pha Lê Cầu Vồng & Decor PNG</span>
-    </div>
-
-    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-      <button class="btn btn-sm btn-pink" onclick="dropSimulatedGift()" title="Thả thử nghiệm một món quà vào hũ xem va chạm và hiệu ứng">
-        🎁 Thả Thử Quà Vào Hũ
-      </button>
-      <button class="btn btn-sm" id="btnToggleShimmerHeader" onclick="toggleShimmerPreview()" title="Bật/tắt xem trước vệt sáng lấp lánh">
-        ✨ Vệt Sáng Viền: BẬT
-      </button>
-      <div style="width: 1px; height: 22px; background: var(--border);"></div>
-      <a href="/admin.html#jarSection" class="btn btn-sm">
-        ← Về Admin
-      </a>
-      <button class="btn btn-gold btn-sm" onclick="quickApplyToObs()">
-        ⚡ ÁP DỤNG NGAY LÊN OBS
-      </button>
+  <header class="studio-header">
+    <a class="studio-brand" href="/" aria-label="Elden Media Studio, trang chủ">
+      <img src="/brand/elden-media.png" alt="" width="45" height="45">
+      <span>Elden Media <small>Live Studio</small></span>
+    </a>
+    <nav class="studio-nav" aria-label="Công cụ Studio">
+      <a href="/admin.html?view=rules">Hiệu ứng quà</a>
+      <a href="/editor.html">Dựng video</a>
+      <a href="/jar-studio.html" aria-current="page">Jar Studio</a>
+    </nav>
+    <div class="studio-header-actions">
+      <button class="btn btn-sm" type="button" id="btnToggleShimmerHeader" onclick="toggleShimmerPreview()">Ánh viền</button>
+      <button class="btn btn-sm" type="button" onclick="dropSimulatedGift()">Thả thử quà</button>
+      <button class="btn studio-primary btn-sm" type="button" onclick="quickApplyToObs()">Áp dụng lên OBS</button>
     </div>
   </header>
 
@@ -399,24 +413,19 @@
     <div class="sidebar">
       <div class="sidebar-tabs">
         <button class="sidebar-tab-btn active" id="tabBtnJar" onclick="switchSidebarTab('jar')">
-          <span style="font-size: 1.15rem;">🔮</span>
-          <span>Hũ Pha Lê</span>
+          Mẫu hũ
         </button>
         <button class="sidebar-tab-btn" id="tabBtnHitbox" onclick="switchSidebarTab('hitbox')">
-          <span style="font-size: 1.15rem;">🎯</span>
-          <span>Khung Hitbox</span>
+          Hitbox
         </button>
         <button class="sidebar-tab-btn" id="tabBtnStickers" onclick="switchSidebarTab('stickers')">
-          <span style="font-size: 1.15rem;">✨</span>
-          <span>Dán Sticker</span>
+          Sticker
         </button>
         <button class="sidebar-tab-btn" id="tabBtnShimmer" onclick="switchSidebarTab('shimmer')">
-          <span style="font-size: 1.15rem;">🌈</span>
-          <span>Vệt Sáng</span>
+          Ánh sáng
         </button>
         <button class="sidebar-tab-btn" id="tabBtnPadding" onclick="switchSidebarTab('padding')">
-          <span style="font-size: 1.15rem;">📐</span>
-          <span>Căn Chỉnh</span>
+          Căn chỉnh
         </button>
       </div>
 
@@ -426,48 +435,79 @@
         <div id="paneJar">
           <div class="panel-box">
             <div class="panel-box-title">
-              <span>🔮 Mẫu Hũ Đang Sử Dụng:</span>
+              <span>Hũ đang chỉnh</span>
             </div>
-            <div style="background: #090f1d; border: 1.5px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; align-items: center;">
-              <img src="/uploads/decor/iridescent_fishbowl_transparent.png" style="width: 68px; height: 68px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
+            <div class="jar-sample-summary">
+              <img id="studioSampleImage" alt="" src="/builtin/jar/iridescent_fishbowl_transparent.png" style="width: 68px; height: 68px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
               <div>
-                <div style="font-weight: 800; color: #38bdf8; font-size: 0.86rem;">Bể Cầu Pha Lê Cầu Vồng 8K</div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Khổ chuẩn 1:1, Nơ hồng, Ruy băng ánh sáng, Cổ bèo ngọc trai 3 lớp</div>
+                <strong id="studioSampleName">Bể pha lê cầu vồng</strong>
+                 <div id="studioJarAspect" class="studio-muted"></div>
               </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
-                <input type="checkbox" id="chkFrontOverlay" checked onchange="toggleFrontOverlay(this.checked)" style="width: 17px; height: 17px; accent-color: #ec4899;">
-                🎀 Lớp phủ mặt trước (Nơ hồng, Cổ bèo, Bóng kính đè lên quà)
+            <div class="jar-design-tools">
+              <label for="studioKeepHitbox">
+                <input type="checkbox" id="studioKeepHitbox" checked>
+                Giữ tỷ lệ và hitbox hiện có khi nhập ảnh
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: #f1f5f9; cursor: pointer;">
-                <input type="checkbox" id="chkHideDefault" checked onchange="state.hideDefaultJar = this.checked; redraw();" style="width: 17px; height: 17px; accent-color: #38bdf8;">
-                ✨ Ẩn hũ nét vẽ vector (Chỉ hiển thị hũ ảnh pha lê 8K)
+              <input type="file" id="baseImageFileInput" accept="image/png,image/webp" hidden onchange="handleCustomJarUpload(this, 'rear')">
+              <input type="file" id="frontImageFileInput" accept="image/png,image/webp" hidden onchange="handleCustomJarUpload(this, 'front')">
+              <div class="jar-layer-list">
+                <div class="jar-layer-row">
+                  <div><strong>Mặt sau</strong><span id="studioRearLayerStatus"></span></div>
+                  <button class="btn studio-primary btn-sm" type="button" onclick="document.getElementById('baseImageFileInput').click()">Nhập mặt sau</button>
+                </div>
+                <div class="jar-layer-row">
+                  <div><strong>Mặt trước</strong><span id="studioFrontLayerStatus"></span></div>
+                  <button class="btn btn-sm" type="button" id="studioImportFront" onclick="document.getElementById('frontImageFileInput').click()" disabled>Nhập mặt trước</button>
+                </div>
+              </div>
+              <p class="editor-tip">Hai ảnh phải cùng kích thước. Mặt trước phủ viền miệng lên quà khi quà đi vào hũ.</p>
+              <label for="chkFrontOverlay">
+                <input type="checkbox" id="chkFrontOverlay" checked onchange="toggleFrontOverlay(this.checked)">
+                Hiện mặt trước khi xem thử
               </label>
+              <label for="chkHideDefault">
+                <input type="checkbox" id="chkHideDefault" checked onchange="state.hideDefaultJar = this.checked; redraw();">
+                Ẩn hũ nét vẽ khi dùng ảnh
+              </label>
+              <div class="studio-panel-actions">
+                <button class="btn btn-sm" type="button" onclick="useStudioFishbowl()">Mẫu pha lê gốc</button>
+                <button class="btn btn-sm" type="button" id="studioRemoveFront" onclick="clearStudioJarFront()">Gỡ mặt trước</button>
+              </div>
             </div>
-
-            <input type="file" id="baseImageFileInput" accept="image/png,image/webp" style="display: none;" onchange="handleCustomJarUpload(this)">
-            <button class="btn btn-sm" style="width: 100%; justify-content: center; padding: 9px;" onclick="document.getElementById('baseImageFileInput').click()">
-              📤 Tải Lên Mẫu Bình Hũ PNG Khác Của Bạn
-            </button>
           </div>
 
           <div class="panel-box">
-            <div class="panel-box-title">
-              <span>🎯 Tỷ Lệ & Tọa Độ Vật Lý:</span>
+            <h2 class="panel-box-title">Thư viện mẫu hũ</h2>
+            <form class="jar-design-tools" onsubmit="saveStudioJarTemplate(event)">
+              <label class="studio-field" for="jarTemplateName">Tên mẫu</label>
+              <input id="jarTemplateName" type="text" maxlength="80" placeholder="Ví dụ Hũ pha lê xanh" required>
+              <div class="studio-panel-actions">
+                <button class="btn studio-primary btn-sm" type="submit">Lưu thành mẫu mới</button>
+              </div>
+            </form>
+            <div id="jarTemplateList" class="jar-template-list" aria-label="Mẫu hũ đã lưu">
+              <p class="studio-empty">Đang tải mẫu hũ…</p>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <button class="btn btn-sm active" id="btnAspectSquare" onclick="setStudioAspect('square')" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;">
-                <span style="font-size: 1.3rem;">🔮</span>
-                <span style="font-weight: 800;">Khổ Vuông 1:1</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">Bể Cầu Pha Lê (Khuyên dùng)</span>
-              </button>
-              <button class="btn btn-sm" id="btnAspectHorizontal" onclick="setStudioAspect('horizontal')" style="padding: 10px; justify-content: center; flex-direction: column; gap: 4px;">
-                <span style="font-size: 1.3rem;">🌊</span>
-                <span style="font-weight: 800;">Khổ Ngang 4:3</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">Bể rộng nằm ngang</span>
-              </button>
+          </div>
+
+          <div class="panel-box">
+            <h2 class="panel-box-title">Thiết kế ảnh hũ với ChatGPT</h2>
+            <p class="editor-tip">Gửi cả hai ảnh tham chiếu và hướng dẫn cho AI để tạo cặp PNG dùng cùng một hitbox.</p>
+            <div class="studio-panel-actions jar-reference-actions">
+              <button class="btn btn-sm" type="button" onclick="downloadJarReference('rear')">PNG mẫu mặt sau</button>
+              <button class="btn btn-sm" type="button" onclick="downloadJarReference('front')">PNG mẫu mặt trước</button>
+              <button class="btn btn-sm" type="button" onclick="downloadJarGuide()">Tải hướng dẫn MD</button>
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <h2 class="panel-box-title">Tỷ lệ khung ảnh</h2>
+            <div class="studio-aspects">
+              <button class="btn btn-sm active" id="btnAspectSquare" onclick="setStudioAspect('square')">Vuông 1:1</button>
+              <button class="btn btn-sm" id="btnAspectHorizontal" onclick="setStudioAspect('horizontal')">Ngang 4:3</button>
+              <button class="btn btn-sm" id="btnAspectVertical" onclick="setStudioAspect('vertical')">Dọc 3:4</button>
             </div>
           </div>
         </div>
@@ -476,13 +516,13 @@
         <div id="paneHitbox" style="display: none;">
           <div class="panel-box" style="border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(180deg, #131d33, #0b1120);">
             <div class="panel-box-title" style="color: #fbbf24;">
-              <span>🎯 Khung Lòng Hũ Vật Lý</span>
+              <span>Khung lòng hũ</span>
               <button class="btn btn-sm" id="btnToggleHitboxStudio" onclick="toggleHitboxWireframe()" style="background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #38bdf8; font-size: 0.72rem; padding: 3px 8px;">
                 👁️ Khung Dây: BẬT
               </button>
             </div>
             <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.45;">
-              Căn chỉnh lòng hũ trực quan theo mọi ảnh bình hũ. Quà rơi được khóa 100% bên trong khung dây này, không bao giờ rơi ra ngoài nơ hay đế kính!
+              Bật khung dây và thả thử quà để kiểm tra hình dáng, miệng và đáy hũ.
             </div>
 
             <!-- CHỌN MẪU KHUNG CÓ SẴN (SHAPE PRESETS) -->
@@ -600,30 +640,15 @@
         <div id="paneStickers" style="display: none;">
           <div class="panel-box">
             <div class="panel-box-title">
-              <span>📤 Tải Sticker PNG Mới:</span>
+              <span>Sticker tùy chọn</span>
             </div>
-            <input type="file" id="customStickerUploadInput" accept="image/png,image/svg+xml,image/webp" style="display: none;" onchange="handleCustomStickerUpload(this)">
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px; font-weight: 800;" onclick="document.getElementById('customStickerUploadInput').click()">
-              ➕ Tải Thêm Sticker / Logo PNG Từ Máy
-            </button>
-            <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px; text-align: center;">
-              Hỗ trợ PNG trong suốt, logo shop, bảng tên idol, chibi, huy hiệu.
+            <input type="file" id="customStickerUploadInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden onchange="handleCustomStickerUpload(this)">
+            <input type="file" id="studioChromaFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden onchange="openStickerChromaFile(this)">
+            <div class="studio-panel-actions">
+              <button class="btn btn-primary" type="button" onclick="document.getElementById('customStickerUploadInput').click()">Tải sticker từ máy</button>
+              <button class="btn btn-sm" type="button" onclick="document.getElementById('studioChromaFile').click()">Xóa phông chroma key</button>
             </div>
-          </div>
-
-          <div class="panel-box">
-            <div class="panel-box-title">
-              <span>📚 Thư Viện Sticker Sẵn Có:</span>
-            </div>
-            <div class="sticker-cat-tabs">
-              <button class="sticker-cat-btn active" onclick="filterStickers('all')">Tất Cả</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('badge')">🏷️ Logo/Bảng Tên</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('chibi')">🧸 Chibi/Linh Vật</button>
-              <button class="sticker-cat-btn" onclick="filterStickers('ribbon')">🎀 Nơ/Ruy Băng</button>
-            </div>
-            <div class="sticker-grid" id="stickersContainer">
-              <!-- Render sticker catalog -->
-            </div>
+            <p class="editor-tip">Hỗ trợ PNG, JPG, SVG và WebP.</p>
           </div>
 
           <!-- STICKER ĐANG CHỌN ĐỂ ĐIỀU CHỈNH -->
@@ -669,7 +694,8 @@
               </div>
             </div>
 
-            <div style="display: flex; gap: 6px;">
+            <div class="studio-panel-actions">
+              <button class="btn btn-sm" type="button" onclick="openSelectedStickerChroma()">Xóa phông sticker này</button>
               <button class="btn btn-sm" style="flex: 1; justify-content: center;" onclick="duplicateSelectedSticker()">
                 📑 Nhân Đôi
               </button>
@@ -682,8 +708,8 @@
           <!-- DANH SÁCH STICKER ĐANG GẮN TRÊN HŨ -->
           <div class="panel-box">
             <div class="panel-box-title">
-              <span>📋 Sticker Đang Gắn Trên Hũ:</span>
-              <span id="activeStickersCount" style="color: #38bdf8; font-size: 0.74rem;">0 sticker</span>
+              <span>Sticker đang gắn <span id="activeStickersCount" class="studio-muted"></span></span>
+              <button class="btn btn-danger btn-sm" type="button" id="clearStudioStickersButton" onclick="clearStudioStickers()">Xóa tất cả sticker</button>
             </div>
             <div id="activeStickersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
               <!-- Danh sách sticker -->
@@ -781,7 +807,7 @@
                 <span>Kích thước hũ trên OBS (Scale):</span>
                 <b id="lblStudioObsScale" style="color: #a855f7;">100%</b>
               </label>
-              <input type="range" id="studioObsScaleSlider" min="0.4" max="1.6" step="0.05" value="1.0" oninput="updateStudioObsPos('jarScale', this.value)">
+              <input type="range" id="studioObsScaleSlider" min="0.15" max="1.6" step="0.05" value="1.0" oninput="updateStudioObsPos('jarScale', this.value)">
             </div>
 
             <span class="form-label" style="margin-bottom: 4px;">Vị trí nhanh trên livestream:</span>
@@ -804,34 +830,70 @@
 
       <!-- FLOATING CANVAS CONTROLS -->
       <div class="floating-toolbar">
-        <button class="btn btn-sm active" id="btnToggleHitboxCanvas" onclick="toggleHitboxWireframe()" title="Bật/Tắt khung dây lòng hũ trực quan">
-          🎯 Khung Lòng Hũ
+        <button class="btn btn-sm" id="btnToggleHitboxCanvas" onclick="toggleHitboxWireframe()" title="Bật/Tắt khung dây lòng hũ trực quan">
+          Khung lòng hũ
         </button>
         <button class="btn btn-sm" id="btnToggleGuide" onclick="toggleGuideOverlay()" title="Ẩn/Hiện đường kẻ hướng dẫn">
-          👁️ Lưới Hướng Dẫn
+          Lưới hướng dẫn
         </button>
         <button class="btn btn-sm" id="btnToggleBg" onclick="cycleCanvasBg()" title="Đổi màu nền xem trước">
-          🏁 Nền Trong Suốt
+          Nền trong suốt
         </button>
         <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.2);"></div>
-        <button class="btn btn-sm" onclick="adjustZoom(-0.1)" title="Thu nhỏ">🔍 -</button>
+        <button class="btn btn-sm" onclick="adjustZoom(-0.1)" title="Thu nhỏ">−</button>
         <span id="lblZoomLevel" style="font-size: 0.76rem; font-weight: 700; color: #38bdf8;">100%</span>
-        <button class="btn btn-sm" onclick="adjustZoom(0.1)" title="Phóng to">🔍 +</button>
-        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.2);"></div>
-        <button class="btn btn-sm btn-gold" onclick="quickApplyToObs()">
-          ⚡ Lưu & Áp Dụng OBS
-        </button>
+        <button class="btn btn-sm" onclick="adjustZoom(0.1)" title="Phóng to">+</button>
+
       </div>
     </div>
 
   </div>
 
+  <dialog class="studio-chroma-dialog" id="studioChromaDialog" aria-labelledby="studioChromaTitle">
+    <form onsubmit="applyStickerChroma(event)">
+      <div class="studio-chroma-heading">
+        <h2 id="studioChromaTitle">Xóa phông chroma key</h2>
+        <button class="btn btn-sm" type="button" id="studioChromaCancel" onclick="document.getElementById('studioChromaDialog').close()">Hủy</button>
+      </div>
+      <div class="studio-chroma-comparison">
+        <figure>
+          <figcaption>Ảnh gốc</figcaption>
+          <div class="studio-chroma-image"><canvas id="studioChromaBefore" aria-label="Ảnh gốc. Bấm vào ảnh để lấy màu nền." onclick="sampleStickerChroma(event)"></canvas></div>
+        </figure>
+        <figure>
+          <figcaption>Sau khi xóa phông</figcaption>
+          <div class="studio-chroma-image"><canvas id="studioChromaAfter" aria-label="Sticker sau khi xóa phông"></canvas></div>
+        </figure>
+      </div>
+      <p class="editor-tip">Chọn màu hoặc bấm vào nền của ảnh gốc để lấy màu.</p>
+      <fieldset class="studio-chroma-controls" id="studioChromaControls" aria-label="Tùy chỉnh xóa phông">
+        <label for="studioChromaColor">Màu nền
+          <input type="color" id="studioChromaColor" value="#00ff00" oninput="queueStickerChromaPreview()">
+        </label>
+        <label for="studioChromaTolerance"><span>Dung sai <output for="studioChromaTolerance" id="studioChromaToleranceValue">18%</output></span>
+          <input type="range" id="studioChromaTolerance" min="0" max="70" value="18" oninput="queueStickerChromaPreview()">
+        </label>
+        <label for="studioChromaSoftness"><span>Mềm viền <output for="studioChromaSoftness" id="studioChromaSoftnessValue">8%</output></span>
+          <input type="range" id="studioChromaSoftness" min="0" max="30" value="8" oninput="queueStickerChromaPreview()">
+        </label>
+      </fieldset>
+      <div class="studio-chroma-footer">
+        <p id="studioChromaStatus" class="editor-tip" role="status"></p>
+        <button type="submit" class="btn studio-primary" id="studioChromaApply">Dán sticker</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- TOAST NOTIFICATION -->
-  <div class="toast" id="toastMsg">
+  <div class="toast" id="toastMsg" role="status">
     <span id="toastIcon">🎉</span>
     <span id="toastText">Thành công!</span>
   </div>
 
+  <script src="/vendor/matter.min.js"></script>
+  <script src="/jar-geometry.js"></script>
+  <script src="/jar-studio-templates.js"></script>
+  <script defer src="/jar-studio-chroma.js"></script>
   <script>
     // ==========================================
     // KHỞI TẠO TRẠNG THÁI STUDIO
@@ -847,13 +909,13 @@
       padBottom: 20,
       padLeft: 20,
       padRight: 20,
-      showGuide: true,
+      showGuide: false,
       zoom: 1.0,
       bgMode: 'checker', // 'checker' | 'dark' | 'live'
       baseImg: null,
-      baseImgUrl: '/uploads/decor/iridescent_fishbowl_transparent.png',
+      baseImgUrl: '/builtin/jar/iridescent_fishbowl_transparent.png',
       frontOverlayImg: null,
-      frontOverlayUrl: '/uploads/decor/iridescent_fishbowl_front_overlay.png',
+      frontOverlayUrl: '/builtin/jar/iridescent_fishbowl_front_overlay.png',
       showFrontOverlay: true,
       hideDefaultJar: true,
       showShimmer: true,
@@ -863,8 +925,13 @@
       selectedStickerIdx: -1,
       isDraggingSticker: false,
       dragOffset: { x: 0, y: 0 },
-      simulatedGifts: [], // Dùng để test thả quà rơi trực tiếp trong Studio
-      showHitbox: true,
+      pendingImage: null,
+      pendingFrontImage: null,
+      sampleName: '',
+      legacyDecor: { decorImage: '', decorText: '' },
+      bounciness: 0.2,
+      showHitbox: false,
+      debugHitbox: false,
       glassRealism: true,
       clipGifts: true,
       jarPosX: 50,
@@ -883,25 +950,21 @@
       }
     };
 
-    // THƯ VIỆN STICKER CÓ SẴN
-    const STICKER_LIBRARY = [
-      { id: 'bunny', cat: 'chibi', name: 'Thỏ Yếm Xanh', src: '/uploads/decor/sticker_bunny.svg' },
-      { id: 'chibi_elden', cat: 'chibi', name: 'Mascot Elden', src: '/uploads/decor/decor_chibi_mascot.svg' },
-      { id: 'ribbon_2010', cat: 'ribbon', name: 'Nơ 20/10', src: '/uploads/decor/sticker_ribbon_2010.svg' },
-      { id: 'ribbon_vip', cat: 'ribbon', name: 'Ruy Băng Vàng', src: '/uploads/decor/decor_vip_ribbon.svg' },
-      { id: 'banner_amy', cat: 'badge', name: 'Amy Nọng Cute', src: '/uploads/decor/sticker_banner_cute.svg' },
-      { id: 'badge_elden', cat: 'badge', name: 'Huy Hiệu Elden', src: '/uploads/decor/decor_eldenmedia_badge.svg' }
-    ];
+    const previewEngine = Matter.Engine.create({ enableSleeping: true, positionIterations: 8 });
+    let previewWalls = [];
+    let simulatedGifts = [];
+    let lastStudioFrame = performance.now();
+    let studioPhysicsTime = 0;
 
-    // ==========================================
-    // KHỞI TẠO VÀ RESIZE CANVAS
-    // ==========================================
-    function calculateCanvasDimensions() {
+    // Kích thước bản xem trước
+    function calculateCanvasDimensions(before = getStudioJarGeometry()) {
       if (state.aspect === 'horizontal') {
         state.baseW = 560;
-        state.baseH = 380;
+        state.baseH = 420;
+      } else if (state.aspect === 'vertical') {
+        state.baseW = 360;
+        state.baseH = 480;
       } else {
-        // square (1:1)
         state.baseW = 480;
         state.baseH = 480;
       }
@@ -912,13 +975,22 @@
       canvas.width = totalW;
       canvas.height = totalH;
 
+      const after = getStudioJarGeometry();
+      for (const sticker of state.stickers) {
+        sticker.x = after.imgX + (sticker.x - before.imgX) * after.w / before.w;
+        sticker.y = after.imgY + (sticker.y - before.imgY) * after.h / before.h;
+      }
+      rebuildPreviewWalls();
       applyZoom();
       redraw();
     }
 
     function applyZoom() {
       const wrapper = document.getElementById('canvasWrapper');
-      wrapper.style.transform = `scale(${state.zoom})`;
+      const stage = document.getElementById('stageArea');
+      const toolbarHeight = stage.querySelector('.floating-toolbar').offsetHeight;
+      const fit = Math.min(1, (stage.clientWidth - 20) / canvas.width, (stage.clientHeight - toolbarHeight - 30) / canvas.height);
+      wrapper.style.transform = 'scale(' + Math.max(0.05, fit * state.zoom) + ')';
       document.getElementById('lblZoomLevel').textContent = `${Math.round(state.zoom * 100)}%`;
     }
 
@@ -933,7 +1005,7 @@
       state.bgMode = modes[nextIdx];
       const area = document.getElementById('stageArea');
       area.className = `canvas-stage bg-${state.bgMode}`;
-      const labels = { checker: '🏁 Nền Trong Suốt', dark: '⬛ Nền Tối', live: '🟣 Nền Live Stream' };
+      const labels = { checker: 'Nền trong suốt', dark: 'Nền tối', live: 'Nền màu' };
       document.getElementById('btnToggleBg').textContent = labels[state.bgMode];
     }
 
@@ -951,7 +1023,8 @@
     function toggleShimmerPreview(val) {
       if (typeof val === 'boolean') state.showShimmer = val;
       else state.showShimmer = !state.showShimmer;
-      document.getElementById('btnToggleShimmerHeader').textContent = state.showShimmer ? '✨ Vệt Sáng Viền: BẬT' : '✨ Vệt Sáng Viền: TẮT';
+      document.getElementById('btnToggleShimmerHeader').setAttribute('aria-pressed', state.showShimmer);
+      document.getElementById('btnToggleShimmerHeader').textContent = state.showShimmer ? 'Tắt ánh viền' : 'Bật ánh viền';
       document.getElementById('chkShimmerRim').checked = state.showShimmer;
     }
 
@@ -959,52 +1032,36 @@
       state.aspect = aspect;
       document.getElementById('btnAspectSquare').classList.toggle('active', aspect === 'square');
       document.getElementById('btnAspectHorizontal').classList.toggle('active', aspect === 'horizontal');
+      document.getElementById('btnAspectVertical').classList.toggle('active', aspect === 'vertical');
       calculateCanvasDimensions();
+      document.getElementById('studioJarAspect').textContent = studioJarAspects[aspect];
     }
 
     function updatePadding(side, val) {
+      const before = getStudioJarGeometry();
       const num = Number(val);
       if (side === 'top') { state.padTop = num; document.getElementById('lblPadTop').textContent = num + 'px'; }
       if (side === 'bottom') { state.padBottom = num; document.getElementById('lblPadBottom').textContent = num + 'px'; }
       if (side === 'sides') { state.padLeft = num; state.padRight = num; document.getElementById('lblPadSides').textContent = num + 'px'; }
-      calculateCanvasDimensions();
+      calculateCanvasDimensions(before);
     }
 
-    let studioObsPosTimer = null;
     function updateStudioObsPos(field, val) {
       const num = Number(val);
       state[field] = num;
-      if (field === 'jarPosX') document.getElementById('lblStudioObsPosX').textContent = `${num}%`;
-      if (field === 'jarPosY') document.getElementById('lblStudioObsPosY').textContent = `${num}%`;
-      if (field === 'jarScale') document.getElementById('lblStudioObsScale').textContent = `${Math.round(num * 100)}%`;
-
-      clearTimeout(studioObsPosTimer);
-      studioObsPosTimer = setTimeout(() => {
-        fetch('/api/jar/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [field]: num })
-        }).catch(() => {});
-      }, 100);
+      if (field === 'jarPosX') document.getElementById('lblStudioObsPosX').textContent = num + '%';
+      if (field === 'jarPosY') document.getElementById('lblStudioObsPosY').textContent = num + '%';
+      if (field === 'jarScale') document.getElementById('lblStudioObsScale').textContent = Math.round(num * 100) + '%';
     }
 
     function setStudioObsPreset(x, y, scale) {
       document.getElementById('studioObsPosXSlider').value = x;
-      document.getElementById('lblStudioObsPosX').textContent = `${x}%`;
       document.getElementById('studioObsPosYSlider').value = y;
-      document.getElementById('lblStudioObsPosY').textContent = `${y}%`;
       document.getElementById('studioObsScaleSlider').value = scale;
-      document.getElementById('lblStudioObsScale').textContent = `${Math.round(scale * 100)}%`;
-      state.jarPosX = x;
-      state.jarPosY = y;
-      state.jarScale = scale;
-
-      fetch('/api/jar/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jarPosX: x, jarPosY: y, jarScale: scale })
-      }).catch(() => {});
-      showToast('📺', `Đã chỉnh vị trí OBS: X ${x}%, Y ${y}%, Scale ${Math.round(scale * 100)}%`);
+      updateStudioObsPos('jarPosX', x);
+      updateStudioObsPos('jarPosY', y);
+      updateStudioObsPos('jarScale', scale);
+      showToast('', 'Đã chọn vị trí. Bấm Áp dụng lên OBS để lưu.');
     }
 
     // ==========================================
@@ -1018,138 +1075,10 @@
         imgY: state.padTop,
         w: state.baseW,
         h: state.baseH,
-        isFishbowl: state.aspect === 'square' || state.baseImgUrl.includes('fishbowl')
+        isFishbowl: state.aspect === 'square'
       };
     }
 
-    function getCavityPoints(geom, hitboxCfg) {
-      const shape = (hitboxCfg && hitboxCfg.shape) || (geom.isFishbowl ? 'sphere' : 'cylinder');
-      const { cx, imgY, w, h } = geom;
-
-      const defaultRx = shape === 'sphere' ? 0.315 : (shape === 'bottle' ? 0.28 : 0.32);
-      const defaultRy = shape === 'sphere' ? 0.24 : (shape === 'bottle' ? 0.26 : 0.30);
-      const defaultCy = shape === 'sphere' ? 0.58 : (shape === 'bottle' ? 0.62 : 0.56);
-      const defaultMouthY = 0.12;
-      const defaultNeckW = shape === 'bottle' ? 0.26 : 0.38;
-      const defaultNeckH = shape === 'bottle' ? 0.26 : 0.20;
-
-      const rx = w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : defaultRx);
-      const ry = h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : defaultRy);
-      const cavityCy = imgY + h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : defaultCy) + (hitboxCfg.offsetY || 0);
-      const cavityCx = cx + (hitboxCfg.offsetX || 0);
-      const mouthY = imgY + h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : defaultMouthY);
-      const mouthHalfW = (w * (hitboxCfg.neckWidth !== undefined ? hitboxCfg.neckWidth : defaultNeckW)) / 2;
-      const neckH = h * (hitboxCfg.neckHeight !== undefined ? hitboxCfg.neckHeight : defaultNeckH);
-      const neckBottomY = mouthY + neckH;
-
-      const points = [];
-
-      if (shape === 'sphere') {
-        // 🔮 BỂ CẦU TRÒN (Sphere / Fishbowl)
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        const neckHalfW = mouthHalfW * 1.05;
-        points.push({ x: cavityCx + neckHalfW, y: neckBottomY });
-
-        const shoulderSteps = 8;
-        for (let i = 1; i <= shoulderSteps; i++) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx + neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5);
-          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
-          points.push({ x: px, y: py });
-        }
-
-        const arcSteps = 24;
-        for (let i = 1; i <= arcSteps; i++) {
-          const angle = (Math.PI * i) / arcSteps;
-          const px = cavityCx + rx * Math.cos(angle);
-          const py = cavityCy + ry * Math.sin(angle);
-          points.push({ x: px, y: py });
-        }
-
-        for (let i = shoulderSteps - 1; i >= 0; i--) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx - (neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5));
-          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
-          points.push({ x: px, y: py });
-        }
-
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-
-      } else if (shape === 'bottle') {
-        // 🏺 HŨ CỔ LỌ / BÌNH HOA (Bottle / Vase)
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        points.push({ x: cavityCx + mouthHalfW, y: neckBottomY });
-
-        const thetaJoin = -0.22 * Math.PI;
-        const joinX = rx * Math.cos(thetaJoin);
-        const joinY = ry * Math.sin(thetaJoin);
-
-        const shoulderSteps = 10;
-        for (let i = 1; i <= shoulderSteps; i++) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx + mouthHalfW + (joinX - mouthHalfW) * ease;
-          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
-          points.push({ x: px, y: py });
-        }
-
-        const arcSteps = 28;
-        const thetaEnd = Math.PI - thetaJoin;
-        for (let i = 1; i <= arcSteps; i++) {
-          const angle = thetaJoin + ((thetaEnd - thetaJoin) * i) / arcSteps;
-          const px = cavityCx + rx * Math.cos(angle);
-          const py = cavityCy + ry * Math.sin(angle);
-          points.push({ x: px, y: py });
-        }
-
-        for (let i = shoulderSteps; i >= 1; i--) {
-          const f = (i - 1) / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx - (mouthHalfW + (joinX - mouthHalfW) * ease);
-          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
-          points.push({ x: px, y: py });
-        }
-
-        points.push({ x: cavityCx - mouthHalfW, y: neckBottomY });
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-
-      } else {
-        // 🥛 HŨ TRỤ ĐỨNG / MASON JAR (Cylinder)
-        const bottomY = cavityCy + ry;
-        const cornerR = Math.min(rx * 0.35, 36);
-
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY + 24 });
-        points.push({ x: cavityCx + rx, y: mouthY + 44 });
-        points.push({ x: cavityCx + rx, y: bottomY - cornerR });
-
-        for (let i = 1; i <= 6; i++) {
-          const a = (Math.PI * 0.5) * (i / 6);
-          points.push({
-            x: cavityCx + rx - cornerR + cornerR * Math.cos(a),
-            y: bottomY - cornerR + cornerR * Math.sin(a)
-          });
-        }
-
-        for (let i = 1; i <= 6; i++) {
-          const a = (Math.PI * 0.5) + (Math.PI * 0.5) * (i / 6);
-          points.push({
-            x: cavityCx - rx + cornerR + cornerR * Math.cos(a),
-            y: bottomY - cornerR + cornerR * Math.sin(a)
-          });
-        }
-
-        points.push({ x: cavityCx - rx, y: mouthY + 44 });
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY + 24 });
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-      }
-
-      return points;
-    }
-
-    // Vẽ khung dây lòng hũ trực quan (Hitbox Wireframe Overlay)
     function drawStudioHitboxWireframe(ctx, geom, points) {
       if (!state.showHitbox || !points || points.length < 3) return;
 
@@ -1209,7 +1138,7 @@
       ctx.fillStyle = '#38bdf8';
       ctx.textAlign = 'center';
       const shapeName = hitboxCfg.shape === 'sphere' ? 'Bể Cầu' : (hitboxCfg.shape === 'bottle' ? 'Cổ Lọ' : 'Hũ Trụ');
-      ctx.fillText(`🎯 ${shapeName} | RX: ${(hitboxCfg.radiusX * 100).toFixed(1)}% | RY: ${(hitboxCfg.radiusY * 100).toFixed(1)}%`, cavityCx, cavityCy - 10);
+      ctx.fillText(`🎯 ${shapeName} | RX: ${(rx / geom.w * 100).toFixed(1)}% | RY: ${(ry / geom.h * 100).toFixed(1)}%`, cavityCx, cavityCy - 10);
 
       ctx.restore();
     }
@@ -1267,6 +1196,11 @@
       const jarW = geom.w;
       const jarH = geom.h;
 
+      if (!state.baseImg || state.hideDefaultJar === false) {
+        ctx.save();
+        drawJarSilhouette(ctx, { ...geom, neckW: points[0].x - points.at(-1).x, neckH: geom.h * 0.14, aspect: state.aspect }, 'mason', 1);
+        ctx.restore();
+      }
       // 1. LAYER 1: MẶT SAU & THÂN BÌNH HŨ (BASE IMAGE)
       if (state.baseImg && state.baseImg.complete && state.baseImg.naturalWidth > 0) {
         ctx.drawImage(state.baseImg, jarX, jarY, jarW, jarH);
@@ -1276,16 +1210,14 @@
       drawStickersByLayer('behind_glass');
 
       // 3. LAYER 3: QUÀ MÔ PHỎNG RƠI BÊN TRONG (TEST GIFTS CÓ KHÓA LÒNG KÍNH)
-      drawSimulatedGifts();
+      drawSimulatedGifts(points);
 
-      // 4. LAYER 4: MẶT TRƯỚC HŨ (NƠ HỒNG, CỔ BÈO, VỆT BÓNG PHA LÊ)
-      if (state.showFrontOverlay && state.frontOverlayImg && state.frontOverlayImg.complete && state.frontOverlayImg.naturalWidth > 0) {
-        ctx.drawImage(state.frontOverlayImg, jarX, jarY, jarW, jarH);
-      }
-
-      // 4.5. LAYER 4.5: HIỆU ỨNG PHẢN CHIẾU THỦY TINH 3D ĐÈ LÊN QUÀ
       if (state.glassRealism) {
         drawStudioGlassReflection(ctx, geom);
+      }
+
+      if (state.showFrontOverlay && state.frontOverlayImg) {
+        ctx.drawImage(state.frontOverlayImg, jarX, jarY, jarW, jarH);
       }
 
       // 5. LAYER 5: STICKERS MẶT NGOÀI HŨ (FRONT)
@@ -1469,95 +1401,54 @@
     // ==========================================
     // THẢ QUÀ THỬ NGHIỆM TRỰC TIẾP TRONG STUDIO
     // ==========================================
-    function dropSimulatedGift() {
+    function rebuildPreviewWalls() {
+      Matter.World.remove(previewEngine.world, previewWalls);
       const geom = getStudioJarGeometry();
-      const hitboxCfg = state.hitbox || {};
-      const rx = geom.w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : 0.315);
-      const ry = geom.h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : 0.24);
-      const cavityCy = geom.imgY + geom.h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : 0.58) + (hitboxCfg.offsetY || 0);
-      const cavityCx = geom.cx + (hitboxCfg.offsetX || 0);
-      const mouthY = geom.imgY + geom.h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : 0.12);
-      const mouthHalfW = (geom.w * (hitboxCfg.neckWidth !== undefined ? hitboxCfg.neckWidth : 0.38)) / 2;
-
-      const emojiList = ['🌹', '🍩', '👑', '🦁', '💖', '🎁', '💎', '⭐'];
-      const em = emojiList[Math.floor(Math.random() * emojiList.length)];
-
-      const spawnX = cavityCx + (Math.random() - 0.5) * (mouthHalfW * 1.3);
-      const relX = (spawnX - cavityCx) / Math.max(1, rx);
-      const clampedRelX = Math.max(-0.85, Math.min(0.85, relX));
-      const bottomCurve = Math.sqrt(Math.max(0, 1 - clampedRelX * clampedRelX)) * ry;
-      const stackOffset = Math.min(120, state.simulatedGifts.length * 3.5);
-      const targetFloorY = cavityCy + bottomCurve - 20 - stackOffset;
-
-      state.simulatedGifts.push({
-        x: spawnX,
-        y: mouthY - 35,
-        vx: (Math.random() - 0.5) * 1.6,
-        vy: 2.2,
-        targetY: Math.min(targetFloorY, cavityCy + ry - 18),
-        size: 30,
-        emoji: em,
-        bounced: 0
-      });
-      showToast('🎁', `Đã thả thử món quà ${em} vào lòng hũ!`);
-      redraw();
+      previewWalls = makeCavityWalls(getCavityPoints(geom, state.hitbox), Math.max(10, geom.w * 0.044), state.bounciness);
+      Matter.World.add(previewEngine.world, previewWalls);
     }
 
-    function drawSimulatedGifts() {
-      if (state.simulatedGifts.length === 0) return;
+    function dropSimulatedGift() {
+      const points = getCavityPoints(getStudioJarGeometry(), state.hitbox);
+      const mouthY = points[0].y;
+      const mouthCenter = (points[0].x + points.at(-1).x) / 2;
+      const glyphs = ['🌹', '🍩', '👑', '💖', '🎁', '💎'];
+      const radius = 12 + Math.random() * 6;
+      const body = Matter.Bodies.circle(mouthCenter + (Math.random() - 0.5) * 24, mouthY - radius - 8, radius, {
+        restitution: state.bounciness, friction: 0.25, frictionAir: 0.012
+      });
+      body.glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+      Matter.World.add(previewEngine.world, body);
+      simulatedGifts.push(body);
+      if (simulatedGifts.length > 100) Matter.World.remove(previewEngine.world, simulatedGifts.shift());
+    }
 
-      const geom = getStudioJarGeometry();
-      const points = getCavityPoints(geom, state.hitbox || {});
-
-      ctx.save();
-      // Khóa quà rơi 100% bên trong lòng kính (Clip to jar cavity)
-      if (state.clipGifts && points && points.length > 2) {
-        ctx.beginPath();
-        // Mở bầu trời ở trên để quà rơi tự nhiên từ trên trời vào miệng hũ
-        ctx.moveTo(-1000, -1000);
-        ctx.lineTo(canvas.width + 1000, -1000);
-        ctx.lineTo(canvas.width + 1000, points[0].y);
-        ctx.lineTo(points[0].x, points[0].y);
-
-        for (let i = 1; i < points.length; i++) {
-          ctx.lineTo(points[i].x, points[i].y);
-        }
-
-        ctx.lineTo(points[0].x, points[0].y);
-        ctx.lineTo(-1000, points[0].y);
-        ctx.closePath();
-        ctx.clip();
+    function drawSimulatedGifts(points) {
+      let cavity;
+      if (state.clipGifts && points.length > 2 && simulatedGifts.length) {
+        cavity = new Path2D();
+        points.forEach(({ x, y }, index) => index ? cavity.lineTo(x, y) : cavity.moveTo(x, y));
+        cavity.closePath();
       }
-
-      for (let i = state.simulatedGifts.length - 1; i >= 0; i--) {
-        const g = state.simulatedGifts[i];
-        if (g.y < g.targetY) {
-          g.y += g.vy;
-          g.vy += 0.42;
-          g.x += g.vx;
-          if (g.y >= g.targetY) {
-            g.y = g.targetY;
-            if (g.bounced < 2) {
-              g.vy = -g.vy * 0.35;
-              g.bounced++;
-            } else {
-              g.vy = 0;
-              g.vx = 0;
-            }
-          }
-        }
-        ctx.font = `${g.size}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(g.emoji, g.x, g.y);
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const body of simulatedGifts) {
+        ctx.save();
+        if (cavity && body.position.y - body.circleRadius > points[0].y && isInsideCavity(body.position, points)) ctx.clip(cavity);
+        ctx.translate(body.position.x, body.position.y);
+        ctx.rotate(body.angle);
+        ctx.font = Math.round(body.circleRadius * 1.65) + 'px sans-serif';
+        ctx.fillText(body.glyph, 0, 0);
+        ctx.restore();
       }
       ctx.restore();
     }
 
     function clearSimulatedGifts() {
-      state.simulatedGifts = [];
+      Matter.World.remove(previewEngine.world, simulatedGifts);
+      simulatedGifts = [];
       redraw();
-      showToast('🧹', 'Đã dọn sạch các món quà thử nghiệm!');
     }
 
     // ==========================================
@@ -1575,24 +1466,13 @@
     function toggleStudioClipGifts(enabled) {
       state.clipGifts = enabled;
       redraw();
-      fetch('/api/jar/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clipGiftsToJar: enabled })
-      }).catch(() => {});
     }
 
     function toggleStudioGlassRealism(enabled) {
       state.glassRealism = enabled;
       redraw();
-      fetch('/api/jar/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ glassRealism: enabled })
-      }).catch(() => {});
     }
 
-    let studioHitboxDebounceTimer = null;
     function updateStudioHitboxSlider(field, val) {
       if (!state.hitbox) state.hitbox = {};
       state.hitbox[field] = val;
@@ -1606,21 +1486,11 @@
       else if (field === 'offsetX') document.getElementById('lblStudioHitboxOffsetX').textContent = `${val}px`;
       else if (field === 'offsetY') document.getElementById('lblStudioHitboxOffsetY').textContent = `${val}px`;
 
+      rebuildPreviewWalls();
       redraw();
-
-      clearTimeout(studioHitboxDebounceTimer);
-      studioHitboxDebounceTimer = setTimeout(async () => {
-        try {
-          await fetch('/api/jar/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hitbox: state.hitbox })
-          });
-        } catch (e) { console.warn('Lỗi lưu hitbox:', e); }
-      }, 120);
     }
 
-    async function setStudioHitboxShapePreset(shape) {
+    function setStudioHitboxShapePreset(shape) {
       if (!state.hitbox) state.hitbox = {};
       state.hitbox.shape = shape;
 
@@ -1650,21 +1520,22 @@
       state.hitbox.offsetY = 0;
 
       applyHitboxToStudioUI();
+      rebuildPreviewWalls();
       redraw();
-
-      try {
-        await fetch('/api/jar/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hitbox: state.hitbox })
-        });
-        showToast('🎯', `Đã áp dụng mẫu khung: ${shape === 'sphere' ? 'Bể Cầu Tròn' : (shape === 'bottle' ? 'Hũ Cổ Lọ' : 'Hũ Trụ')}`);
-      } catch (e) {}
     }
 
     function applyHitboxToStudioUI() {
-      const h = state.hitbox || {};
-      const shape = h.shape || 'sphere';
+      const shape = state.hitbox?.shape || (state.aspect === 'square' ? 'sphere' : 'cylinder');
+      const defaults = {
+        sphere: { radiusX: .315, radiusY: .24, centerY: .58 },
+        bottle: { radiusX: .28, radiusY: .26, centerY: .62 },
+        cylinder: { radiusX: .32, radiusY: .30, centerY: .56 }
+      };
+      const h = {
+        ...defaults[shape], mouthY: .12, offsetX: 0, offsetY: 0,
+        neckWidth: shape === 'bottle' ? .26 : .38, neckHeight: shape === 'bottle' ? .26 : .20,
+        ...state.hitbox
+      };
 
       ['sphere', 'bottle', 'cylinder'].forEach(s => {
         const btn = document.getElementById(`studioPreset${s.charAt(0).toUpperCase() + s.slice(1)}`);
@@ -1715,124 +1586,102 @@
     // ==========================================
     // QUẢN LÝ STICKER & TẢI ẢNH PNG
     // ==========================================
-    function filterStickers(cat) {
-      const container = document.getElementById('stickersContainer');
-      container.innerHTML = '';
-
-      document.querySelectorAll('.sticker-cat-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick').includes(cat));
-      });
-
-      const list = cat === 'all' ? STICKER_LIBRARY : STICKER_LIBRARY.filter(s => s.cat === cat);
-      list.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'sticker-item';
-        div.innerHTML = `
-          <img src="${item.src}">
-          <span>${item.name}</span>
-        `;
-        div.onclick = () => addStickerToCanvas(item.src, item.name);
-        container.appendChild(div);
-      });
-    }
-
-    function addStickerToCanvas(src, name = 'Sticker') {
+    async function addStickerToCanvas(src, name, existing = null) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const defaultW = Math.min(220, img.naturalWidth || 180);
-        const defaultH = ((img.naturalHeight || 180) / (img.naturalWidth || 180)) * defaultW;
+      img.src = src;
+      await img.decode();
 
+      if (existing) {
+        const index = state.stickers.indexOf(existing);
+        if (index < 0) throw new Error('Sticker này đã bị xóa khỏi mẫu.');
+        existing.src = src;
+        existing.img = img;
+        state.selectedStickerIdx = index;
+      } else {
+        const w = Math.min(220, img.naturalWidth);
         state.stickers.push({
-          id: `stk_${Date.now()}`,
+          id: 'stk_' + Date.now(),
           name,
           src,
           img,
           x: canvas.width / 2,
           y: canvas.height * 0.82,
-          w: defaultW,
-          h: defaultH,
+          w,
+          h: w * img.naturalHeight / img.naturalWidth,
           scale: 0.85,
           rotation: 0,
           opacity: 1.0,
           layer: 'front'
         });
-
         state.selectedStickerIdx = state.stickers.length - 1;
-        updateActiveStickersList();
-        updateSelectedStickerUI();
-        redraw();
-        showToast('✨', `Đã dán phụ kiện: ${name}`);
-      };
-      img.src = src;
+      }
+      updateActiveStickersList();
+      updateSelectedStickerUI();
+      redraw();
+    }
+
+    async function uploadStudioSticker(file) {
+      if (file.size > 25 * 1024 * 1024) throw new Error('Ảnh vượt quá giới hạn 25 MB.');
+      const form = new FormData();
+      form.set('decor', file);
+      form.set('apply', 'false');
+      const response = await fetch('/api/jar/upload-decor', { method: 'POST', body: form });
+      if (!(response.headers.get('content-type') || '').includes('application/json')) {
+        throw new Error('Máy chủ chưa lưu được sticker.');
+      }
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.fileUrl) throw new Error(data.error || 'Tải sticker thất bại.');
+      return data.fileUrl;
     }
 
     async function handleCustomStickerUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      showToast('⏳', `Đang tải sticker "${file.name}"...`);
-
-      const formData = new FormData();
-      formData.append('decor', file);
-
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file) return;
       try {
-        const res = await fetch('/api/jar/upload-decor', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success && data.fileUrl) {
-          addStickerToCanvas(data.fileUrl, file.name.replace(/\.[^/.]+$/, ''));
-          showToast('✨', `Đã tải lên và dán sticker: ${file.name}`);
-        } else {
-          const reader = new FileReader();
-          reader.onload = (e) => addStickerToCanvas(e.target.result, file.name);
-          reader.readAsDataURL(file);
-        }
-      } catch (err) {
-        const reader = new FileReader();
-        reader.onload = (e) => addStickerToCanvas(e.target.result, file.name);
-        reader.readAsDataURL(file);
+        const src = await uploadStudioSticker(file);
+        await addStickerToCanvas(src, file.name.replace(/\.[^./]+$/, ''));
+        showToast('', 'Đã dán sticker vào mẫu đang chỉnh.');
+      } catch (error) {
+        showToast('', error instanceof DOMException ? 'Không đọc được ảnh sticker.' : error.message);
       }
-    }
-
-    function handleCustomJarUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        loadJarImage(e.target.result);
-        showToast('🖼️', `Đã nạp mẫu bình hũ mới: ${file.name}`);
-      };
-      reader.readAsDataURL(file);
     }
 
     function updateActiveStickersList() {
       const container = document.getElementById('activeStickersList');
-      container.innerHTML = '';
-      document.getElementById('activeStickersCount').textContent = `${state.stickers.length} sticker`;
+      container.replaceChildren();
+      document.getElementById('activeStickersCount').textContent = `(${state.stickers.length})`;
+      document.getElementById('clearStudioStickersButton').disabled =
+        !state.stickers.length && !state.legacyDecor.decorImage && !state.legacyDecor.decorText;
 
-      state.stickers.forEach((s, idx) => {
-        const card = document.createElement('div');
-        card.className = `active-sticker-card ${idx === state.selectedStickerIdx ? 'selected' : ''}`;
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${s.src}" style="width: 28px; height: 28px; object-fit: contain;">
-              <span style="font-size: 0.76rem; font-weight: 700; color: #fff;">${s.name}</span>
-            </div>
-            <span style="font-size: 0.68rem; color: ${s.layer === 'front' ? '#38bdf8' : '#fbbf24'};">
-              ${s.layer === 'front' ? 'Mặt Ngoài' : 'Trong Kính'}
-            </span>
-          </div>
-        `;
+      if (!state.stickers.length) {
+        const empty = document.createElement('p');
+        empty.className = 'studio-empty';
+        empty.textContent = 'Chưa có sticker trên mẫu đang chỉnh.';
+        container.append(empty);
+      }
+      state.stickers.forEach((sticker, idx) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'active-sticker-card';
+        card.classList.toggle('selected', idx === state.selectedStickerIdx);
+        card.setAttribute('aria-pressed', idx === state.selectedStickerIdx);
+        const img = document.createElement('img');
+        img.src = sticker.src;
+        img.alt = '';
+        const name = document.createElement('strong');
+        name.textContent = sticker.name;
+        const layer = document.createElement('small');
+        layer.textContent = sticker.layer === 'front' ? 'Mặt trước' : 'Dưới kính';
+        card.append(img, name, layer);
         card.onclick = () => {
           state.selectedStickerIdx = idx;
           updateActiveStickersList();
           updateSelectedStickerUI();
           redraw();
         };
-        container.appendChild(card);
+        container.append(card);
       });
     }
 
@@ -1922,7 +1771,9 @@
       };
     }
 
-    canvas.addEventListener('mousedown', (evt) => {
+    canvas.addEventListener('pointerdown', (evt) => {
+      if (evt.button !== 0) return;
+      canvas.setPointerCapture(evt.pointerId);
       const { x, y } = getCanvasCoords(evt);
       for (let i = state.stickers.length - 1; i >= 0; i--) {
         const s = state.stickers[i];
@@ -1945,7 +1796,7 @@
       redraw();
     });
 
-    window.addEventListener('mousemove', (evt) => {
+    window.addEventListener('pointermove', (evt) => {
       if (!state.isDraggingSticker || state.selectedStickerIdx < 0) return;
       const { x, y } = getCanvasCoords(evt);
       const s = state.stickers[state.selectedStickerIdx];
@@ -1954,74 +1805,91 @@
       redraw();
     });
 
-    window.addEventListener('mouseup', () => {
-      state.isDraggingSticker = false;
-    });
+    for (const eventName of ['pointerup', 'pointercancel']) {
+      canvas.addEventListener(eventName, () => { state.isDraggingSticker = false; });
+    }
 
     // ==========================================
     // ĐỒNG BỘ LÊN OBS STUDIO NGAY LẬP TỨC
     // ==========================================
-    async function quickApplyToObs() {
-      showToast('⏳', 'Đang đồng bộ hũ và sticker lên OBS Studio...');
-      const totalW = canvas.width;
-      const totalH = canvas.height;
-
-      const normalizedStickers = state.stickers.map(s => ({
-        id: s.id,
-        name: s.name,
-        url: s.src,
-        x: Math.round((s.x / totalW) * 100),
-        y: Math.round((s.y / totalH) * 100),
-        scale: Number(s.scale || 1.0),
-        rotation: Math.round(((s.rotation || 0) * 180) / Math.PI),
-        opacity: s.opacity !== undefined ? Number(s.opacity) : 1.0,
-        layer: s.layer || 'front'
-      }));
-
-      const payload = {
-        style: 'fishbowl',
+    function getStudioJarConfig() {
+      const geom = getStudioJarGeometry();
+      return {
+        style: state.baseImgUrl.includes('iridescent_fishbowl') ? 'fishbowl' : (state.baseImgUrl ? 'custom_image' : 'mason'),
         customJarImage: state.baseImgUrl,
-        frontOverlayImage: state.showFrontOverlay ? state.frontOverlayUrl : '',
+        frontOverlayImage: state.frontOverlayUrl,
         hideDefaultJarOnCustom: state.hideDefaultJar,
         jarAspect: state.aspect,
-        jarPadding: {
-          top: state.padTop,
-          bottom: state.padBottom,
-          left: state.padLeft,
-          right: state.padRight
-        },
-        stickers: normalizedStickers,
-        decorImage: normalizedStickers.length > 0 ? normalizedStickers[0].url : '',
+        jarPadding: { top: state.padTop, bottom: state.padBottom, left: state.padLeft, right: state.padRight },
+        stickers: state.stickers.map(sticker => ({
+          id: sticker.id,
+          name: sticker.name,
+          url: sticker.src,
+          x: Number(((sticker.x - geom.imgX) / geom.w * 100).toFixed(2)),
+          y: Number(((sticker.y - geom.imgY) / geom.h * 100).toFixed(2)),
+          scale: sticker.scale,
+          rotation: Math.round(sticker.rotation * 180 / Math.PI),
+          opacity: sticker.opacity,
+          layer: sticker.layer
+        })),
+        ...state.legacyDecor,
         shimmerRimEffect: state.showShimmer,
         shimmerRimSpeed: state.shimmerSpeed,
         shimmerSparkles: state.showSparkles,
-        jarPosX: typeof state.jarPosX === 'number' ? state.jarPosX : 50,
-        jarPosY: typeof state.jarPosY === 'number' ? state.jarPosY : 78,
-        jarScale: typeof state.jarScale === 'number' ? state.jarScale : 1.0,
-        hitbox: state.hitbox,
+        jarPosX: state.jarPosX ?? 50,
+        jarPosY: state.jarPosY ?? 78,
+        jarScale: state.jarScale ?? 1,
+        hitbox: { ...state.hitbox },
         clipGiftsToJar: state.clipGifts,
         glassRealism: state.glassRealism,
-        debugHitbox: state.showHitbox
+        debugHitbox: state.debugHitbox
       };
+    }
 
+    async function quickApplyToObs() {
+      if (studioJarImporting) {
+        showToast('', 'Ảnh hũ đang được đọc. Hãy thử lại sau khi ảnh hiện trong bản xem trước.');
+        return;
+      }
+      const buttons = document.querySelectorAll('[onclick="quickApplyToObs()"]');
+      buttons.forEach(button => { button.disabled = true; });
+      showToast('', 'Đang áp dụng mẫu hũ…');
+      const payload = getStudioJarConfig();
+      const rear = state.pendingImage;
+      const front = state.pendingFrontImage;
       try {
-        const res = await fetch('/api/jar/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('⚡', 'ĐÃ KÍCH HOẠT LÊN OBS! Hũ quà, Khung Hitbox và Sticker đã hiển thị ngay lập tức!');
+        let options;
+        if ((rear || front) && await supportsJarLayerUploads()) {
+          const form = new FormData();
+          if (rear) form.set('jarRear', rear);
+          if (front) form.set('jarFront', front);
+          form.set('config', JSON.stringify(payload));
+          options = { method: 'POST', body: form };
         } else {
-          alert('Lỗi lưu: ' + (data.error || 'Thao tác thất bại'));
+          // Older servers accept one image per upload and publish both URLs together as JSON.
+          if (rear) payload.customJarImage = await uploadStudioJarLayer('rear', rear);
+          if (front) payload.frontOverlayImage = await uploadStudioJarLayer('front', front);
+          options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          };
         }
+        const { config } = await requestStudioTemplate('/api/jar/config', options);
+        adoptStudioJarLayer('rear', rear, config.customJarImage);
+        adoptStudioJarLayer('front', front, config.frontOverlayImage);
+        updateJarSample();
+        showToast('', 'Đã áp dụng mẫu hũ lên OBS');
+        await refreshStudioJarTemplates();
       } catch (err) {
-        alert('Lỗi kết nối: ' + err.message);
+        showToast('', err.message);
+      } finally {
+        buttons.forEach(button => { button.disabled = false; });
       }
     }
 
     function switchSidebarTab(tab) {
+      if (tab === 'hitbox' && !state.showHitbox) toggleHitboxWireframe();
       ['jar', 'hitbox', 'stickers', 'shimmer', 'padding'].forEach(t => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const pane = document.getElementById(`pane${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -2035,12 +1903,45 @@
       }
     }
 
+    function updateJarSample() {
+      const thumbnail = document.getElementById('studioSampleImage');
+      thumbnail.hidden = !state.baseImgUrl;
+      if (state.baseImgUrl) thumbnail.src = state.baseImgUrl;
+      const builtIn = state.baseImgUrl.includes('iridescent_fishbowl');
+      document.getElementById('studioSampleName').textContent = state.sampleName ||
+        (builtIn ? 'Bể pha lê cầu vồng' : state.baseImgUrl ? 'Mẫu ảnh riêng' : 'Hũ nét vẽ');
+      const dimensions = image => image ? image.naturalWidth + ' × ' + image.naturalHeight : '';
+      document.getElementById('studioRearLayerStatus').textContent = dimensions(state.baseImg) || 'Chưa có ảnh mặt sau';
+      document.getElementById('studioFrontLayerStatus').textContent = dimensions(state.frontOverlayImg) || 'Chưa có ảnh phủ quà';
+      const checkbox = document.getElementById('chkFrontOverlay');
+      checkbox.checked = state.showFrontOverlay;
+      checkbox.disabled = !state.frontOverlayUrl;
+      document.getElementById('studioImportFront').disabled = !state.baseImg;
+      document.getElementById('studioRemoveFront').disabled = !state.frontOverlayUrl;
+    }
+
+    function useStudioFishbowl() {
+      ++studioJarImageRequest;
+      discardPendingJarArtwork();
+      state.sampleName = '';
+      state.showFrontOverlay = true;
+      loadJarImage('/builtin/jar/iridescent_fishbowl_transparent.png');
+      loadFrontOverlay('/builtin/jar/iridescent_fishbowl_front_overlay.png');
+      setStudioAspect('square');
+      setStudioHitboxShapePreset('sphere');
+    }
+
     function loadJarImage(url) {
       state.baseImgUrl = url;
+      state.baseImg = null;
+      updateJarSample();
+      if (!url) { redraw(); return; }
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
+        if (state.baseImgUrl !== url) return;
         state.baseImg = img;
+        updateJarSample();
         redraw();
       };
       img.src = url;
@@ -2048,10 +1949,15 @@
 
     function loadFrontOverlay(url) {
       state.frontOverlayUrl = url;
+      state.frontOverlayImg = null;
+      updateJarSample();
+      if (!url) { redraw(); return; }
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
+        if (state.frontOverlayUrl !== url) return;
         state.frontOverlayImg = img;
+        updateJarSample();
         redraw();
       };
       img.src = url;
@@ -2070,9 +1976,21 @@
     // ANIMATION LOOP 60FPS TRONG STUDIO
     function studioLoop(time) {
       studioAnimTime = time;
-      if (state.showShimmer || state.simulatedGifts.length > 0) {
-        redraw();
+      if (simulatedGifts.length) {
+        studioPhysicsTime += Math.max(0, Math.min(50, time - lastStudioFrame));
+        const step = 1000 / 120;
+        while (studioPhysicsTime >= step) {
+          Matter.Engine.update(previewEngine, step);
+          studioPhysicsTime -= step;
+        }
+        simulatedGifts = simulatedGifts.filter(body => {
+          if (body.position.y <= canvas.height + 40) return true;
+          Matter.World.remove(previewEngine.world, body);
+          return false;
+        });
       }
+      lastStudioFrame = time;
+      if (state.showShimmer || simulatedGifts.length) redraw();
       requestAnimationFrame(studioLoop);
     }
 
@@ -2082,88 +2000,28 @@
         const res = await fetch('/api/jar/config');
         const data = await res.json();
         const cfg = data.config || {};
-        if (cfg.customJarImage) state.baseImgUrl = cfg.customJarImage;
-        if (cfg.frontOverlayImage) state.frontOverlayUrl = cfg.frontOverlayImage;
-        if (cfg.jarAspect) state.aspect = cfg.jarAspect;
-        if (cfg.jarPadding) {
-          state.padTop = Number(cfg.jarPadding.top) || 20;
-          state.padBottom = Number(cfg.jarPadding.bottom) || 20;
-          state.padLeft = Number(cfg.jarPadding.left) || 20;
-          state.padRight = Number(cfg.jarPadding.right) || 20;
+        if (!res.ok || !data.success) throw new Error(data.error || 'Không đọc được cấu hình hũ');
+        state.bounciness = Number(cfg.bounciness ?? 0.2);
+        for (const [field, slider] of [['jarPosX', 'studioObsPosXSlider'], ['jarPosY', 'studioObsPosYSlider'], ['jarScale', 'studioObsScaleSlider']]) {
+          if (cfg[field] === undefined) continue;
+          document.getElementById(slider).value = cfg[field];
+          updateStudioObsPos(field, cfg[field]);
         }
-        if (cfg.shimmerRimEffect !== undefined) state.showShimmer = cfg.shimmerRimEffect;
-        if (cfg.shimmerRimSpeed !== undefined) state.shimmerSpeed = Number(cfg.shimmerRimSpeed);
-
-        if (cfg.jarPosX !== undefined) {
-          state.jarPosX = Number(cfg.jarPosX);
-          const el = document.getElementById('studioObsPosXSlider');
-          if (el) el.value = state.jarPosX;
-          const lbl = document.getElementById('lblStudioObsPosX');
-          if (lbl) lbl.textContent = `${state.jarPosX}%`;
-        }
-        if (cfg.jarPosY !== undefined) {
-          state.jarPosY = Number(cfg.jarPosY);
-          const el = document.getElementById('studioObsPosYSlider');
-          if (el) el.value = state.jarPosY;
-          const lbl = document.getElementById('lblStudioObsPosY');
-          if (lbl) lbl.textContent = `${state.jarPosY}%`;
-        }
-        if (cfg.jarScale !== undefined) {
-          state.jarScale = Number(cfg.jarScale);
-          const el = document.getElementById('studioObsScaleSlider');
-          if (el) el.value = state.jarScale;
-          const lbl = document.getElementById('lblStudioObsScale');
-          if (lbl) lbl.textContent = `${Math.round(state.jarScale * 100)}%`;
-        }
-
-        if (cfg.hitbox) {
-          state.hitbox = { ...state.hitbox, ...cfg.hitbox };
-        }
-        if (cfg.clipGiftsToJar !== undefined) state.clipGifts = cfg.clipGiftsToJar;
-        if (cfg.glassRealism !== undefined) state.glassRealism = cfg.glassRealism;
-        if (cfg.debugHitbox !== undefined) state.showHitbox = cfg.debugHitbox;
-        applyHitboxToStudioUI();
-
-        calculateCanvasDimensions();
-        loadJarImage(state.baseImgUrl);
-        loadFrontOverlay(state.frontOverlayUrl);
-
-        // Nạp mảng stickers
-        if (Array.isArray(cfg.stickers) && cfg.stickers.length > 0) {
-          state.stickers = [];
-          cfg.stickers.forEach(s => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => redraw();
-            img.src = s.url;
-            state.stickers.push({
-              id: s.id || `stk_${Date.now()}`,
-              name: s.name || 'Sticker',
-              src: s.url,
-              img,
-              x: (s.x / 100) * canvas.width,
-              y: (s.y / 100) * canvas.height,
-              w: 220,
-              h: 100,
-              scale: s.scale || 0.85,
-              rotation: ((s.rotation || 0) * Math.PI) / 180,
-              opacity: s.opacity !== undefined ? s.opacity : 1.0,
-              layer: s.layer || 'front'
-            });
-          });
-        }
+        state.debugHitbox = !!cfg.debugHitbox;
+        loadStudioJarDesign(cfg);
       } catch (err) {
         console.warn('Fallback default:', err);
-        calculateCanvasDimensions();
+        setStudioAspect(state.aspect);
         loadJarImage(state.baseImgUrl);
         loadFrontOverlay(state.frontOverlayUrl);
       }
 
-      filterStickers('all');
       updateActiveStickersList();
+      refreshStudioJarTemplates();
       requestAnimationFrame(studioLoop);
     }
 
+    new ResizeObserver(applyZoom).observe(document.getElementById("stageArea"));
     initStudio();
   </script>
 </body>

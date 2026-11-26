@@ -3,121 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LiveEffect Studio · TikTok Live & OBS Control Center</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #060911;
-      color: #f1f5f9;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      min-height: 100vh;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .hero {
-      width: 100%;
-      max-width: 960px;
-      text-align: center;
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 36px 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    }
-    h1 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p {
-      color: #94a3b8;
-      font-size: 1.05rem;
-      margin-bottom: 28px;
-      line-height: 1.6;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    @media (max-width: 860px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-    .card-btn {
-      background: #141e33;
-      border: 1px solid #233149;
-      border-radius: 12px;
-      padding: 22px 18px;
-      text-decoration: none;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: all 0.2s;
-    }
-    .card-btn:hover {
-      border-color: #38bdf8;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25);
-    }
-    .card-btn .icon { font-size: 2.4rem; margin-bottom: 10px; }
-    .card-btn .title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
-    .card-btn .desc { font-size: 0.85rem; color: #94a3b8; line-height: 1.4; }
-    .features {
-      text-align: left;
-      background: #090e1c;
-      border-radius: 10px;
-      border: 1px solid #1a253a;
-      padding: 18px 22px;
-      font-size: 0.88rem;
-      color: #cbd5e1;
-      line-height: 1.8;
-    }
-  </style>
+  <title>Elden Media Studio</title>
+  <link rel="icon" href="/brand/elden-media.png" type="image/png">
+  <link rel="stylesheet" href="/studio-ui.css">
 </head>
-<body>
-  <div class="hero">
-    <h1>🎬 LiveEffect Studio</h1>
-    <p>Hệ thống tự động hóa hiệu ứng quà tặng, ngắt nhạc nền, tỉ lệ trúng/xịt (Gacha), và dựng video đa layer 60 FPS cho TikTok Live & OBS Studio.</p>
-
-    <div class="grid">
-      <!-- 1. Quản trị -->
-      <a href="/admin.html" class="card-btn">
-        <div class="icon">⚙️</div>
-        <div class="title">Trang Quản Trị</div>
-        <div class="desc">Cấu hình quà tặng bảng GGTT, gán pool video ngẫu nhiên, chỉnh tỉ lệ trúng/xịt (gacha) và test giả lập.</div>
-      </a>
-
-      <!-- 2. Trình dựng Video CapCut Style -->
-      <a href="/editor.html" class="card-btn" style="border-color: #0284c7; background: #0f2444;">
-        <div class="icon">✂️</div>
-        <div class="title" style="color: #38bdf8;">Dựng Video 60 FPS</div>
-        <div class="desc">Tách nhạc, double intro beat, chèn khoảng trống trong suốt để lộ camera idol, cắt ghép đa layer mượt mà.</div>
-      </a>
-
-      <!-- 3. OBS Browser Source -->
-      <a href="/overlay.html" target="_blank" class="card-btn">
-        <div class="icon">📺</div>
-        <div class="title">Link Nhúng OBS</div>
-        <div class="desc">Dán link này vào Browser Source của OBS Studio để chạy hiệu ứng video và banner lên buổi phát sóng trực tiếp.</div>
-      </a>
+<body data-studio-page="home">
+  <header class="studio-header">
+    <a class="studio-brand" href="/" aria-label="Elden Media Studio"><img src="/brand/elden-media.png" alt=""><span><strong>Elden Media</strong><small>Live Studio</small></span></a>
+    <nav class="studio-nav" aria-label="Không gian làm việc">
+      <a href="/admin.html?view=rules">Điều khiển</a><a href="/editor.html">Dựng video</a><a href="/jar-studio.html">Thiết kế hũ</a>
+    </nav>
+  </header>
+  <main class="studio-home">
+    <section class="studio-home-hero" aria-labelledby="homeHeading">
+      <div class="studio-home-copy">
+        <h1 id="homeHeading">Phòng điều khiển LIVE</h1>
+        <p>Tạo video hiệu ứng, gán quà TikTok và thiết kế hũ quà dùng trong OBS.</p>
+        <a class="btn studio-primary" href="/admin.html?view=rules">Mở bảng điều khiển</a>
+      </div>
+      <img src="/brand/elden-media.png" alt="Logo Elden Media">
+    </section>
+    <div class="studio-home-tools">
+      <section>
+        <h2>Công cụ chuẩn bị</h2>
+        <a href="/editor.html"><strong>Dựng video</strong><small>Timeline và xuất WebM</small></a>
+        <a href="/jar-studio.html"><strong>Thiết kế hũ</strong><small>Mẫu hũ và khung va chạm</small></a>
+      </section>
+      <section>
+        <h2>Nguồn OBS</h2>
+        <a href="/overlay.html"><strong>Video hiệu ứng</strong><small>Browser Source</small></a>
+        <a href="/jar.html"><strong>Hũ quà</strong><small>Browser Source</small></a>
+      </section>
     </div>
-
-    <div class="features">
-      <b>✨ Các tính năng nổi bật:</b><br>
-      • <b>Giao diện Bảng Chuẩn GGTT:</b> Quản lý gọn gàng hàng chục hiệu ứng cùng lúc, có xem trước video.<br>
-      • <b>Xuất Video 60 FPS & Nhập Tên:</b> Tự động nhận diện FPS gốc hoặc nâng lên 60 FPS mượt mà qua GPU + FFmpeg 6.1.<br>
-      • <b>Chế độ Idol Pose & Cam Break:</b> Lùi video để phát nhạc trước (trong suốt hoàn toàn), tắt hình giữa bài lộ camera idol nhảy theo.<br>
-      • <b>Tỉ lệ Trúng / Xịt (Gacha):</b> Chọn xác suất nổ video (vd 90% nổ, 10% xịt thông báo hài hước).<br>
-      • <b>Tự động hạ nhạc nền (Audio Ducking):</b> OBS tự tắt nhạc nền khi có video nhảy và hồi lại nhạc khi video kết thúc.
-    </div>
-  </div>
+  </main>
 </body>
 </html>

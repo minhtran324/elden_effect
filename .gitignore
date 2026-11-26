@@ -24,6 +24,7 @@ elden-live-effect-studio/public/uploads/audio/*
 # Temporary update folders
 **/temp_update/
 temp_update/
+elden-live-effect-studio/studio-release.json
 
 # Scratch & Reverse Engineering dump directories
 cuoi-lien-tay/

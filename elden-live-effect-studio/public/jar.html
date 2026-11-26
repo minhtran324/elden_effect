@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>🏺 Hũ Quà Rơi Vật Lý TikTok - LiveEffect Studio</title>
+  <title>Nguồn OBS hũ quà · Elden Media Studio</title>
+  <link rel="icon" href="/brand/elden-media.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -102,78 +103,6 @@
       transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    /* TOAST THÔNG BÁO QUÀ RƠI */
-    #toast-container {
-      position: absolute;
-      top: 85px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      z-index: 101;
-      pointer-events: none;
-    }
-    .gift-toast {
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 999px;
-      padding: 6px 16px 6px 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #fff;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      animation: toastIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(-15px) scale(0.85); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .toast-out {
-      animation: toastOut 0.35s ease forwards !important;
-    }
-    @keyframes toastOut {
-      to { opacity: 0; transform: translateY(-10px) scale(0.9); }
-    }
-    .toast-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 2px solid #fbbf24;
-      object-fit: cover;
-      background: #1e293b;
-    }
-    .toast-text {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    .toast-name {
-      color: #38bdf8;
-      font-weight: 700;
-    }
-    .toast-gift {
-      color: #fbbf24;
-      font-weight: 800;
-    }
-
-    /* FLASH TRẮNG KHI VỠ HŨ */
-    #screen-flash {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 999;
-      transition: opacity 0.1s ease;
-    }
-
-    /* BANNER CHÚC MỪNG HOÀN THÀNH MỤC TIÊU */
     #celebration-banner {
       position: absolute;
       top: 40%;
@@ -205,24 +134,22 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.4);
       border: 3px solid #fff;
     }
-    .banner-sub {
-      color: #fff;
-      font-size: 1.1rem;
-      font-weight: 800;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-      background: rgba(15, 23, 42, 0.85);
-      padding: 6px 20px;
-      border-radius: 999px;
+    #stage-container[hidden] { display: none; }
+    #goal-hud { top: clamp(16px, 4vh, 48px); max-width: calc(100% - 24px); }
+    @media (prefers-reduced-motion: reduce) {
+      #celebration-banner { animation: none; transition: none; }
     }
   </style>
 
   <!-- Nạp thư viện Matter.js chuẩn offline & Socket.io -->
   <script src="/vendor/matter.min.js"></script>
+  <script src="/jar-geometry.js"></script>
+  <script src="/jar-glass-effects.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
-  <div id="stage-container">
+  <div id="stage-container" hidden>
     <canvas id="physics-canvas"></canvas>
 
     <!-- MỤC TIÊU TIẾN TRÌNH HŨ -->
@@ -240,16 +167,9 @@
       </div>
     </div>
 
-    <!-- TOAST QUÀ VỪA RƠI -->
-    <div id="toast-container"></div>
-
-    <!-- FLASH TRẮNG KHI VỠ -->
-    <div id="screen-flash"></div>
-
     <!-- BANNER NỔ HŨ HOÀN THÀNH MỤC TIÊU -->
     <div id="celebration-banner">
-      <div class="banner-badge">💥 HŨ ĐÃ ĐẦY & NỔ TUNG! 💥</div>
-      <div class="banner-sub">Cảm ơn tất cả các Idol & Đại Gia đã ủng hộ! 💖</div>
+      <div class="banner-badge">Đã đạt mục tiêu!</div>
     </div>
   </div>
 
@@ -339,107 +259,33 @@
         } catch (_) {}
       },
 
-      // Tiếng rung lắc hũ trầm ồn
-      playShake() {
-        if (!this.enabled) return;
-        this.ensureCtx();
-        if (!this.ctx) return;
-
-        try {
-          const now = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(140, now);
-          osc.frequency.linearRampToValueAtTime(70, now + 0.35);
-
-          gain.gain.setValueAtTime(0.5 * this.volume, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(now);
-          osc.stop(now + 0.36);
-        } catch (_) {}
-      },
-
-      // Tiếng vỡ kính nổ tung hoành tráng
       playShatter() {
-        if (!this.enabled) return;
+        if (!this.enabled || this.volume <= 0) return;
         this.ensureCtx();
         if (!this.ctx) return;
 
+        const { ctx } = this;
         try {
-          const now = this.ctx.currentTime;
-          // 1. Noise blast
-          const bufferSize = this.ctx.sampleRate * 0.8;
-          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-          const data = buffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+          const duration = 0.34;
+          const buffer = ctx.createBuffer(1, Math.round(ctx.sampleRate * duration), ctx.sampleRate);
+          const samples = buffer.getChannelData(0);
+          for (let i = 0; i < samples.length; i++) {
+            const time = i / ctx.sampleRate;
+            const firstSnap = Math.exp(-time / 0.024);
+            const fallingGlass = time > 0.045 ? Math.exp(-(time - 0.045) / 0.074) * 0.38 : 0;
+            samples[i] = (Math.random() * 2 - 1) * (firstSnap + fallingGlass);
           }
-
-          const noise = this.ctx.createBufferSource();
+          const noise = ctx.createBufferSource();
           noise.buffer = buffer;
-
-          const filter = this.ctx.createBiquadFilter();
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(1800, now);
-          filter.Q.setValueAtTime(1.2, now);
-
-          const gain = this.ctx.createGain();
-          gain.gain.setValueAtTime(0.85 * this.volume, now);
-          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.8);
-
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'highpass';
+          filter.frequency.value = 1900;
+          const gain = ctx.createGain();
+          gain.gain.value = 0.63 * this.volume;
           noise.connect(filter);
           filter.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          noise.start(now);
-
-          // 2. Sub bass boom
-          const boom = this.ctx.createOscillator();
-          const boomGain = this.ctx.createGain();
-          boom.type = 'sine';
-          boom.frequency.setValueAtTime(110, now);
-          boom.frequency.exponentialRampToValueAtTime(30, now + 0.6);
-
-          boomGain.gain.setValueAtTime(0.8 * this.volume, now);
-          boomGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-
-          boom.connect(boomGain);
-          boomGain.connect(this.ctx.destination);
-
-          boom.start(now);
-          boom.stop(now + 0.65);
-        } catch (_) {}
-      },
-
-      // Tiếng xả hũ / dốc ngược (Whoosh)
-      playWhoosh() {
-        if (!this.enabled) return;
-        this.ensureCtx();
-        if (!this.ctx) return;
-
-        try {
-          const now = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(110, now + 0.5);
-
-          gain.gain.setValueAtTime(0.4 * this.volume, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(now);
-          osc.stop(now + 0.51);
+          gain.connect(ctx.destination);
+          noise.start();
         } catch (_) {}
       },
 
@@ -497,7 +343,7 @@
     });
 
     const engine = Engine.create({
-      enableSleeping: false
+      enableSleeping: true, positionIterations: 8
     });
     engine.world.gravity.y = 1.0;
 
@@ -505,8 +351,8 @@
     let jarConfig = {
       enabled: true,
       style: 'fishbowl',
-      customJarImage: '/uploads/decor/iridescent_fishbowl_transparent.png',
-      frontOverlayImage: '/uploads/decor/iridescent_fishbowl_front_overlay.png',
+      customJarImage: '/builtin/jar/iridescent_fishbowl_transparent.png',
+      frontOverlayImage: '/builtin/jar/iridescent_fishbowl_front_overlay.png',
       hideDefaultJarOnCustom: true,
       decorImage: '',
       decorText: '',
@@ -522,8 +368,10 @@
       fallSpeed: 0.65,
       gravity: 1.05,
       shakeThreshold: 1000,
+      flipSpeed: 1,
       enableFloorAccumulation: true,
       giftCapacity: 400,
+      giftCapacityUnlimited: false,
       giftScaleGlobal: 0.85,
       giftSizeSmall: 16,
       giftSizeMedium: 26,
@@ -541,7 +389,6 @@
       soundEnabled: true,
       soundVolume: 0.3,
       autoBurstOnGoal: false,
-      autoResetSeconds: 5,
       jarAspect: 'square',
       debugHitbox: false,
       clipGiftsToJar: true,
@@ -571,12 +418,11 @@
     // Trạng thái tương tác
     let jarState = {
       currentCoins: 0,
-      crackLevel: 0, // 0: lành lặn, 1: nứt nhẹ, 2: nứt mạng nhện, 3: nứt nghiêm trọng
+      crackLevel: 0,
+      goalCrackLevel: 0,
+      goalBurstUsed: false,
       isBurst: false,
-      isFlipped: false,
-      flipAngle: 0, // góc xoay radian của hũ
-      shakeTrauma: 0, // độ rung lắc hiện tại (0 -> 1)
-      shakeTime: 0
+      isFlipped: false
     };
 
     // Bộ nhớ cache ảnh để vẽ sprite mượt mà 60fps
@@ -591,9 +437,12 @@
       return img;
     }
 
-    // Danh sách các hạt mảnh kính, pháo hoa & bụi sáng
+    const restPose = { x: 0, y: 0, angle: 0 };
+    let jarPose = restPose;
+    let wallRest = [];
+    const crackStarts = [];
+    let jarArtwork;
     let glassShards = [];
-    let confettiParticles = [];
     let sparkleParticles = [];
 
     function spawnSparkleDust(x, y, coins) {
@@ -632,7 +481,7 @@
       const posX = typeof jarConfig.jarPosX === 'number' ? jarConfig.jarPosX : 50;
       const posY = typeof jarConfig.jarPosY === 'number' ? jarConfig.jarPosY : 78;
       const aspect = jarConfig.jarAspect || 'square';
-      const isFishbowl = aspect === 'square' || jarConfig.style === 'fishbowl' || (jarConfig.customJarImage && jarConfig.customJarImage.includes('fishbowl'));
+      const isFishbowl = aspect === 'square';
 
       let baseW, baseH, neckW, neckH;
       if (isFishbowl) {
@@ -643,24 +492,26 @@
         neckW = baseW * 0.44 * scale;
         neckH = baseH * 0.18 * scale;
       } else if (aspect === 'horizontal') {
-        baseW = Math.min(560, width * 0.85);
-        baseH = Math.min(380, height * 0.45);
+        baseW = Math.min(560, width * 0.85, height * 0.6);
+        baseH = baseW * 0.75;
         neckW = baseW * 0.78 * scale;
         neckH = 42 * scale;
       } else {
-        baseW = Math.min(380, width * 0.75);
-        baseH = Math.min(500, height * 0.55);
+        baseW = Math.min(380, width * 0.75, height * 0.42);
+        baseH = baseW * 4 / 3;
         neckW = baseW * 0.68 * scale;
         neckH = 55 * scale;
       }
 
       const w = baseW * scale;
       const h = baseH * scale;
-      const wallThickness = 28 * scale;
+      const wallThickness = Math.max(4, w * 0.044);
 
       // Tâm (cx, cy) chuẩn xác theo % vị trí
-      const cx = (width * posX) / 100;
-      const cy = (height * posY) / 100;
+      const fitX = Math.min(width / 2, w / 2 + 8);
+      const fitY = Math.min(height / 2, h / 2 + 8);
+      const cx = Math.max(fitX, Math.min(width - fitX, width * posX / 100));
+      const cy = Math.max(fitY, Math.min(height - fitY, height * posY / 100));
 
       const imgW = w;
       const imgH = h;
@@ -668,8 +519,8 @@
       const imgY = cy - h / 2;
 
       const hitboxCfg = jarConfig.hitbox || {};
-      const rx = w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : 0.315);
-      const ry = h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : 0.24);
+      const rx = w * (hitboxCfg.radiusX ?? 0.315) * (hitboxCfg.scaleX ?? 1);
+      const ry = h * (hitboxCfg.radiusY ?? 0.24) * (hitboxCfg.scaleY ?? 1);
       const cavityCy = imgY + h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : 0.58) + (hitboxCfg.offsetY || 0);
       const cavityCx = cx + (hitboxCfg.offsetX || 0);
       const mouthY = imgY + h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : 0.12);
@@ -699,237 +550,67 @@
       };
     }
 
-    // Tường bao đáy màn hình & 2 biên trái phải để quà tràn hũ rơi xuống đất chồng chất
+    const giftCategory = 0x0001;
+    const screenBoundaryCategory = 0x0002;
+    const jarWallCategory = 0x0004;
     let screenBoundaries = [];
+
+    function giftCollisionMask(retainedAfterBreak) {
+      return jarConfig.enableFloorAccumulation !== false || retainedAfterBreak ? 0xffffffff : 0xffffffff ^ screenBoundaryCategory;
+    }
+
+    function updateGiftCollisionMask(body) {
+      let mask = giftCollisionMask(body.giftData.retainedAfterBreak);
+      if (flipAnimation?.spilled.has(body)) mask &= ~(jarWallCategory | giftCategory);
+      body.collisionFilter.mask = mask;
+    }
+
     function rebuildScreenBoundaries() {
-      if (screenBoundaries.length > 0) {
-        World.remove(engine.world, screenBoundaries);
-        screenBoundaries = [];
-      }
-      if (jarConfig.enableFloorAccumulation !== false) {
-        // Đáy sàn màn hình dày 300px chống xuyên thủng (tunneling) tuyệt đối khi rơi với tốc độ cao
-        const floor = Bodies.rectangle(width / 2, height + 150, width * 4, 300, {
-          isStatic: true,
-          friction: 0.85,
-          restitution: 0.15,
-          label: 'screen_floor'
-        });
-        // Tường bên trái màn hình dày 200px
-        const leftWall = Bodies.rectangle(-100, height / 2, 200, height * 4, {
-          isStatic: true,
-          friction: 0.2,
-          restitution: 0.2,
-          label: 'screen_wall'
-        });
-        // Tường bên phải màn hình dày 200px
-        const rightWall = Bodies.rectangle(width + 100, height / 2, 200, height * 4, {
-          isStatic: true,
-          friction: 0.2,
-          restitution: 0.2,
-          label: 'screen_wall'
-        });
-        screenBoundaries = [floor, leftWall, rightWall];
-        World.add(engine.world, screenBoundaries);
-      }
+      World.remove(engine.world, screenBoundaries);
+      // Gifts spilled by a broken jar stay on the floor even if ordinary overflow is disabled.
+      const boundary = (x, y, w, h, friction, label) => Bodies.rectangle(x, y, w, h, {
+        isStatic: true, friction, restitution: 0.15, label,
+        collisionFilter: { category: screenBoundaryCategory }
+      });
+      screenBoundaries = [
+        boundary(width / 2, height + 150, width * 4, 300, 0.85, 'screen_floor'),
+        boundary(-100, height / 2, 200, height * 4, 0.2, 'screen_wall'),
+        boundary(width + 100, height / 2, 200, height * 4, 0.2, 'screen_wall')
+      ];
+      World.add(engine.world, screenBoundaries);
     }
 
     // Lưu trữ đỉnh của lòng hũ cho clipping và debug hitbox
     let currentCavityPoints = [];
 
-    function getCavityPoints(geom, hitboxCfg) {
-      const shape = hitboxCfg.shape || (geom.isFishbowl ? 'sphere' : 'cylinder');
-      const { cx, imgY, w, h } = geom;
-
-      const defaultRx = shape === 'sphere' ? 0.315 : (shape === 'bottle' ? 0.28 : 0.32);
-      const defaultRy = shape === 'sphere' ? 0.24 : (shape === 'bottle' ? 0.26 : 0.30);
-      const defaultCy = shape === 'sphere' ? 0.58 : (shape === 'bottle' ? 0.62 : 0.56);
-      const defaultMouthY = 0.12;
-      const defaultNeckW = shape === 'bottle' ? 0.26 : 0.38;
-      const defaultNeckH = shape === 'bottle' ? 0.26 : 0.20;
-
-      const rx = w * (hitboxCfg.radiusX !== undefined ? hitboxCfg.radiusX : defaultRx);
-      const ry = h * (hitboxCfg.radiusY !== undefined ? hitboxCfg.radiusY : defaultRy);
-      const cavityCy = imgY + h * (hitboxCfg.centerY !== undefined ? hitboxCfg.centerY : defaultCy) + (hitboxCfg.offsetY || 0);
-      const cavityCx = cx + (hitboxCfg.offsetX || 0);
-      const mouthY = imgY + h * (hitboxCfg.mouthY !== undefined ? hitboxCfg.mouthY : defaultMouthY);
-      const mouthHalfW = (w * (hitboxCfg.neckWidth !== undefined ? hitboxCfg.neckWidth : defaultNeckW)) / 2;
-      const neckH = h * (hitboxCfg.neckHeight !== undefined ? hitboxCfg.neckHeight : defaultNeckH);
-      const neckBottomY = mouthY + neckH;
-
-      const points = [];
-
-      if (shape === 'sphere') {
-        // 🔮 BỂ CẦU TRÒN (Sphere / Fishbowl)
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        const neckHalfW = mouthHalfW * 1.05;
-        points.push({ x: cavityCx + neckHalfW, y: neckBottomY });
-
-        const shoulderSteps = 8;
-        for (let i = 1; i <= shoulderSteps; i++) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx + neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5);
-          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
-          points.push({ x: px, y: py });
-        }
-
-        const arcSteps = 24;
-        for (let i = 1; i <= arcSteps; i++) {
-          const angle = (Math.PI * i) / arcSteps;
-          const px = cavityCx + rx * Math.cos(angle);
-          const py = cavityCy + ry * Math.sin(angle);
-          points.push({ x: px, y: py });
-        }
-
-        for (let i = shoulderSteps - 1; i >= 0; i--) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx - (neckHalfW + (rx - neckHalfW) * Math.sin(f * Math.PI * 0.5));
-          const py = neckBottomY + (cavityCy - neckBottomY) * ease;
-          points.push({ x: px, y: py });
-        }
-
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-
-      } else if (shape === 'bottle') {
-        // 🏺 HŨ CỔ LỌ / BÌNH HOA (Bottle / Vase)
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        points.push({ x: cavityCx + mouthHalfW, y: neckBottomY });
-
-        const thetaJoin = -0.22 * Math.PI;
-        const joinX = rx * Math.cos(thetaJoin);
-        const joinY = ry * Math.sin(thetaJoin);
-
-        const shoulderSteps = 10;
-        for (let i = 1; i <= shoulderSteps; i++) {
-          const f = i / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx + mouthHalfW + (joinX - mouthHalfW) * ease;
-          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
-          points.push({ x: px, y: py });
-        }
-
-        const arcSteps = 28;
-        const thetaEnd = Math.PI - thetaJoin;
-        for (let i = 1; i <= arcSteps; i++) {
-          const angle = thetaJoin + ((thetaEnd - thetaJoin) * i) / arcSteps;
-          const px = cavityCx + rx * Math.cos(angle);
-          const py = cavityCy + ry * Math.sin(angle);
-          points.push({ x: px, y: py });
-        }
-
-        for (let i = shoulderSteps; i >= 1; i--) {
-          const f = (i - 1) / shoulderSteps;
-          const ease = f * f * (3 - 2 * f);
-          const px = cavityCx - (mouthHalfW + (joinX - mouthHalfW) * ease);
-          const py = neckBottomY + (cavityCy + joinY - neckBottomY) * f;
-          points.push({ x: px, y: py });
-        }
-
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-
-      } else {
-        // 🥛 HŨ TRỤ ĐỨNG / MASON JAR (Cylinder)
-        const bottomY = cavityCy + ry;
-        const cornerR = Math.min(rx * 0.35, 36);
-
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY });
-        points.push({ x: cavityCx + mouthHalfW, y: mouthY + 24 });
-        points.push({ x: cavityCx + rx, y: mouthY + 44 });
-        points.push({ x: cavityCx + rx, y: bottomY - cornerR });
-
-        for (let i = 1; i <= 6; i++) {
-          const a = (Math.PI * 0.5) * (i / 6);
-          points.push({
-            x: cavityCx + rx - cornerR + cornerR * Math.cos(a),
-            y: bottomY - cornerR + cornerR * Math.sin(a)
-          });
-        }
-
-        for (let i = 1; i <= 6; i++) {
-          const a = (Math.PI * 0.5) + (Math.PI * 0.5) * (i / 6);
-          points.push({
-            x: cavityCx - rx + cornerR + cornerR * Math.cos(a),
-            y: bottomY - cornerR + cornerR * Math.sin(a)
-          });
-        }
-
-        points.push({ x: cavityCx - rx, y: mouthY + 44 });
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY + 24 });
-        points.push({ x: cavityCx - mouthHalfW, y: mouthY });
-      }
-
-      return points;
-    }
-
     let lastJarGeometry = null;
 
     function rebuildJarBodies() {
+      if (jarState.isFlipped) return;
       // Xoá các tường cũ nếu có
       if (jarWalls.length > 0) {
         World.remove(engine.world, jarWalls);
         jarWalls = [];
       }
 
+      calculateJarGeometry();
       if (jarState.isBurst) return;
 
-      const oldGeom = lastJarGeometry ? { ...lastJarGeometry } : null;
-
-      calculateJarGeometry();
+      const oldGeom = lastJarGeometry;
+      const oldPoints = currentCavityPoints;
       lastJarGeometry = { ...jarGeometry };
 
       const hitboxCfg = jarConfig.hitbox || {};
-      const { cx, w, h, imgY } = jarGeometry;
-      const bounciness = Math.min(Number(jarConfig.bounciness) || 0.22, 0.22);
-      const wallThickness = 28 * (jarConfig.jarScale || 1.0);
+      const bounciness = Math.max(0, Math.min(0.8, Number(jarConfig.bounciness ?? 0.2)));
+      const wallThickness = jarGeometry.wallThickness;
 
       currentCavityPoints = getCavityPoints(jarGeometry, hitboxCfg);
 
-      // Tạo các phân đoạn va chạm kín khít 100% không kẽ hở
-      for (let i = 0; i < currentCavityPoints.length - 1; i++) {
-        const p1 = currentCavityPoints[i];
-        const p2 = currentCavityPoints[i + 1];
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const len = Math.hypot(dx, dy);
-        if (len < 1) continue;
-
-        const midX = (p1.x + p2.x) / 2;
-        const midY = (p1.y + p2.y) / 2;
-        const angle = Math.atan2(dy, dx);
-
-        const seg = Bodies.rectangle(midX, midY, len * 1.55, wallThickness, {
-          isStatic: true,
-          angle: angle,
-          friction: 0.25,
-          restitution: bounciness,
-          label: 'jar_wall'
-        });
-        jarWalls.push(seg);
-      }
-
-      // 2 Phễu định hướng dẫn quà rơi chuẩn xác qua miệng hũ
-      const mouthY = currentCavityPoints[0].y;
-      const mouthRightX = currentCavityPoints[0].x;
-      const mouthLeftX = currentCavityPoints[currentCavityPoints.length - 1].x;
-
-      const leftFunnel = Bodies.rectangle(mouthLeftX - w * 0.08, mouthY - 20, w * 0.18, wallThickness, {
-        isStatic: true,
-        angle: 0.65,
-        friction: 0.1,
-        restitution: bounciness,
-        label: 'jar_wall'
-      });
-      const rightFunnel = Bodies.rectangle(mouthRightX + w * 0.08, mouthY - 20, w * 0.18, wallThickness, {
-        isStatic: true,
-        angle: -0.65,
-        friction: 0.1,
-        restitution: bounciness,
-        label: 'jar_wall'
-      });
-
-      jarWalls.push(leftFunnel, rightFunnel);
+      jarWalls = makeCavityWalls(currentCavityPoints, wallThickness, bounciness);
+      for (const wall of jarWalls) wall.collisionFilter.category = jarWallCategory;
+      wallRest = jarWalls.map(body => ({ body, x: body.position.x, y: body.position.y, angle: body.angle }));
       World.add(engine.world, jarWalls);
+      placeJar(jarPose, false);
 
       // --- TỰ ĐỘNG KÉO THEO TOÀN BỘ QUÀ HIỆN CÓ KHI DỊCH CHUYỂN HOẶC CO GIÃN HŨ ---
       if (oldGeom && oldGeom.w > 0 && giftBodies.length > 0) {
@@ -944,7 +625,7 @@
 
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || Math.abs(scaleRatio - 1.0) > 0.005) {
           giftBodies.forEach(b => {
-            if (!b || !b.position) return;
+            if (!isInsideCavity(b.position, oldPoints)) return;
             // Co giãn vị trí tương đối quanh tâm lòng hũ
             const relX = (b.position.x - oldCavityCx) * scaleRatio;
             const relY = (b.position.y - oldCavityCy) * scaleRatio;
@@ -960,14 +641,51 @@
       }
     }
 
-    rebuildScreenBoundaries();
-    rebuildJarBodies();
-     // ==========================================
+    // ==========================================
     // 4. QUẢN LÝ QUÀ TẶNG & THẢ QUÀ VẬT LÝ (GIFT PHYSICS BODY)
     // ==========================================
     let giftBodies = [];
+    const airborneGifts = new Set();
+    let jarHiddenAt;
+    const pendingDrops = [];
+    const giftInventory = new Map();
+    let inventoryDirty = true;
+    let nextDropAt = 0;
+    let queuedGiftCount = 0;
+    let jarSessionId;
+    let jarSyncPending = true;
+    let jarEventSequence = 0;
+    let restoredGiftBatches = [];
+    let restoredPositions = [];
+    let restoreGrid;
+    let checkpointDirty = true;
+    let goalBurstTimer;
+    let assembly;
+    let flipAnimation;
+    let settlingPour;
+    let shakeAnimation;
+    let pendingBreak;
+    let bannerTimer;
+    const previewMode = new URLSearchParams(location.search).has('preview');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+
+    rebuildScreenBoundaries();
+    rebuildJarBodies();
+
+    Events.on(engine, 'collisionStart', ({ pairs }) => {
+      const contact = pairs.find(({ bodyA, bodyB }) =>
+        (bodyA.label === 'gift_item' && bodyB.label === 'jar_wall' && bodyA.speed > 3) ||
+        (bodyB.label === 'gift_item' && bodyA.label === 'jar_wall' && bodyB.speed > 3)
+      );
+      if (contact && performance.now() - lastClink > 105) {
+        lastClink = performance.now();
+        AudioEngine.playClink();
+      }
+    });
+    let lastClink = -Infinity;
     // Tính bán kính hiển thị và va chạm theo xu & cài đặt kích thước
-    function getGiftRadius(coins, giftId) {
+    function getGiftRadius(coins) {
       const global = Number(jarConfig.giftScaleGlobal) || 1.0;
       const numCoins = Number(coins) || 1;
       let baseR = 15;
@@ -983,182 +701,159 @@
       return Math.max(5, Math.round(baseR * global));
     }
 
-    // Co giãn kích thước tất cả các quà ĐÃ RƠI TRONG HŨ ngay lập tức theo thời gian thực & Tự động nén dồn xuống đáy
     function resizeActiveGiftBodies() {
-      if (!giftBodies || giftBodies.length === 0) return;
-
-      const bowlCx = jarGeometry.bowlCx || jarGeometry.cx;
-      const bowlCy = jarGeometry.bowlCy || jarGeometry.cy;
-      const rx = jarGeometry.bowlRx || jarGeometry.bowlR || (jarGeometry.w * 0.37);
-      const ry = jarGeometry.bowlRy || (jarGeometry.h * 0.335);
-      const mouthY = jarGeometry.mouthY || (jarGeometry.cy - jarGeometry.h * 0.38);
-      const floorY = bowlCy + ry - 14;
-
-      giftBodies.forEach(b => {
-        if (!b || !b.giftData) return;
-        const targetR = getGiftRadius(b.giftData.coins, b.giftData.giftId);
-        const curR = b.giftData.radius || b.circleRadius || 18;
-
-        if (Math.abs(targetR - curR) > 0.4) {
-          const ratio = targetR / curR;
-
-          // 1. Co giãn kích thước vật thể Matter.js
-          Body.scale(b, ratio, ratio);
-          b.giftData.radius = targetR;
-          b.circleRadius = targetR;
-
-          const oldX = b.position.x;
-          const oldY = b.position.y;
-
-          // Nếu quà đang nằm trên sàn màn hình bên ngoài hũ
-          if (oldY >= height - 40) {
-            const screenFloorY = height - targetR - 4;
-            Body.setPosition(b, { x: oldX, y: Math.min(oldY, screenFloorY) });
-          } else {
-            // Nén dồn TOÀN BỘ quà (cả quà nằm trong lòng hũ lẫn quà đang chất đống trên miệng hũ)
-            // Giúp các món quà co lại lập tức dồn khít vào lòng hũ, không bao giờ bị bay lơ lửng trong không trung
-            if (ratio < 0.99) {
-              const newX = bowlCx + (oldX - bowlCx) * ratio;
-              const newY = floorY - (floorY - oldY) * ratio;
-
-              // Khóa giới hạn an toàn tuyệt đối không bao giờ chui lọt qua đáy hoặc thành hũ
-              const relX = (newX - bowlCx) / Math.max(1, rx);
-              const clampedRelX = Math.max(-0.85, Math.min(0.85, relX));
-              const maxFloorAtX = bowlCy + ry * Math.sqrt(Math.max(0, 1 - clampedRelX * clampedRelX)) - targetR - 10;
-              const clampedY = Math.min(newY, maxFloorAtX);
-
-              Body.setPosition(b, { x: newX, y: clampedY });
-            } else {
-              // Khi phóng to lên: Đảm bảo không bị lún qua đáy hũ
-              const relX = (oldX - bowlCx) / Math.max(1, rx);
-              const clampedRelX = Math.max(-0.85, Math.min(0.85, relX));
-              const maxFloorAtX = bowlCy + ry * Math.sqrt(Math.max(0, 1 - clampedRelX * clampedRelX)) - targetR - 10;
-              if (oldY > maxFloorAtX) {
-                Body.setPosition(b, { x: oldX, y: maxFloorAtX });
-              }
-            }
-          }
-
-          // Cấp vận tốc dồn rơi tự nhiên và đánh thức vật thể
-          Body.setVelocity(b, {
-            x: (Math.random() - 0.5) * 0.4,
-            y: Math.max(b.velocity.y, 2.0 + Math.random() * 0.8)
+      const { mouthY, bowlCx, bowlCy, bowlRy } = jarGeometry;
+      for (const body of giftBodies) {
+        const previous = body.giftData.radius;
+        const radius = getGiftRadius(body.giftData.coins);
+        if (radius === previous) continue;
+        const ratio = radius / previous;
+        Body.scale(body, ratio, ratio);
+        body.giftData.radius = radius;
+        body.circleRadius = radius;
+        const { x, y } = body.position;
+        if (!jarState.isBurst && jarPose === restPose && ratio < 1 && isInsideCavity(body.position, currentCavityPoints)) {
+          const floor = bowlCy + bowlRy - jarGeometry.wallThickness / 2 - radius;
+          Body.setPosition(body, {
+            x: bowlCx + (x - bowlCx) * ratio,
+            y: Math.max(mouthY + radius, floor - (floor - y) * ratio)
           });
-          Matter.Sleeping.set(b, false);
-          b.isSleeping = false;
+        } else if (jarConfig.enableFloorAccumulation !== false && y > height - radius) {
+          Body.setPosition(body, { x, y: height - radius });
         }
-      });
+        Matter.Sleeping.set(body, false);
+      }
     }
 
+    function limitGiftBodies(room = 0) {
+      if (jarConfig.giftCapacityUnlimited === true) return;
+      const capacity = Math.max(1, Math.floor(Number(jarConfig.giftCapacity) || 600));
+      while (giftBodies.length > capacity - room) {
+        const body = giftBodies.shift();
+        if (!airborneGifts.delete(body)) World.remove(engine.world, body);
+        adjustGiftInventory(body.giftData, -1, 0);
+      }
+    }
+
+    function adjustGiftInventory({ key, inventoryName }, count, queued) {
+      const item = giftInventory.get(key) || { key, name: inventoryName, count: 0, queued: 0 };
+      item.count += count;
+      item.queued += queued;
+      if (item.count || item.queued) giftInventory.set(key, item);
+      else giftInventory.delete(key);
+      inventoryDirty = true;
+    }
+
+    function createJarGift(data, x, y, radius, retainedAfterBreak, angle = 0, arrival = null) {
+      const body = Bodies.circle(x, y, radius, {
+        restitution: Math.max(0, Math.min(0.8, Number(jarConfig.bounciness ?? 0.2))),
+        friction: 0.25,
+        frictionAir: 0.012,
+        angle,
+        label: 'gift_item',
+        collisionFilter: { category: giftCategory, mask: giftCollisionMask(retainedAfterBreak) }
+      });
+      body.giftData = { ...data, radius, retainedAfterBreak, arrival };
+      if (arrival) airborneGifts.add(body);
+      else World.add(engine.world, body);
+      giftBodies.push(body);
+      checkpointDirty = true;
+      return body;
+    }
+
+    function normalizeJarGift(data) {
+      const count = Math.max(1, Math.floor(Number(data.count) || 1));
+      if (!Number.isSafeInteger(count)) return;
+      const coins = Math.max(1, Math.floor(Number(data.diamondCount ?? data.coins) || 1));
+      const inventoryName = String(data.inventoryName || data.giftName || 'Quà tặng').trim().slice(0, 160) || 'Quà tặng';
+      const id = String(data.giftId ?? '').trim().slice(0, 180);
+      const key = data.giftKey || (id && id !== 'custom' ? 'id:' + id : 'name:' + inventoryName.normalize('NFC').toLocaleLowerCase('vi'));
+      const jarAction = data.giftKey ? data.jarAction : jarConfig.giftActions?.[key]?.action;
+      return { ...data, count, coins, key, inventoryName, jarAction };
+    }
 
     function dropGift(data) {
-      if (!jarConfig.enabled) return;
+      if (!data) return;
+      const gift = normalizeJarGift(data);
+      if (!gift) return;
+      if (gift.jarAction) triggerAction({ action: gift.jarAction });
+      if (gift.iconUrl) preloadImage(gift.iconUrl);
+      if (!pendingDrops.length) nextDropAt = 0;
+      pendingDrops.push({ data: gift, total: gift.coins * gift.count, remaining: gift.count, started: false });
+      queuedGiftCount += gift.count;
+      adjustGiftInventory(gift, 0, gift.count);
+    }
 
-      const { cx, cy, h, neckW } = jarGeometry;
-      const coins = Number(data.coins) || 1;
-      const count = Math.min(Number(data.count) || 1, 50);
+    function spawnPendingGifts(now) {
+      if (!pendingDrops.length || jarState.isFlipped || pendingBreak || assembly) return;
+      const shower = jarConfig.dropMode === 'shower';
+      const fallSpeed = Math.max(0.5, Math.min(2.5, Number(jarConfig.fallSpeed) || 1));
+      if (!nextDropAt) nextDropAt = now;
 
-      const radius = getGiftRadius(coins, data.giftId);
-      const dropOrigin = jarConfig.dropOrigin || 'top';
-      const dropMode = jarConfig.dropMode || 'straight';
-      const fallSpeed = Number(jarConfig.fallSpeed) || 1.0;
-      const gravity = Number(jarConfig.gravity) || 1.0;
-      engine.world.gravity.y = gravity * fallSpeed;
+      for (let spawned = 0; spawned < 6 && pendingDrops.length && now >= nextDropAt; spawned++) {
+        const batch = pendingDrops[0];
+        const { data } = batch;
+        const { mouthY, bowlCx, neckW } = jarGeometry;
+        const radius = getGiftRadius(data.coins);
+        const origin = jarConfig.dropOrigin;
+        const spawnY = origin === 'mouth' ? mouthY - radius - 12 :
+          origin === 'middle' ? Math.min(mouthY - radius - 12, height * 0.35) : -radius - 3;
+        const spread = shower ? neckW * Number(jarConfig.dropSpread ?? 0.35) : 10;
+        const x = bowlCx + (Math.random() - 0.5) * spread;
+        const entryY = mouthY - radius - 16;
+        const distance = entryY - spawnY;
+        const pace = Math.sqrt(fallSpeed * (Number(jarConfig.gravity) || 1));
+        const arrival = distance > 0 ? {
+          x, y: spawnY, distance, start: now,
+          duration: Math.max(100, 1100 * Math.sqrt(distance / height) / pace),
+          spin: (Math.random() - 0.5) * 3.5
+        } : null;
 
-      const maxCapacity = Number(jarConfig.giftCapacity) || 600;
+        limitGiftBodies(1);
+        const body = createJarGift(data, x, spawnY, radius, jarState.isBurst, 0, arrival);
+        if (!arrival) {
+          Body.setVelocity(body, { x: (bowlCx - x) * 0.018, y: 3 * Math.sqrt(fallSpeed) });
+          Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.09);
+        }
+        queuedGiftCount--;
+        adjustGiftInventory(body.giftData, 1, -1);
 
-      // Tiền tải icon
-      if (data.iconUrl) preloadImage(data.iconUrl);
-
-      // Tốc độ so le giữa các quà: rơi thẳng lần lượt hoặc mưa tản nhẹ
-      const intervalMs = dropMode === 'straight'
-        ? Math.max(35, Math.round(60 / fallSpeed))
-        : Math.max(25, Math.round(40 / fallSpeed));
-
-      for (let i = 0; i < count; i++) {
-        setTimeout(() => {
-          if (jarState.isBurst) return;
-
-          // Xoá bớt quà cũ nếu vượt quá giới hạn tối đa
-          if (giftBodies.length >= maxCapacity) {
-            const oldest = giftBodies.shift();
-            World.remove(engine.world, oldest);
+        if (!batch.started) {
+          batch.started = true;
+          updateGoal(batch.total);
+          const threshold = Number(jarConfig.shakeThreshold ?? 50);
+          const shakeCoins = data.autoShakeCoins ?? batch.total;
+          if (!data.jarAction && threshold > 0 && shakeCoins >= threshold) {
+            triggerAction({ action: 'shake', intensity: Math.min(1.5, shakeCoins / threshold) });
           }
-
-          // Tính toán vị trí spawnY theo dropOrigin
-          let spawnY = -40;
-          if (dropOrigin === 'middle') {
-            spawnY = Math.min(cy - h / 2 - 40, height * 0.35) + (Math.random() - 0.5) * 20;
-          } else if (dropOrigin === 'mouth') {
-            spawnY = (jarGeometry.mouthY || (cy - h / 2 + 30)) - 30 - Math.random() * 15;
-          } else {
-            spawnY = -40 - Math.random() * 25;
-          }
-
-          // Vị trí rơi ngang spawnX và vận tốc ngang vx chuẩn theo tâm miệng hũ
-          const mouthCx = jarGeometry.bowlCx || cx;
-          let spawnX = mouthCx;
-          let vx = 0;
-
-          if (dropMode === 'straight') {
-            // RƠI THẲNG LẦN LƯỢT: spawn ngay giữa miệng hũ, không văng ngang
-            spawnX = mouthCx + (Math.random() - 0.5) * 10;
-            vx = 0;
-          } else {
-            // MƯA TẢN NHẸ
-            const spread = jarConfig.dropSpread !== undefined ? jarConfig.dropSpread : 0.35;
-            spawnX = mouthCx + (Math.random() - 0.5) * (neckW * spread);
-            vx = (mouthCx - spawnX) * 0.03 + (Math.random() - 0.5) * 0.8;
-          }
-
-          const body = Bodies.circle(spawnX, spawnY, radius, {
-            restitution: 0.18,
-            friction: 0.22, // ma sát vừa phải giúp quà lăn mượt mà tạo đống chóp tự nhiên
-            frictionAir: 0.007,
-            density: 0.002 * (coins >= 100 ? 2.0 : 1.0),
-            angle: (Math.random() - 0.5) * 0.5,
-            label: 'gift_item'
-          });
-
-          // Gán thông tin hiển thị
-          body.giftData = {
-            giftId: data.giftId,
-            giftName: data.giftName,
-            coins: coins,
-            iconUrl: data.iconUrl,
-            sender: data.sender,
-            avatar: data.avatar,
-            radius,
-            createdTime: Date.now()
-          };
-
-          const baseVy = dropOrigin === 'top' ? (5.5 + Math.random() * 3) : (dropOrigin === 'middle' ? 4 + Math.random() * 2 : 2 + Math.random() * 2);
-          const vy = baseVy * fallSpeed;
-
-          Body.setVelocity(body, { x: vx, y: vy });
-
-          World.add(engine.world, body);
-          giftBodies.push(body);
-
-          // Tạo vệt bụi sáng lấp lánh (Sparkle dust)
-          if (jarConfig.sparkleEffect !== false) {
-            spawnSparkleDust(spawnX, spawnY, coins);
-          }
-
-          // Phát âm thanh va chạm lách cách
-          AudioEngine.playClink(radius > 30 ? 0.7 : 1.2);
-
-        }, i * intervalMs);
+        }
+        if (jarConfig.sparkleEffect !== false && batch.remaining % 3 === 1 && !reducedMotion.matches && queuedGiftCount < 30) {
+          spawnSparkleDust(x, Math.max(0, spawnY), data.coins);
+        }
+        if (--batch.remaining === 0) pendingDrops.shift();
+        const gap = Math.max(12, (shower ? 23 : 35) / Math.sqrt(fallSpeed) / (queuedGiftCount >= 25 ? 1.5 : 1));
+        nextDropAt = Math.max(nextDropAt + gap, now - gap * 3);
+        if (jarState.isFlipped || pendingBreak || assembly) break;
       }
+    }
 
-      // Cập nhật mục tiêu và hiển thị thông báo toast
-      updateGoal(coins * (Number(data.count) || 1));
-      showGiftToast(data);
+    function advanceAirborneGifts(now) {
+      for (const body of airborneGifts) {
+        const flight = body.giftData.arrival;
+        const progress = Math.max(0, Math.min(1, (now - flight.start) / flight.duration));
+        // Keep the approach smooth under load. Matter takes over near the mouth for real collisions.
+        const traveled = progress * (0.42 + 0.58 * progress);
+        Body.setPosition(body, { x: flight.x, y: flight.y + flight.distance * traveled });
+        Body.setAngle(body, flight.spin * progress);
 
-      // Nếu quà to >= shakeThreshold, tự động kích hoạt rung hũ kịch tính!
-      const shakeThresh = Number(jarConfig.shakeThreshold) || 50;
-      if (coins >= shakeThresh) {
-        triggerAction({ action: 'shake', intensity: Math.min(2.0, 1 + coins / 500) });
+        if (progress >= 1) {
+          airborneGifts.delete(body);
+          body.giftData.arrival = null;
+          World.add(engine.world, body);
+          const velocity = flight.distance / flight.duration * (1000 / 60) * 1.58;
+          Body.setVelocity(body, { x: (jarGeometry.bowlCx - flight.x) * .018, y: Math.min(13, velocity) });
+          Body.setAngularVelocity(body, flight.spin * .025);
+        }
       }
     }
 
@@ -1167,36 +862,20 @@
     // ==========================================
     function triggerAction(payload) {
       const action = payload.action;
-      const intensity = payload.intensity || 1.0;
+      if (!jarConfig.enabled && !['clear', 'remove_gift_type', 'reset'].includes(action)) return;
+      if ((jarState.isFlipped || jarState.isBurst || pendingBreak) && ['shake', 'crack', 'flip', 'burst'].includes(action)) return;
+      const intensity = Math.max(0.1, Math.min(2, Number(payload.intensity) || 1));
 
       switch (action) {
         case 'shake':
-          // 1. Rung lắc hũ + Nảy quà bên trong
-          jarState.shakeTrauma = Math.min(1.0, jarState.shakeTrauma + 0.6 * intensity);
-          AudioEngine.playShake();
-
-          // Tác động lực đẩy nảy tất cả các quà trong hũ
-          giftBodies.forEach(b => {
-            Body.setVelocity(b, {
-              x: b.velocity.x + (Math.random() - 0.5) * 8 * intensity,
-              y: - (5 + Math.random() * 9 * intensity)
-            });
-          });
+          shakeJar(intensity);
           break;
-
         case 'crack':
-          // 2. Nứt hũ (tăng từng cấp độ 1 -> 2 -> 3)
-          jarState.crackLevel = Math.min(3, jarState.crackLevel + 1);
-          AudioEngine.playCrack();
-          jarState.shakeTrauma = Math.max(jarState.shakeTrauma, 0.4);
-
-          // Tạo chút bụi kính bắn ra
-          spawnGlassDust();
+          setCrackLevel(jarState.crackLevel + 1);
           break;
 
         case 'flip':
           // 3. Lật hũ (Xả toàn bộ quà dốc ngược 180 độ)
-          if (jarState.isFlipped) return;
           flipJarAndDump();
           break;
 
@@ -1205,9 +884,22 @@
           burstJarExplode();
           break;
 
+        case 'assemble':
+          assembleJar();
+          break;
+
+        case 'clear_shards':
+          glassShards = [];
+          if (assembly) assembly.pieces.length = 0;
+          break;
+
         case 'clear':
           // 5. Dọn sạch quà
           clearAllGifts();
+          break;
+
+        case 'remove_gift_type':
+          removeGiftType(payload.giftKey);
           break;
 
         case 'reset':
@@ -1217,346 +909,504 @@
       }
     }
 
-    // --- HIỆU ỨNG LẬT HŨ (XẢ QUÀ) ---
+    function jarPoint(point, pose = jarPose, inverse = false) {
+      const { cx, cy } = jarGeometry;
+      const sin = Math.sin(pose.angle);
+      const cos = Math.cos(pose.angle);
+      if (inverse) {
+        const dx = point.x - cx - pose.x;
+        const dy = point.y - cy - pose.y;
+        return { x: cx + dx * cos + dy * sin, y: cy - dx * sin + dy * cos };
+      }
+      const dx = point.x - cx;
+      const dy = point.y - cy;
+      return { x: cx + pose.x + dx * cos - dy * sin, y: cy + pose.y + dx * sin + dy * cos };
+    }
+
+    function placeJar(pose, moving = true) {
+      jarPose = pose;
+      for (const wall of wallRest) {
+        Body.setPosition(wall.body, jarPoint(wall), moving);
+        Body.setAngle(wall.body, wall.angle + pose.angle, moving);
+        if (!moving) {
+          Body.setVelocity(wall.body, { x: 0, y: 0 });
+          Body.setAngularVelocity(wall.body, 0);
+        }
+      }
+    }
+
+    function wakeJarGifts() {
+      const inside = new Set();
+      for (const body of giftBodies) {
+        if (!isInsideCavity(jarPoint(body.position, jarPose, true), currentCavityPoints)) continue;
+        Matter.Sleeping.set(body, false);
+        inside.add(body);
+      }
+      return inside;
+    }
+
+    function mixPose(a, b, t) {
+      const ease = t * t * (3 - 2 * t);
+      return { x: a.x + (b.x - a.x) * ease, y: a.y + (b.y - a.y) * ease,
+        angle: a.angle + (b.angle - a.angle) * ease };
+    }
+
+    function shakeJar(intensity) {
+      const calm = reducedMotion.matches;
+      const distance = Math.min(jarGeometry.w * .075, 28) * Math.min(1.4, intensity) * (calm ? .34 : 1);
+      shakeAnimation = { start: performance.now(), from: jarPose, distance, duration: calm ? 430 : 780 };
+      wakeJarGifts();
+    }
+
     function flipJarAndDump() {
       jarState.isFlipped = true;
-      AudioEngine.playWhoosh();
+      shakeAnimation = undefined;
+      const { cx, cy, w } = jarGeometry;
+      const calm = reducedMotion.matches;
+      const direction = cx > width * .56 ? -1 : 1;
+      const raised = { x: (width / 2 - cx) * (calm ? .5 : 1), y: (height * .47 - cy) * (calm ? .58 : 1), angle: 0 };
+      const tilted = {
+        x: raised.x + direction * Math.min(w * .12, 27) * (calm ? .3 : 1),
+        y: raised.y + Math.min(w * .065, 18),
+        angle: direction * Math.PI
+      };
+      const speed = Number.isFinite(jarConfig.flipSpeed) ? Math.max(0.5, Math.min(2, jarConfig.flipSpeed)) : 1;
+      const liftEnd = 640;
+      flipAnimation = {
+        start: performance.now(), from: jarPose, raised, tilted, carried: wakeJarGifts(),
+        liftEnd, tipEnd: liftEnd + 590 / speed, spilled: new Set()
+      };
+    }
 
-      // Xoá các tường vật lý hiện tại
-      if (jarWalls.length > 0) {
-        World.remove(engine.world, jarWalls);
-        jarWalls = [];
+    function guideGiftPastRestingJar(body, motion) {
+      const { x, y } = body.position;
+      const radius = body.giftData.radius;
+      const margin = radius + jarGeometry.wallThickness / 2 + 8;
+      const left = motion.restBounds.left - margin;
+      const right = motion.restBounds.right + margin;
+      if (y >= motion.restBounds.bottom + margin || x <= left || x >= right) return false;
+
+      // Select a clear side from the outlet so the descending jar can't catch its own spill.
+      const roomLeft = left >= radius;
+      const roomRight = right <= width - radius;
+      if (!roomLeft && !roomRight) return false;
+      const direction = roomLeft && (!roomRight || motion.mouth.x - left < right - motion.mouth.x) ? -1 : 1;
+      Matter.Sleeping.set(body, false);
+      // A small outward step keeps the spill moving even when floor friction absorbs its velocity.
+      Body.setPosition(body, { x: x + direction, y });
+      Body.setVelocity(body, { x: direction * (5.5 + (body.id % 7) * .35), y: body.velocity.y });
+      return true;
+    }
+
+    function pourJarGifts(motion, time) {
+      if (!motion.draining) {
+        placeJar(motion.tilted, false);
+        motion.mouth = jarPoint({ x: jarGeometry.bowlCx, y: jarGeometry.mouthY });
+        motion.restBounds = {
+          left: Math.min(...currentCavityPoints.map(point => point.x)),
+          right: Math.max(...currentCavityPoints.map(point => point.x)),
+          bottom: Math.max(...currentCavityPoints.map(point => point.y))
+        };
+        motion.pourStartedAt = time;
+        motion.draining = wakeJarGifts();
+        for (const body of motion.carried) {
+          const local = jarPoint(body.position, jarPose, true);
+          const radius = body.giftData.radius;
+          const touchesOpening = Math.abs(local.y - jarGeometry.mouthY) < radius &&
+            Math.abs(local.x - jarGeometry.bowlCx) < jarGeometry.mouthW / 2 + radius;
+          if (touchesOpening) motion.draining.add(body);
+        }
+        motion.spilled = new Set([...motion.carried, ...motion.draining]);
+        for (const body of motion.spilled) updateGiftCollisionMask(body);
       }
 
-      // Đẩy quà trút ngược xuống sàn
-      giftBodies.forEach(b => {
-        Body.setVelocity(b, {
-          x: (Math.random() - 0.5) * 8,
-          y: 6 + Math.random() * 8
+      const { mouth, draining } = motion;
+      let stillPouring = false;
+      for (const body of giftBodies) {
+        if (!motion.spilled.has(body)) continue;
+        const radius = body.giftData.radius;
+        const clearY = Math.min(height - radius - 2, mouth.y + radius + jarGeometry.wallThickness / 2 + 20);
+        if (!draining.has(body) || body.position.y >= clearY) {
+          draining.delete(body);
+          if (guideGiftPastRestingJar(body, motion)) stillPouring = true;
+          continue;
+        }
+
+        // Give jammed gifts a path through the opening, including gifts wider than the neck.
+        const halfOpening = Math.max(0, jarGeometry.mouthW / 2 - radius - jarGeometry.wallThickness / 2);
+        const offset = body.position.x - mouth.x;
+        const steer = Math.sign(offset) * Math.max(0, Math.abs(offset) - halfOpening);
+        Matter.Sleeping.set(body, false);
+        Body.setVelocity(body, {
+          x: Math.max(-9, Math.min(9, -steer * 0.13)),
+          y: Math.abs(steer) > 8 ? Math.min(3, Math.max(1.5, (mouth.y - body.position.y) * .08)) : Math.max(6, Math.min(10, body.velocity.y))
         });
+        stillPouring = true;
+      }
+      if (stillPouring || motion.clearAt === undefined) motion.clearAt = time;
+      return time - motion.clearAt < 120 || time - motion.pourStartedAt < 730;
+    }
+
+    function limitPourMomentum(time) {
+      if (settlingPour && time >= settlingPour.until) settlingPour = undefined;
+      const bodies = (flipAnimation?.draining ? flipAnimation.spilled : flipAnimation?.carried) ?? settlingPour?.bodies;
+      if (!bodies) return;
+      for (const body of bodies) {
+        const { x, y } = body.velocity;
+        // Contain the impulse when many gifts touch the rotating wall or regain collisions at once.
+        if (Math.abs(x) > 16 || y < -5 || y > 30) {
+          Body.setVelocity(body, { x: Math.max(-16, Math.min(16, x)), y: Math.max(-5, Math.min(30, y)) });
+        }
+      }
+    }
+
+    function updateJarMotion(time) {
+      if (flipAnimation) {
+        const { start, from, raised, tilted, carried, liftEnd, tipEnd } = flipAnimation;
+        const elapsed = Math.max(0, time - start);
+        if (elapsed < liftEnd) {
+          const pose = mixPose(from, raised, elapsed / liftEnd);
+          // The rising jar carries its contents. Once it tips, gravity and the walls take over.
+          for (const body of giftBodies) {
+            if (carried.has(body)) {
+              const local = jarPoint(body.position, jarPose, true);
+              Body.setPosition(body, jarPoint(local, pose));
+            }
+          }
+          placeJar(pose, false);
+        } else if (elapsed < tipEnd) {
+          placeJar(mixPose(raised, tilted, (elapsed - liftEnd) / (tipEnd - liftEnd)), false);
+        } else {
+          if (flipAnimation.returnAt === undefined) {
+            if (pourJarGifts(flipAnimation, time)) return;
+            flipAnimation.returnAt = time;
+          }
+          const returning = time - flipAnimation.returnAt;
+          if (returning < 520) {
+            placeJar(mixPose(tilted, raised, returning / 520));
+          } else if (returning < 1090) {
+            placeJar(mixPose(raised, restPose, (returning - 520) / 570));
+          } else {
+            placeJar(restPose, false);
+            const { spilled } = flipAnimation;
+            settlingPour = { bodies: spilled, until: time + 900 };
+            flipAnimation = undefined;
+            jarState.isFlipped = false;
+            for (const body of spilled) updateGiftCollisionMask(body);
+            rebuildJarBodies();
+            updateGoal();
+          }
+        }
+        return;
+      }
+
+      if (!shakeAnimation) return;
+      const { start, from, distance, duration } = shakeAnimation;
+      const progress = Math.max(0, (time - start) / duration);
+      if (progress >= 1) {
+        placeJar(restPose, false);
+        shakeAnimation = undefined;
+        return;
+      }
+      const damping = (1 - progress) ** 1.8;
+      const phase = progress * Math.PI * 4.8;
+      const sway = Math.sin(phase);
+      placeJar({
+        x: (from.x + distance * sway) * damping,
+        y: (from.y - distance * .23 * (1 - Math.cos(phase * 1.26))) * damping,
+        angle: (from.angle - distance / Math.max(40, jarGeometry.w) * 1.35 * Math.sin(phase * .88)) * damping
+      });
+    }
+
+    function setCrackLevel(value, playSound = true) {
+      const level = Math.min(3, value);
+      const previous = jarState.crackLevel;
+      if (level <= previous) return;
+      const now = performance.now();
+      for (let i = previous; i < level; i++) crackStarts[i] = now + (i - previous) * 72;
+      jarState.crackLevel = level;
+      if (playSound) AudioEngine.playCrack();
+    }
+
+    function getJarArtwork() {
+      const base = preloadImage(getJarBaseUrl(jarConfig.style));
+      const front = preloadImage(jarConfig.frontOverlayImage);
+      const signature = [base?.src, base?.naturalWidth, front?.src, front?.naturalWidth, jarConfig.style, jarConfig.hideDefaultJarOnCustom].join('|');
+      if (jarArtwork?.geometry === jarGeometry && jarArtwork.signature === signature) return jarArtwork;
+      jarArtwork = {
+        geometry: jarGeometry, signature,
+        texture: JarGlass.capture(jarGeometry, currentCavityPoints, art => {
+          drawJarBackground(art, jarGeometry, jarConfig.style);
+          drawJarForegroundHighlights(art, jarGeometry, jarConfig.style);
+        })
+      };
+      return jarArtwork;
+    }
+
+    function drawActiveCracks(time) {
+      const artwork = getJarArtwork();
+      const duration = reducedMotion.matches ? 130 : 345;
+      const progress = crackStarts.map(start => Math.max(0, Math.min(1, (time - start) / duration)));
+      const staticFrame = progress.every(value => value === 1);
+      if (!staticFrame || artwork.crackLevel !== jarState.crackLevel) {
+        const pulse = reducedMotion.matches ? 0 : Math.max(0, 1 - (time - crackStarts[0]) / 180);
+        JarGlass.paintCracks(artwork.texture, progress, Math.min(1, pulse));
+        artwork.crackLevel = staticFrame ? jarState.crackLevel : undefined;
+      }
+      const { imgX, imgY, w, h } = jarGeometry;
+      ctx.drawImage(artwork.texture.cracks, imgX, imgY, w, h);
+    }
+
+    function burstJarExplode(onGoal = false) {
+      if (jarState.isBurst || jarState.isFlipped || pendingBreak) return;
+      clearTimeout(goalBurstTimer);
+      goalBurstTimer = undefined;
+      setCrackLevel(3, false);
+      pendingBreak = { onGoal, timer: setTimeout(() => {
+        const reassemble = pendingBreak.assembleAfter;
+        pendingBreak = undefined;
+        if (!onGoal || canBurstOnGoal()) {
+          shatterJar(onGoal);
+          if (reassemble) assembleJar();
+        }
+      }, reducedMotion.matches ? 80 : 170) };
+    }
+
+    function shatterJar(onGoal) {
+      const artwork = getJarArtwork();
+      JarGlass.paintCracks(artwork.texture, [1, 1, 1]);
+      artwork.crackLevel = undefined;
+      const calm = reducedMotion.matches;
+      const { imgX, imgY, w, h } = jarGeometry;
+      const pieces = JarGlass.cutShards(artwork.texture, calm).map(piece => {
+        const center = jarPoint({ x: imgX + piece.u * w, y: imgY + piece.v * h });
+        const spread = calm ? 50 : Math.max(185, Math.min(500, w * 1.6));
+        return {
+          image: piece.image, x: center.x, y: center.y,
+          u: piece.u, v: piece.v, relW: piece.w, relH: piece.h, w: piece.w * w, h: piece.h * h,
+          angle: jarPose.angle, spin: (Math.random() - .5) * (calm ? 1.8 : 8),
+          vx: (piece.u - .5) * spread + (Math.random() - .5) * spread * .42,
+          vy: (piece.v - .52) * spread * .56 - 45 - Math.random() * (calm ? 32 : 124),
+          bounces: 0, settled: false
+        };
       });
 
-      // Animate xoay hũ 180 độ
-      let start = null;
-      const dur = 1000;
-
-      function animFlip(ts) {
-        if (!start) start = ts;
-        const progress = Math.min(1, (ts - start) / dur);
-        // Easing cubic
-        const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-        jarState.flipAngle = ease * Math.PI;
-
-        if (progress < 1) {
-          requestAnimationFrame(animFlip);
-        } else {
-          // Chờ quà đổ hết ra ngoài trong 2.5s rồi lật thẳng lại
-          setTimeout(() => {
-            animateJarBackUpright();
-          }, 2500);
-        }
-      }
-      requestAnimationFrame(animFlip);
-    }
-
-    function animateJarBackUpright() {
-      let start = null;
-      const dur = 900;
-      const fromAngle = jarState.flipAngle;
-
-      function animUp(ts) {
-        if (!start) start = ts;
-        const progress = Math.min(1, (ts - start) / dur);
-        const ease = 1 - Math.pow(1 - progress, 3);
-        jarState.flipAngle = fromAngle + ease * (Math.PI * 2 - fromAngle);
-
-        if (progress < 1) {
-          requestAnimationFrame(animUp);
-        } else {
-          jarState.flipAngle = 0;
-          jarState.isFlipped = false;
-          // Xoá sạch các quà đã rơi ra ngoài
-          giftBodies.forEach(b => World.remove(engine.world, b));
-          giftBodies = [];
-          rebuildJarBodies();
-        }
-      }
-      requestAnimationFrame(animUp);
-    }
-
-    // --- HIỆU ỨNG NỔ TUNG HŨ (BURST / EXPLODE) ---
-    function burstJarExplode() {
-      if (jarState.isBurst) return;
+      glassShards.push(...pieces);
       jarState.isBurst = true;
-
+      shakeAnimation = undefined;
+      // The gift count and goal belong to this live session, not the current glass.
+      for (const body of giftBodies) {
+        body.giftData.retainedAfterBreak = true;
+        body.collisionFilter.mask = giftCollisionMask(true);
+      }
       AudioEngine.playShatter();
-      AudioEngine.playFanfare();
-
-      // Flash trắng màn hình kịch tính
-      const flash = document.getElementById('screen-flash');
-      flash.style.opacity = '0.9';
-      setTimeout(() => { flash.style.opacity = '0'; }, 220);
-
-      // Hiện banner chúc mừng
-      const banner = document.getElementById('celebration-banner');
-      banner.classList.add('show');
-      setTimeout(() => { banner.classList.remove('show'); }, 4000);
-
-      // Tháo bỏ hoàn toàn tường hũ
-      if (jarWalls.length > 0) {
-        World.remove(engine.world, jarWalls);
-        jarWalls = [];
+      if (onGoal) {
+        jarState.goalBurstUsed = true;
+        AudioEngine.playFanfare();
+        const banner = document.getElementById('celebration-banner');
+        banner.classList.add('show');
+        bannerTimer = setTimeout(() => banner.classList.remove('show'), 2900);
       }
-
-      const { cx, cy } = jarGeometry;
-
-      // 1. Nổ tung quà văng tứ phía
-      giftBodies.forEach(b => {
-        const dx = b.position.x - cx;
-        const dy = b.position.y - cy;
-        const dist = Math.hypot(dx, dy) || 1;
-        const speed = 14 + Math.random() * 16;
-        Body.setVelocity(b, {
-          x: (dx / dist) * speed,
-          y: (dy / dist) * speed - 8
-        });
-        Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.4);
-      });
-
-      // 2. Tạo 90 mảnh kính vỡ bay lấp lánh
-      glassShards = [];
-      for (let i = 0; i < 90; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const spd = 6 + Math.random() * 22;
-        glassShards.push({
-          x: cx + (Math.random() - 0.5) * 200,
-          y: cy + (Math.random() - 0.5) * 300,
-          vx: Math.cos(angle) * spd,
-          vy: Math.sin(angle) * spd - 6,
-          rot: Math.random() * Math.PI * 2,
-          vrot: (Math.random() - 0.5) * 0.35,
-          size: 8 + Math.random() * 26,
-          alpha: 1.0,
-          points: [
-            { x: 0, y: - (8 + Math.random() * 14) },
-            { x: 6 + Math.random() * 14, y: 0 },
-            { x: 0, y: 8 + Math.random() * 14 },
-            { x: - (6 + Math.random() * 14), y: 2 }
-          ]
-        });
+      for (const body of wakeJarGifts()) {
+        const dx = body.position.x - jarGeometry.cx - jarPose.x;
+        const push = calm ? .55 : 1;
+        Body.setVelocity(body, { x: body.velocity.x + Math.sign(dx) * (1.2 + Math.random() * 3) * push, y: body.velocity.y - 2 * push });
       }
-
-      // 3. Tạo 160 hạt pháo hoa rực rỡ
-      confettiParticles = [];
-      const colors = ['#f59e0b', '#ef4444', '#10b981', '#38bdf8', '#a855f7', '#fbbf24', '#ffffff'];
-      for (let i = 0; i < 160; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const spd = 5 + Math.random() * 20;
-        confettiParticles.push({
-          x: cx,
-          y: cy - 40,
-          vx: Math.cos(angle) * spd,
-          vy: Math.sin(angle) * spd - 10,
-          rot: Math.random() * Math.PI * 2,
-          vrot: (Math.random() - 0.5) * 0.4,
-          w: 6 + Math.random() * 8,
-          h: 10 + Math.random() * 14,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          alpha: 1.0
-        });
-      }
-
-      // Tự động hồi sinh hũ sau số giây cấu hình
-      const resetSec = jarConfig.autoResetSeconds || 5;
-      setTimeout(() => {
-        respawnJar();
-      }, resetSec * 1000);
+      World.remove(engine.world, jarWalls);
+      jarWalls = [];
+      wallRest = [];
+      jarPose = restPose;
     }
 
-    function spawnGlassDust() {
-      const { cx, cy } = jarGeometry;
-      for (let i = 0; i < 30; i++) {
-        glassShards.push({
-          x: cx + (Math.random() - 0.5) * 160,
-          y: cy + (Math.random() - 0.5) * 220,
-          vx: (Math.random() - 0.5) * 4,
-          vy: - (1 + Math.random() * 4),
-          rot: Math.random() * Math.PI * 2,
-          vrot: (Math.random() - 0.5) * 0.2,
-          size: 4 + Math.random() * 8,
-          alpha: 0.9,
-          points: [
-            { x: 0, y: -4 },
-            { x: 4, y: 0 },
-            { x: 0, y: 4 },
-            { x: -4, y: 0 }
-          ]
-        });
+    function drawGlassShards(dt) {
+      const elapsed = Math.max(0, dt) / 1000;
+      for (const shard of glassShards) {
+        const extent = Math.min(width / 2, Math.hypot(shard.w, shard.h) / 2);
+        if (!shard.settled) {
+          shard.vy += 1000 * elapsed;
+          shard.x += shard.vx * elapsed;
+          shard.y += shard.vy * elapsed;
+          shard.angle += shard.spin * elapsed;
+          if (shard.x < extent || shard.x > width - extent) shard.vx *= -.32;
+        }
+        shard.x = Math.max(extent, Math.min(width - extent, shard.x));
+
+        const halfHeight = Math.abs(Math.sin(shard.angle)) * shard.w / 2 + Math.abs(Math.cos(shard.angle)) * shard.h / 2;
+        const floor = height - halfHeight - 1;
+        if (shard.settled || shard.y >= floor) {
+          shard.y = floor;
+          if (!shard.settled && shard.vy > 0) {
+            shard.settled = ++shard.bounces >= 3 || shard.vy < 78;
+            shard.vy *= -.26;
+            shard.vx *= .58;
+            shard.spin *= .60;
+          }
+        }
+        drawShard(shard.image, shard.x, shard.y, shard.w, shard.h, shard.angle);
       }
     }
 
-    function respawnJar() {
-      // Dọn sạch quà cũ và hạt
-      giftBodies.forEach(b => World.remove(engine.world, b));
-      giftBodies = [];
-      glassShards = [];
-      confettiParticles = [];
+    function drawShard(image, x, y, w, h, angle, opacity = 1) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.drawImage(image, -w / 2, -h / 2, w, h);
+      ctx.restore();
+    }
 
+    function assembleJar() {
+      if (pendingBreak) {
+        pendingBreak.assembleAfter = true;
+        return;
+      }
+      if (!jarState.isBurst || assembly) return;
+
+      // Move the existing pieces into the assembly so the floor no longer draws them.
+      assembly = { pieces: glassShards, started: performance.now(), duration: reducedMotion.matches ? 300 : 820 };
+      glassShards = [];
+    }
+
+    function drawAssembly(time) {
+      if (!assembly) return;
+      const progress = Math.max(0, (time - assembly.started) / assembly.duration);
+
+      const { imgX, imgY, w, h } = jarGeometry;
+      const ease = progress * progress * (3 - 2 * progress);
+      const opacity = assembly.pieces.length ? Math.max(0, (progress - .68) / .32) : ease;
+      for (const piece of assembly.pieces) {
+        const x = piece.x + (imgX + piece.u * w - piece.x) * ease;
+        const y = piece.y + (imgY + piece.v * h - piece.y) * ease;
+        const pieceWidth = piece.w + (piece.relW * w - piece.w) * ease;
+        const pieceHeight = piece.h + (piece.relH * h - piece.h) * ease;
+        drawShard(piece.image, x, y, pieceWidth, pieceHeight, piece.angle * (1 - ease), 1 - opacity);
+      }
+      if (opacity > 0) {
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.drawImage(getJarArtwork().texture.art, imgX, imgY, w, h);
+        ctx.restore();
+      }
+    }
+
+    function resetVisualEffects() {
+      clearTimeout(pendingBreak?.timer);
+      clearTimeout(bannerTimer);
+      pendingBreak = undefined;
+      if (assembly) glassShards = assembly.pieces;
+      assembly = undefined;
+      flipAnimation = undefined;
+      settlingPour = undefined;
+      shakeAnimation = undefined;
       jarState.isBurst = false;
-      jarState.crackLevel = 0;
       jarState.isFlipped = false;
-      jarState.flipAngle = 0;
-      jarState.currentCoins = 0;
-
-      rebuildJarBodies();
-      updateGoal(0, true);
-
-      // Hiệu ứng hồi sinh nảy nhẹ
-      jarState.shakeTrauma = 0.5;
-      AudioEngine.playFanfare();
+      placeJar(restPose, false);
+      sparkleParticles = [];
+      document.getElementById('celebration-banner').classList.remove('show');
     }
 
     function clearAllGifts() {
-      giftBodies.forEach(b => World.remove(engine.world, b));
+      World.remove(engine.world, giftBodies);
       giftBodies = [];
-      jarState.currentCoins = 0;
-      jarState.crackLevel = 0;
-      updateGoal(0, true);
+      airborneGifts.clear();
+      pendingDrops.length = 0;
+      queuedGiftCount = 0;
+      restoredGiftBatches = [];
+      restoredPositions = [];
+      restoreGrid = undefined;
+      checkpointDirty = true;
+      giftInventory.clear();
+      inventoryDirty = true;
+      nextDropAt = 0;
+      sparkleParticles = [];
+    }
+
+    function removeGiftBodies(key) {
+      const remaining = [];
+      const removed = [];
+      for (const body of giftBodies) {
+        if (body.giftData.key === key) {
+          airborneGifts.delete(body);
+          removed.push(body);
+          adjustGiftInventory(body.giftData, -1, 0);
+        } else {
+          remaining.push(body);
+        }
+      }
+      World.remove(engine.world, removed);
+      giftBodies = remaining;
+    }
+
+    function removeGiftType(key) {
+      removeGiftBodies(key);
+      for (let i = pendingDrops.length - 1; i >= 0; i--) {
+        if (pendingDrops[i].data.key === key) {
+          queuedGiftCount -= pendingDrops[i].remaining;
+          pendingDrops.splice(i, 1);
+        }
+      }
+      restoredGiftBatches = restoredGiftBatches.filter(batch => batch.data.key !== key);
+      restoredPositions = restoredPositions.filter(item => item.data.key !== key);
+      checkpointDirty = true;
+      giftInventory.delete(key);
+      inventoryDirty = true;
+      if (!pendingDrops.length) nextDropAt = 0;
     }
 
     function resetJarGoal() {
+      clearTimeout(goalBurstTimer);
+      goalBurstTimer = undefined;
       jarState.currentCoins = 0;
+      jarState.goalCrackLevel = 0;
+      jarState.goalBurstUsed = false;
+      resetJarCracks();
+      if (pendingBreak?.onGoal) {
+        clearTimeout(pendingBreak.timer);
+        pendingBreak = undefined;
+      }
+      updateGoal();
+    }
+
+    function resetJarCracks() {
       jarState.crackLevel = 0;
-      updateGoal(0, true);
+      crackStarts.length = 0;
+      if (jarArtwork) jarArtwork.crackLevel = undefined;
     }
 
-    // ==========================================
-    // 6. TIẾN TRÌNH MỤC TIÊU & TỰ ĐỘNG NỨT/NỔ
-    // ==========================================
-    function updateGoal(addedCoins = 0, isReset = false) {
-      if (isReset) {
-        jarState.currentCoins = 0;
-      } else {
-        jarState.currentCoins += addedCoins;
-      }
+    function canBurstOnGoal() {
+      return jarConfig.enabled && jarConfig.goalEnabled && jarConfig.autoBurstOnGoal &&
+        !jarState.goalBurstUsed && !jarState.isBurst && !pendingBreak && !jarState.isFlipped && jarState.currentCoins >= (Number(jarConfig.goalTargetCoins) || 500);
+    }
 
-      const target = jarConfig.goalTargetCoins || 500;
+    function updateGoal(addedCoins = 0) {
+      jarState.currentCoins += addedCoins;
+      const target = Number(jarConfig.goalTargetCoins) || 500;
       const curr = jarState.currentCoins;
-      const pct = Math.min(100, Math.round((curr / target) * 100));
-
+      const pct = Math.min(100, Math.round(curr / target * 100));
       const hud = document.getElementById('goal-hud');
-      if (!jarConfig.goalEnabled) {
-        hud.style.display = 'none';
-        return;
-      }
-      hud.style.display = 'flex';
+      hud.style.display = jarConfig.goalEnabled ? 'flex' : 'none';
+      document.getElementById('hudGoalCounter').textContent = String(curr.toLocaleString('vi-VN')) + ' / ' + target.toLocaleString('vi-VN') + ' xu';
+      document.getElementById('hudGoalFill').style.width = pct + '%';
 
-      document.getElementById('hudGoalCounter').textContent = `${curr.toLocaleString()} / ${target.toLocaleString()} Xu`;
-      document.getElementById('hudGoalFill').style.width = `${pct}%`;
-
-      // Tự động tăng vết nứt theo tiến trình
-      if (!jarState.isBurst) {
-        if (pct >= 90 && jarState.crackLevel < 3) {
-          jarState.crackLevel = 3;
-          AudioEngine.playCrack();
-        } else if (pct >= 60 && jarState.crackLevel < 2) {
-          jarState.crackLevel = 2;
-          AudioEngine.playCrack();
-        } else if (pct >= 30 && jarState.crackLevel < 1) {
-          jarState.crackLevel = 1;
-          AudioEngine.playCrack();
+      if (jarConfig.goalEnabled) {
+        const level = pct >= 90 ? 3 : pct >= 60 ? 2 : pct >= 30 ? 1 : 0;
+        if (level > jarState.goalCrackLevel) {
+          jarState.goalCrackLevel = level;
+          if (!jarState.isBurst) setCrackLevel(level);
         }
-
-        // Đạt 100% mục tiêu -> Tự động nổ hũ!
-        if (curr >= target && jarConfig.autoBurstOnGoal) {
-          setTimeout(() => {
-            if (!jarState.isBurst) burstJarExplode();
-          }, 300);
-        }
+        if (curr >= target && jarState.isBurst && jarConfig.autoBurstOnGoal) jarState.goalBurstUsed = true;
       }
-    }
-
-    function showGiftToast(data) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'gift-toast';
-
-      const avatarSrc = data.avatar || '';
-      const count = Number(data.count) || 1;
-      const giftName = data.giftName || 'Món Quà';
-      const sender = data.sender || 'Người Xem';
-
-      let avatarHtml = `<span style="font-size: 1.2rem;">🎁</span>`;
-      if (avatarSrc) {
-        avatarHtml = `<img class="toast-avatar" src="${avatarSrc}" onerror="this.outerHTML='<span style=\\'font-size: 1.2rem;\\'>🎁</span>'">`;
+      if (canBurstOnGoal() && !goalBurstTimer) {
+        goalBurstTimer = setTimeout(() => {
+          goalBurstTimer = undefined;
+          if (canBurstOnGoal()) burstJarExplode(true);
+        }, 950);
       }
-
-      toast.innerHTML = `
-        ${avatarHtml}
-        <div class="toast-text">
-          <span class="toast-name">${sender}</span> tặng <span class="toast-gift">${count > 1 ? count + 'x ' : ''}${giftName}</span>
-        </div>
-      `;
-
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add('toast-out');
-        setTimeout(() => toast.remove(), 400);
-      }, 3500);
     }
 
     // ==========================================
     // 7. RENDER VẼ HŨ & HIỆU ỨNG ĐỒ HOẠ (CANVAS 60FPS)
     // ==========================================
-
-    // Vết nứt thủy tinh vẽ động
-    function drawCracks(ctx, cx, cy, w, h, level) {
-      if (level <= 0) return;
-
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.lineWidth = 2.0;
-      ctx.shadowColor = 'rgba(186, 230, 253, 0.9)';
-      ctx.shadowBlur = 6;
-
-      ctx.beginPath();
-      // Nhánh chính 1
-      ctx.moveTo(cx - 30, cy + 20);
-      ctx.lineTo(cx - 10, cy - 40);
-      ctx.lineTo(cx + 40, cy - 60);
-      ctx.lineTo(cx + 60, cy - 110);
-
-      if (level >= 2) {
-        // Nhánh phụ mạng nhện
-        ctx.moveTo(cx - 10, cy - 40);
-        ctx.lineTo(cx - 65, cy - 50);
-        ctx.lineTo(cx - 95, cy - 20);
-
-        ctx.moveTo(cx + 40, cy - 60);
-        ctx.lineTo(cx + 75, cy - 40);
-        ctx.lineTo(cx + 105, cy - 70);
-
-        ctx.moveTo(cx - 30, cy + 20);
-        ctx.lineTo(cx - 50, cy + 80);
-        ctx.lineTo(cx - 30, cy + 130);
-      }
-
-      if (level >= 3) {
-        // Nhánh vết nứt nghiêm trọng toàn thân
-        ctx.moveTo(cx - 50, cy + 80);
-        ctx.lineTo(cx + 20, cy + 100);
-        ctx.lineTo(cx + 80, cy + 150);
-
-        ctx.moveTo(cx + 60, cy - 110);
-        ctx.lineTo(cx + 30, cy - 150);
-        ctx.lineTo(cx - 20, cy - 170);
-
-        ctx.lineWidth = 3.0;
-        ctx.shadowBlur = 12;
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
 
     // Hào quang neon phát sáng nhẹ xung quanh hũ (Ánh pha lê cầu vồng dịu dàng, trong suốt OBS)
     function drawAuraGlow(ctx, geom) {
@@ -1581,71 +1431,18 @@
       ctx.restore();
     }
 
+    function getJarBaseUrl(style) {
+      return jarConfig.customJarImage || (style === 'fishbowl' ? '/builtin/jar/iridescent_fishbowl_transparent.png' : '');
+    }
+
     // Vẽ hình dáng hũ theo các phong cách (kể cả ảnh mẫu tùy chọn)
     function drawJarBackground(ctx, geom, style) {
-      const { cx, cy, w, h, imgX, imgY, neckW, neckH, aspect, isFishbowl } = geom;
-      const scale = jarConfig.jarScale || 1.0;
-
+      const { imgX, imgY, w, h } = geom;
+      const image = preloadImage(getJarBaseUrl(style));
+      const hasImage = image?.complete && image.naturalWidth > 0;
       ctx.save();
-
-      // Kiểm tra xem có dùng hũ ảnh AI / Fishbowl không
-      const hasCustomImage = !!jarConfig.customJarImage;
-      const isFishbowlStyle = isFishbowl || style === 'fishbowl' || (hasCustomImage && jarConfig.customJarImage.includes('fishbowl'));
-
-      if (hasCustomImage || isFishbowlStyle || style === 'custom_image') {
-        const customUrl = jarConfig.customJarImage || '/uploads/decor/iridescent_fishbowl_transparent.png';
-        const customImg = preloadImage(customUrl);
-        if (customImg && customImg.complete && customImg.naturalWidth > 0) {
-          ctx.drawImage(customImg, imgX, imgY, w, h);
-        }
-        ctx.restore();
-        return; // KHÔNG BAO GIỜ VẼ HŨ VECTOR KHI DÙNG ẢNH HŨ
-      }
-
-      // Fallback chỉ dành cho hũ vector truyền thống nếu người dùng chủ động chọn mason jar
-      const halfW = w / 2;
-      const halfH = h / 2;
-      const halfNeckW = neckW / 2;
-      const cornerR = (aspect === 'horizontal' ? 44 : 36) * scale;
-      const baseThick = (aspect === 'horizontal' ? 26 : 32) * scale;
-
-      const grad = ctx.createLinearGradient(cx - halfW, cy, cx + halfW, cy);
-      if (style === 'diamond') {
-        grad.addColorStop(0, 'rgba(168, 85, 247, 0.28)');
-        grad.addColorStop(0.15, 'rgba(216, 180, 254, 0.08)');
-        grad.addColorStop(0.85, 'rgba(216, 180, 254, 0.08)');
-        grad.addColorStop(1, 'rgba(168, 85, 247, 0.32)');
-      } else {
-        grad.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
-        grad.addColorStop(0.15, 'rgba(224, 242, 254, 0.06)');
-        grad.addColorStop(0.85, 'rgba(224, 242, 254, 0.06)');
-        grad.addColorStop(1, 'rgba(56, 189, 248, 0.30)');
-      }
-
-      ctx.fillStyle = grad;
-
-      // Đường viền bo tròn đáy hũ & uốn lượn vai hũ
-      ctx.beginPath();
-      ctx.moveTo(cx - halfW + cornerR, cy + halfH);
-      ctx.lineTo(cx + halfW - cornerR, cy + halfH);
-      ctx.quadraticCurveTo(cx + halfW, cy + halfH, cx + halfW, cy + halfH - cornerR);
-      ctx.lineTo(cx + halfW, cy - halfH + neckH + 24);
-      ctx.quadraticCurveTo(cx + halfW, cy - halfH + neckH, cx + halfNeckW, cy - halfH + neckH);
-      ctx.lineTo(cx + halfNeckW, cy - halfH);
-      ctx.lineTo(cx - halfNeckW, cy - halfH);
-      ctx.lineTo(cx - halfNeckW, cy - halfH + neckH);
-      ctx.quadraticCurveTo(cx - halfW, cy - halfH + neckH, cx - halfW, cy - halfH + neckH + 24);
-      ctx.lineTo(cx - halfW, cy + halfH - cornerR);
-      ctx.quadraticCurveTo(cx - halfW, cy + halfH, cx - halfW + cornerR, cy + halfH);
-      ctx.closePath();
-      ctx.fill();
-
-      // Đáy kính đúc nguyên khối dày dặn
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.24)';
-      ctx.beginPath();
-      ctx.ellipse(cx, cy + halfH - baseThick * 0.45, halfW - cornerR * 0.4, baseThick * 0.35, 0, 0, Math.PI * 2);
-      ctx.fill();
-
+      if (!hasImage || jarConfig.hideDefaultJarOnCustom === false) drawJarSilhouette(ctx, geom, style, jarConfig.jarScale || 1);
+      if (hasImage) ctx.drawImage(image, imgX, imgY, w, h);
       ctx.restore();
     }
 
@@ -1654,7 +1451,7 @@
       const scale = jarConfig.jarScale || 1.0;
 
       // 1. Nếu có ảnh Overlay mặt trước (Front Overlay: Nơ, cổ bèo, viền miệng hũ, bóng kính pha lê)
-      const overlayUrl = jarConfig.frontOverlayImage || (isFishbowl ? '/uploads/decor/iridescent_fishbowl_front_overlay.png' : '');
+      const overlayUrl = jarConfig.frontOverlayImage;
       if (overlayUrl) {
         const overlayImg = preloadImage(overlayUrl);
         if (overlayImg && overlayImg.complete && overlayImg.naturalWidth > 0) {
@@ -1743,7 +1540,7 @@
 
           const stkX = cx + ((stk.x !== undefined ? stk.x - 50 : 0) / 100) * w;
           const stkY = cy + ((stk.y !== undefined ? stk.y - 50 : 0) / 100) * h;
-          const stkScale = (stk.scale || 1.0) * scale;
+          const stkScale = stk.scale ?? 1;
           const stkRot = ((stk.rotation || 0) * Math.PI) / 180;
           const stkAlpha = stk.opacity !== undefined ? stk.opacity : 1.0;
 
@@ -2062,8 +1859,9 @@
 
       // Đổ bóng nhẹ dưới quà
       ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetY = 2;
+      const detailedShadow = giftBodies.length < 200 || r >= 18;
+      ctx.shadowBlur = detailedShadow ? 6 : 0;
+      ctx.shadowOffsetY = detailedShadow ? 2 : 0;
 
       let img = null;
       if (data.iconUrl) {
@@ -2071,16 +1869,10 @@
       }
 
       if (img && img.complete && img.naturalWidth > 0) {
-        // Cắt hình tròn vẽ ảnh icon TikTok chính thức
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(img, -r, -r, r * 2, r * 2);
-
-        // Vành viền bóng nhẹ quanh icon
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        const fit = (r * 2) / Math.max(img.naturalWidth, img.naturalHeight);
+        const w = img.naturalWidth * fit;
+        const h = img.naturalHeight * fit;
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
       } else {
         // Fallback: Vẽ huy hiệu bo tròn kèm emoji thông minh
         const coins = data.coins || 1;
@@ -2125,22 +1917,41 @@
     // 8. MAIN ANIMATION LOOP (60FPS OBS RENDERING)
     // ==========================================
     let lastTime = performance.now();
+    let physicsTime = 0;
 
     function renderLoop(time) {
-      const dt = Math.min(33, time - lastTime);
+      requestAnimationFrame(renderLoop);
+      const dt = Math.min(50, time - lastTime);
       lastTime = time;
+      if (!jarConfig.enabled) return;
+      if (assembly && time - assembly.started >= assembly.duration) {
+        assembly = undefined;
+        jarState.isBurst = false;
+        resetJarCracks();
+        rebuildJarBodies();
+        updateGoal();
+      }
+      spawnRestoredGifts();
+      spawnPendingGifts(time);
+      advanceAirborneGifts(time);
+      physicsTime += Math.max(0, dt);
+      const step = 1000 / 120;
+      while (physicsTime >= step) {
+        const physicsAt = time - physicsTime + step;
+        updateJarMotion(physicsAt);
+        Engine.update(engine, step);
+        limitPourMomentum(physicsAt);
+        physicsTime -= step;
+      }
 
-      // 1. Cập nhật vật lý Matter.js
-      Engine.update(engine, dt);
-
-      // Đảm bảo an toàn tuyệt đối: quà rơi xuống sàn màn hình luôn nằm vững trên mặt đất không lọt ra ngoài
-      if (jarConfig.enableFloorAccumulation !== false) {
-        for (let i = 0; i < giftBodies.length; i++) {
-          const b = giftBodies[i];
-          const r = b.giftData?.radius || b.circleRadius || 16;
-          if (b.position.y > height - r) {
-            Matter.Body.setPosition(b, { x: b.position.x, y: height - r });
-            if (b.velocity.y > 0) Matter.Body.setVelocity(b, { x: b.velocity.x * 0.95, y: 0 });
+      if (jarConfig.enableFloorAccumulation === false) {
+        for (let i = giftBodies.length - 1; i >= 0; i--) {
+          const body = giftBodies[i];
+          if (!body.giftData.retainedAfterBreak && body.position.y - body.giftData.radius > height + 40) {
+            World.remove(engine.world, body);
+            giftBodies.splice(i, 1);
+            checkpointDirty = true;
+            adjustGiftInventory(body.giftData, -1, 0);
           }
         }
       }
@@ -2148,27 +1959,11 @@
       // 2. Xoá canvas trong suốt
       ctx.clearRect(0, 0, width, height);
 
-      // 3. Tính toán Trauma rung lắc hũ
-      let shakeOffsetX = 0;
-      let shakeOffsetY = 0;
-      let shakeRot = 0;
-
-      if (jarState.shakeTrauma > 0) {
-        jarState.shakeTime += 0.35;
-        const trauma2 = jarState.shakeTrauma * jarState.shakeTrauma;
-        shakeOffsetX = Math.sin(jarState.shakeTime * 1.4) * 18 * trauma2;
-        shakeOffsetY = Math.cos(jarState.shakeTime * 1.7) * 12 * trauma2;
-        shakeRot = Math.sin(jarState.shakeTime * 1.2) * 0.05 * trauma2;
-
-        // Giảm dần trauma
-        jarState.shakeTrauma = Math.max(0, jarState.shakeTrauma - 0.015);
-      }
-
+      const sceneTransform = ctx.getTransform();
       ctx.save();
-      // Áp dụng rung lắc & lật hũ (Flip)
       const { cx, cy } = jarGeometry;
-      ctx.translate(cx + shakeOffsetX, cy + shakeOffsetY);
-      ctx.rotate(jarState.flipAngle + shakeRot);
+      ctx.translate(cx + jarPose.x, cy + jarPose.y);
+      ctx.rotate(jarPose.angle);
       ctx.translate(-cx, -cy);
 
       // --- LAYER 0: HÀO QUANG NEON (AURA GLOW) ---
@@ -2187,14 +1982,34 @@
         drawDecorStickers(ctx, jarGeometry, 'behind_glass');
       }
 
-      // --- LAYER 3: CÁC MÓN QUÀ VẬT LÝ ĐANG RƠI VÀ XẾP LỚP BÊN TRONG ---
-      if (giftBodies.length > 0) {
-        ctx.save();
-        // Quà vật lý được giữ kín bên trong bởi hệ thống 43 bức tường va chạm Matter.js (jarWalls).
-        // Cho phép quà hiển thị trọn vẹn 100% không bị cắt cụt ngang mép miệng hũ khi tràn miệng hoặc rơi xuống sàn.
-        giftBodies.forEach(b => drawGiftBody(ctx, b));
-        ctx.restore();
+      // Matter bodies already live in screen coordinates. The glass alone uses the visual transform.
+      ctx.save();
+      ctx.setTransform(sceneTransform);
+      let cavity;
+      if (jarConfig.clipGiftsToJar && !jarState.isBurst && currentCavityPoints.length > 2) {
+        cavity = new Path2D();
+        currentCavityPoints.forEach((point, index) => {
+          const { x, y } = jarPose === restPose ? point : jarPoint(point);
+          if (index) cavity.lineTo(x, y);
+          else cavity.moveTo(x, y);
+        });
+        cavity.closePath();
       }
+      for (const body of giftBodies) {
+        const radius = body.giftData.radius;
+        if (body.position.y + radius < 0 || body.position.y - radius > height) continue;
+        const local = cavity && jarPose !== restPose ? jarPoint(body.position, jarPose, true) : body.position;
+        if (cavity && local.y - radius > jarGeometry.mouthY && Math.abs(local.x - cx) < jarGeometry.w * .56 &&
+            isInsideCavity(local, currentCavityPoints)) {
+          ctx.save();
+          ctx.clip(cavity);
+          drawGiftBody(ctx, body);
+          ctx.restore();
+        } else {
+          drawGiftBody(ctx, body);
+        }
+      }
+      ctx.restore();
 
       // --- LAYER 4: HIỆU ỨNG PHẢN CHIẾU ÁNH BÓNG MẶT KÍNH TRƯỚC (QUÉT LÊN TRÊN QUÀ) ---
       if (!jarState.isBurst) {
@@ -2213,12 +2028,12 @@
 
       // --- LAYER 7: HIỆU ỨNG DẢI SÁNG LẤP LÁNH CHẠY QUANH VIỀN HŨ (60FPS CAUSTIC SHIMMER & SPARKLES) ---
       if (!jarState.isBurst) {
-        drawRealisticRimShimmer(ctx, jarGeometry, time);
+        if (!reducedMotion.matches) drawRealisticRimShimmer(ctx, jarGeometry, time);
       }
 
       // --- LAYER 8: CÁC ĐƯỜNG NỨT THỦY TINH (CRACKS) ---
       if (!jarState.isBurst && jarState.crackLevel > 0) {
-        drawCracks(ctx, jarGeometry.cx, jarGeometry.cy, jarGeometry.w, jarGeometry.h, jarState.crackLevel);
+        drawActiveCracks(time);
       }
 
       // --- LAYER 9: KHUNG DÂY VẬT LÝ CĂN CHỈNH (DEBUG HITBOX WIREFRAME) ---
@@ -2228,68 +2043,8 @@
 
       ctx.restore();
 
-      // --- LAYER 6: CÁC MẢNH KÍNH VỠ VÀ PHÁO HOA KHI NỔ TUNG ---
-      if (glassShards.length > 0) {
-        ctx.save();
-        for (let i = glassShards.length - 1; i >= 0; i--) {
-          const s = glassShards[i];
-          s.x += s.vx;
-          s.y += s.vy;
-          s.vy += 0.35; // trọng lực rơi
-          s.rot += s.vrot;
-          s.alpha -= 0.005;
-
-          if (s.alpha <= 0 || s.y > height + 50) {
-            glassShards.splice(i, 1);
-            continue;
-          }
-
-          ctx.save();
-          ctx.translate(s.x, s.y);
-          ctx.rotate(s.rot);
-          ctx.fillStyle = `rgba(224, 242, 254, ${s.alpha * 0.75})`;
-          ctx.strokeStyle = `rgba(255, 255, 255, ${s.alpha * 0.95})`;
-          ctx.lineWidth = 1.5;
-
-          ctx.beginPath();
-          ctx.moveTo(s.points[0].x, s.points[0].y);
-          for (let p = 1; p < s.points.length; p++) {
-            ctx.lineTo(s.points[p].x, s.points[p].y);
-          }
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
-        }
-        ctx.restore();
-      }
-
-      // Pháo hoa giấy bay
-      if (confettiParticles.length > 0) {
-        ctx.save();
-        for (let i = confettiParticles.length - 1; i >= 0; i--) {
-          const p = confettiParticles[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.28;
-          p.rot += p.vrot;
-          p.alpha -= 0.006;
-
-          if (p.alpha <= 0 || p.y > height + 50) {
-            confettiParticles.splice(i, 1);
-            continue;
-          }
-
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.globalAlpha = p.alpha;
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-          ctx.restore();
-        }
-        ctx.restore();
-      }
+      drawGlassShards(dt);
+      drawAssembly(time);
 
       // --- LAYER 7: BỤI SÁNG LẤP LÁNH KHI QUÀ RƠI (SPARKLE DUST) ---
       if (sparkleParticles.length > 0) {
@@ -2318,7 +2073,6 @@
         ctx.restore();
       }
 
-      requestAnimationFrame(renderLoop);
     }
     requestAnimationFrame(renderLoop);
 
@@ -2334,78 +2088,206 @@
       transports: ['websocket', 'polling']
     });
 
-    let lastDisconnectTime = null;
+    let configRevision = 0;
+    let configReady = false;
 
-    // Nạp ngay cấu hình ban đầu từ Server khi trang vừa mở
-    function fetchAndApplyInitialConfig() {
-      fetch('/api/jar/config')
-        .then(r => r.json())
-        .then(res => {
-          if (res.success && res.config) {
-            jarConfig = { ...jarConfig, ...res.config };
-            AudioEngine.enabled = jarConfig.soundEnabled !== false;
-            AudioEngine.volume = jarConfig.soundVolume || 0.7;
-            engine.world.gravity.y = (Number(jarConfig.gravity) || 1.0) * (Number(jarConfig.fallSpeed) || 1.0);
-            updateGoal(0, false);
-            rebuildJarBodies();
-            rebuildScreenBoundaries();
-            resizeActiveGiftBodies();
-          }
-        }).catch(() => {});
-    }
-    fetchAndApplyInitialConfig();
+    function applyJarConfig(config) {
+      const previous = jarConfig;
+      jarConfig = { ...previous, ...config };
+      document.getElementById('stage-container').hidden = !jarConfig.enabled;
+      AudioEngine.enabled = !previewMode && jarConfig.soundEnabled !== false;
+      AudioEngine.volume = Number(jarConfig.soundVolume ?? 0.7);
+      engine.world.gravity.y = (Number(jarConfig.gravity) || 1) * (Number(jarConfig.fallSpeed) || 1);
 
-    socket.on('connect', () => {
-      console.log('⚡ [JAR] Đã kết nối Socket.IO thành công!');
-      lastDisconnectTime = null;
-      fetchAndApplyInitialConfig();
-    });
-
-    socket.on('disconnect', () => {
-      console.warn('⚠️ [JAR] Mất kết nối tới Server. Đang chờ kết nối lại...');
-      lastDisconnectTime = Date.now();
-    });
-
-    // Watchdog Ping cho OBS Browser Source: Tự động tải lại trang khi server khởi động lại
-    setInterval(() => {
-      if (!socket.connected) {
-        fetch('/api/ping', { cache: 'no-store' })
-          .then(res => {
-            if (res.ok) {
-              if (lastDisconnectTime && (Date.now() - lastDisconnectTime > 3000)) {
-                console.log('🔄 [JAR] Server đã trực tuyến trở lại! Tự động làm mới trang...');
-                window.location.reload();
-              } else if (!socket.connected) {
-                socket.connect();
-              }
-            }
-          })
-          .catch(() => {});
+      if (!jarConfig.enabled && previous.enabled) {
+        jarHiddenAt = performance.now();
+        saveJarCheckpoint(true);
+      } else if (jarConfig.enabled && jarHiddenAt !== undefined) {
+        const hiddenFor = performance.now() - jarHiddenAt;
+        for (const body of airborneGifts) body.giftData.arrival.start += hiddenFor;
+        jarHiddenAt = undefined;
+        nextDropAt = 0;
       }
-    }, 2500);
+      const changed = (keys) => keys.some(key => JSON.stringify(previous[key]) !== JSON.stringify(jarConfig[key]));
+      if (!configReady || changed(['style', 'jarAspect', 'jarPosX', 'jarPosY', 'jarScale', 'hitbox', 'bounciness'])) rebuildJarBodies();
+      if (changed(['enableFloorAccumulation'])) {
+        giftBodies.forEach(updateGiftCollisionMask);
+      }
+      if (changed(['giftScaleGlobal', 'giftSizeSmall', 'giftSizeMedium', 'giftSizeLarge', 'giftSizeVIP'])) resizeActiveGiftBodies();
+      if (changed(['giftCapacity', 'giftCapacityUnlimited'])) limitGiftBodies();
+      checkpointDirty = true;
+      if (changed(['bounciness'])) giftBodies.forEach(body => { body.restitution = Number(jarConfig.bounciness); });
+      configReady = true;
+      updateGoal();
+      publishJarState();
+    }
 
-    // Nhận quà rơi vào hũ
-    socket.on('jar_drop_gift', (data) => {
-      console.log('🎁 [JAR DROP]', data);
-      dropGift(data);
-    });
+    function acceptJarSessionEvent(payload) {
+      if (!payload?.sessionId) return Boolean(payload);
+      // The snapshot covers events emitted before this source finished connecting.
+      if (jarSyncPending || payload.sessionId !== jarSessionId || payload.sequence <= jarEventSequence) return false;
+      jarEventSequence = payload.sequence;
+      return true;
+    }
 
-    // Nhận hành động tương tác (Lắc, Nứt, Lật, Nổ, Dọn)
-    socket.on('jar_action', (data) => {
-      console.log('⚡ [JAR ACTION]', data);
-      triggerAction(data);
-    });
+    function restoreJarSession(snapshot) {
+      if (!snapshot?.sessionId || !Array.isArray(snapshot.gifts)) return;
+      jarSyncPending = false;
+      if (snapshot.sessionId === jarSessionId && snapshot.sequence === jarEventSequence) return;
 
-    // Cập nhật cấu hình
-    socket.on('jar_config_updated', (newCfg) => {
-      jarConfig = { ...jarConfig, ...newCfg };
-      AudioEngine.enabled = jarConfig.soundEnabled !== false;
-      AudioEngine.volume = jarConfig.soundVolume || 0.7;
-      engine.world.gravity.y = (Number(jarConfig.gravity) || 1.0) * (Number(jarConfig.fallSpeed) || 1.0);
-      updateGoal(0, false);
+      jarSessionId = snapshot.sessionId;
+      jarEventSequence = snapshot.sequence;
+      clearAllGifts();
+      resetVisualEffects();
+      resetJarGoal();
       rebuildJarBodies();
-      rebuildScreenBoundaries();
-      resizeActiveGiftBodies();
+      const coins = Number(snapshot.coins) || 0;
+      jarState.goalBurstUsed = coins >= (Number(jarConfig.goalTargetCoins) || 500);
+      updateGoal(coins);
+
+      let capacity = jarConfig.giftCapacityUnlimited === true
+        ? Infinity : Math.max(1, Math.trunc(Number(jarConfig.giftCapacity) || 600));
+      const batches = new Map();
+      for (const gift of snapshot.gifts.slice().reverse()) {
+        if (capacity <= 0) break;
+        const data = normalizeJarGift(gift);
+        if (!data) continue;
+        const remaining = Math.min(capacity, data.count);
+        batches.set(data.key, { data, remaining });
+        capacity -= remaining;
+      }
+
+      for (const [key, x, y, angle, retained] of snapshot.positions || []) {
+        const batch = batches.get(key);
+        if (!batch?.remaining) continue;
+        restoredPositions.push({ data: batch.data, x: x * width, y: y * height, angle, retained });
+        batch.remaining--;
+      }
+      restoredPositions.reverse();
+      restoredGiftBatches = [...batches.values()].filter(batch => batch.remaining).reverse();
+    }
+
+    function getStoredGiftPosition(radius) {
+      if (!restoreGrid) {
+        const smallest = Math.min(...restoredGiftBatches.map(batch => getGiftRadius(batch.data.coins)));
+        restoreGrid = {
+          size: smallest * 2 + 2, col: 0, row: 0, floor: 0, inside: true
+        };
+      }
+      const grid = restoreGrid;
+      const { bowlCx, bowlCy, bowlRx, bowlRy, mouthY } = jarGeometry;
+      const columns = Math.max(1, Math.floor(bowlRx * 2 / grid.size));
+      while (grid.inside) {
+        const y = bowlCy + bowlRy - (grid.row + .5) * grid.size;
+        if (y < mouthY + grid.size / 2) {
+          grid.inside = false;
+          break;
+        }
+        const x = bowlCx + (grid.col - (columns - 1) / 2) * grid.size;
+        if (++grid.col >= columns) {
+          grid.col = 0;
+          grid.row++;
+        }
+        if (isInsideCavity({ x, y: y + radius + 2 }, currentCavityPoints) &&
+            isInsideCavity({ x: x - radius, y }, currentCavityPoints) &&
+            isInsideCavity({ x: x + radius, y }, currentCavityPoints)) return { x, y };
+      }
+      const shelf = Math.max(grid.size, radius * 2 + 2);
+      const widthInSlots = Math.max(1, Math.floor(width / shelf));
+      const floorSlots = widthInSlots * Math.max(1, Math.floor(height / shelf));
+      const cell = grid.floor++ % floorSlots;
+      return {
+        x: width / 2 + (cell % widthInSlots - (widthInSlots - 1) / 2) * shelf,
+        y: height - radius - 1 - Math.floor(cell / widthInSlots) * shelf
+      };
+    }
+
+    function spawnRestoredGifts() {
+      for (let added = 0; added < 60; added++) {
+        const saved = restoredPositions.pop();
+        const batch = restoredGiftBatches[0];
+        if (!saved && !batch) break;
+
+        const data = saved?.data || batch.data;
+        const radius = getGiftRadius(data.coins);
+        const { x, y } = saved || getStoredGiftPosition(radius);
+        limitGiftBodies(1);
+        const body = createJarGift(data, x, y, radius, saved?.retained === true, saved?.angle);
+        Matter.Sleeping.set(body, true);
+        adjustGiftInventory(data, 1, 0);
+        if (!saved && --batch.remaining === 0) restoredGiftBatches.shift();
+      }
+    }
+
+    function saveJarCheckpoint(force = false) {
+      if (!jarSessionId || !socket.connected || restoredPositions.length || restoredGiftBatches.length) return;
+      if (!force && !checkpointDirty && (!jarConfig.enabled || giftBodies.every(body => body.isSleeping))) return;
+      const positions = [];
+      for (const body of giftBodies.slice(-1800)) {
+        if (airborneGifts.has(body)) continue;
+        const x = body.position.x / width;
+        const y = body.position.y / height;
+        if (x < 0 || x > 1 || y < 0 || y > 1) continue;
+        positions.push([body.giftData.key, Math.round(x * 10000) / 10000, Math.round(y * 10000) / 10000,
+          Math.round(body.angle * 100) / 100, body.giftData.retainedAfterBreak === true]);
+      }
+      socket.emit('jar_checkpoint', { sessionId: jarSessionId, sequence: jarEventSequence, positions });
+      checkpointDirty = false;
+    }
+
+    async function fetchAndApplyInitialConfig() {
+      const revision = configRevision;
+      try {
+        const res = await fetch('/api/jar/config', { cache: 'no-store' });
+        const data = await res.json();
+        if (data.success && revision === configRevision) applyJarConfig(data.config);
+      } catch (_) {}
+    }
+
+    function publishJarState() {
+      if (!previewMode) {
+        if (socket.connected && configReady && inventoryDirty) {
+          socket.emit('jar_report_inventory', [...giftInventory.values()]);
+          inventoryDirty = false;
+        }
+        return;
+      }
+      if (window.parent === window) return;
+      window.parent.postMessage({
+        type: 'jar-preview-state', ready: configReady, connected: socket.connected,
+        enabled: jarConfig.enabled, count: giftBodies.length, coins: jarState.currentCoins,
+        condition: assembly ? 'assembling' : jarState.isBurst ? 'broken' : 'ready',
+        shardCount: assembly ? assembly.pieces.length : glassShards.length,
+        inventory: inventoryDirty ? [...giftInventory.values()] : undefined
+      }, location.origin);
+      inventoryDirty = false;
+    }
+
+    socket.on('connect', async () => {
+      inventoryDirty = true;
+      jarSyncPending = true;
+      const connection = socket.id;
+      await fetchAndApplyInitialConfig();
+      if (socket.connected && socket.id === connection) {
+        socket.emit('jar_sync_session', previewMode ? 'preview' : 'obs', restoreJarSession);
+      }
+    });
+    socket.on('disconnect', () => {
+      jarSyncPending = true;
+      publishJarState();
+    });
+    socket.on('jar_drop_gift', data => { if (acceptJarSessionEvent(data)) dropGift(data); });
+    socket.on('jar_action', data => { if (acceptJarSessionEvent(data)) triggerAction(data); });
+    socket.on('jar_config_updated', (config) => {
+      configRevision++;
+      applyJarConfig(config);
+    });
+    fetchAndApplyInitialConfig();
+    setInterval(publishJarState, 150);
+    setInterval(saveJarCheckpoint, 1500);
+    window.addEventListener('pagehide', () => saveJarCheckpoint(true));
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) saveJarCheckpoint(true);
     });
 
     // Kích hoạt âm thanh khi người dùng click vào trang

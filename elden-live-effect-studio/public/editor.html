@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="studio-editor-document">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>LiveEffect Pro NLE Studio · Dựng Video & Nhạc TikTok Live Đa Layer 60 FPS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dựng video · Elden Media Studio</title>
   <style>
     :root {
       --bg-darkest: #060911;
@@ -541,40 +541,38 @@
       transition: width 0.15s ease-out;
     }
   </style>
+  <link rel="icon" href="/brand/elden-media.png" type="image/png">
+  <link rel="stylesheet" href="/studio-ui.css">
 </head>
-<body>
+<body data-studio-page="editor">
 
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <a href="/admin.html" class="btn btn-sm" style="text-decoration: none;">← Về Trang Cấu Hình</a>
-      <span>✂️ LiveEffect NLE Studio</span>
-      <span class="badge-pro">Multi-Layer</span>
+  <header class="studio-header">
+    <a class="studio-brand" href="/" aria-label="Elden Media Studio"><img src="/brand/elden-media.png" alt=""><span><strong>Elden Media</strong><small>Trình dựng video</small></span></a>
+    <nav class="studio-nav" aria-label="Không gian làm việc">
+      <a href="/admin.html?view=rules">Điều khiển</a><a href="/editor.html" aria-current="page">Dựng video</a><a href="/jar-studio.html">Thiết kế hũ</a>
+    </nav>
+    <div class="studio-header-actions">
       <span class="fps-badge" id="sourceFpsBadge">FPS: 30</span>
-    </div>
-
-    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-      <!-- Chọn video từ thư viện có sẵn -->
-      <select id="selectLibraryVideo" onchange="loadSelectedLibraryVideo(this.value)" style="max-width: 180px;">
-        <option value="">-- Chọn video trong Studio --</option>
-      </select>
-
-      <input type="file" id="localVideoFile" accept="video/*" style="display: none;" onchange="handleLocalFileSelect(this.files[0])">
-      <button class="btn btn-sm" onclick="document.getElementById('localVideoFile').click()">📤 Mở Video Mới</button>
-
-      <!-- Nút mở Modal xuất video chuẩn FPS -->
-      <button class="btn btn-sm btn-success" onclick="openExportModal()">🚀 Xuất & Lưu Vào Studio</button>
+      <input type="file" id="localVideoFile" accept="video/*" hidden onchange="handleLocalFileSelect(this.files[0]); this.value = ''">
+      <button type="button" class="btn" onclick="document.getElementById('localVideoFile').click()">Nhập video</button>
+      <button type="button" class="btn studio-primary" onclick="openExportModal()">Xuất video</button>
     </div>
   </header>
 
   <!-- WORKSPACE -->
   <div class="workspace">
+    <aside class="editor-library" aria-labelledby="editorLibraryTitle">
+      <h2 class="studio-panel-title" id="editorLibraryTitle">Thư viện video</h2>
+      <label><input type="search" id="editorMediaSearch" placeholder="Tìm video" aria-label="Tìm video" oninput="renderEditorLibrary()"></label>
+      <select id="selectLibraryVideo" onchange="loadSelectedLibraryVideo(this.value)" hidden></select>
+      <div id="editorMediaItems" class="editor-media-items"></div>
+    </aside>
     <!-- KHUNG XEM TRƯỚC (CANVAS STAGE) -->
     <div class="stage-area">
       <div class="canvas-container canvas-checkered-bg" id="canvasWrapper">
         <canvas id="previewCanvas" width="720" height="1280"></canvas>
       </div>
-      <div class="stage-hud" id="stageHudInfo">🎬 Sẵn sàng biên tập...</div>
+      <div class="stage-hud" id="stageHudInfo" role="status">🎬 Sẵn sàng biên tập...</div>
 
       <!-- Hidden video element for decoding -->
       <video id="hiddenSourceVideo" playsinline preload="auto" style="display: none;"></video>
@@ -583,19 +581,7 @@
     <!-- BẢNG ĐIỀU KHIỂN & THUỘC TÍNH (INSPECTOR) -->
     <div class="inspector-panel">
 
-      <!-- HƯỚNG DẪN THAO TÁC IDOL -->
-      <div class="card-box" style="border-color: #0284c7; background: rgba(2, 132, 199, 0.08);">
-        <div class="card-box-title" style="color: #38bdf8;">
-          <span>💡 Dựng Nhạc Chờ Idol Chuẩn</span>
-        </div>
-        <div style="font-size: 0.74rem; color: #bae6fd; line-height: 1.4;">
-          1. <b>Kéo lùi video:</b> Giữ chuột vào clip Video và <b>kéo sang phải</b> (ví dụ bắt đầu từ 3.5s).<br>
-          2. Khoảng trống phía trước (0s - 3.5s) sẽ <b>tự động là Trong Suốt</b> (OBS chỉ phát nhạc, camera hiện idol tạo dáng).<br>
-          3. <b>Nhân đôi dạo đầu:</b> Chọn clip nhạc intro $\rightarrow$ Chuột phải $\rightarrow$ <b>Nhân đôi</b> để nối tiếp nhạc dạo.<br>
-          4. <b>Cắt giữa bài:</b> Kéo kim $\rightarrow$ Bấm <b>✂️ Cắt</b> $\rightarrow$ Kéo đoạn sau dãn ra để tạo khoảng trống camera idol nhảy theo!
-        </div>
-      </div>
-
+      <h2 class="studio-panel-title">Thuộc tính đoạn cắt</h2>
       <!-- THUỘC TÍNH CLIP ĐANG CHỌN -->
       <div class="card-box" id="clipInspectorCard">
         <div class="card-box-title">
@@ -618,13 +604,33 @@
             </select>
           </div>
 
-          <!-- Kiểu Biến Hình / Mờ Dần -->
+          <div class="form-row" id="videoLookRow">
+            <label class="form-label" for="propVideoLook">Màu hình ảnh</label>
+            <select id="propVideoLook" onchange="updateSelectedClipProp('look', this.value)">
+              <option value="original">Màu gốc</option><option value="warm">Ánh ấm</option>
+              <option value="cool">Ánh lạnh</option><option value="mono">Đen trắng</option><option value="vivid">Tương phản cao</option>
+            </select>
+          </div>
+          <div class="form-row" id="videoFitRow">
+            <label class="form-label" for="propVideoFit">Cách vừa khung</label>
+            <select id="propVideoFit" onchange="updateSelectedClipProp('fit', this.value)">
+              <option value="contain">Hiện đủ video</option><option value="cover">Lấp đầy khung 9:16</option>
+            </select>
+          </div>
+          <div class="form-row" id="audioVolumeRow" hidden>
+            <label class="form-label" for="propClipVolume">Âm lượng</label>
+            <input type="range" id="propClipVolume" min="0" max="1" step=".05" onchange="updateSelectedClipProp('volume', Number(this.value))">
+          </div>
+          <!-- Chuyển cảnh -->
           <div class="form-row" id="videoFxStyleRow">
             <div class="form-label"><span>Hiệu ứng Chuyển Cảnh:</span></div>
             <select id="propVideoFxStyle" onchange="updateSelectedClipProp('fxStyle', this.value)">
-              <option value="smooth_fade" selected>🌊 Mờ Dần Mượt Mà (Cubic Smooth - Mặc định)</option>
-              <option value="magic_transform">🌟 Biến Hình Ảo Diệu (Zoom Flash & Glow)</option>
-              <option value="flash_glow">⚡ Chớp Sáng Rực Rỡ (Flash Flare)</option>
+              <option value="smooth_fade">Mờ dần</option>
+              <option value="magic_transform">Zoom và lóe sáng</option>
+              <option value="flash_glow">Chớp sáng</option>
+              <option value="slide_up">Trượt dọc</option>
+              <option value="wipe">Quét ngang</option>
+              <option value="focus">Lấy nét dần</option>
             </select>
           </div>
 
@@ -657,18 +663,18 @@
         </div>
 
         <div id="noClipSelectedMsg" style="color: #64748b; font-size: 0.78rem; text-align: center; padding: 14px 0;">
-          Nhấn vào một đoạn clip trên Timeline để chỉnh sửa hoặc nhấp chuột phải.
+          Chọn một đoạn trên timeline để chỉnh hình, âm thanh và chuyển cảnh.
         </div>
       </div>
 
       <!-- QUẢN LÝ LAYER -->
       <div class="card-box">
         <div class="card-box-title">
-          <span>📑 Quản Lý Layer</span>
+          <span>Lớp timeline</span>
         </div>
         <div style="display: flex; gap: 6px;">
-          <button class="btn btn-sm" style="flex: 1;" onclick="addNewVideoLayer()">+ Thêm Layer Video</button>
-          <button class="btn btn-sm" style="flex: 1;" onclick="addNewAudioLayer()">+ Thêm Layer Nhạc</button>
+          <button class="btn btn-sm" style="flex: 1;" onclick="addNewVideoLayer()">+ Lớp video</button>
+          <button class="btn btn-sm" style="flex: 1;" onclick="addNewAudioLayer()">+ Lớp nhạc</button>
         </div>
       </div>
 
@@ -748,14 +754,14 @@
   <div class="modal-backdrop" id="exportModal">
     <div class="modal-card">
       <div style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-        <span>🚀 Xuất & Lưu Video Vào Studio</span>
+        <span>Xuất video hiệu ứng</span>
         <button class="btn btn-sm" onclick="closeExportModal()">✕</button>
       </div>
 
       <!-- Tên Video (YÊU CẦU BẮT BUỘC) -->
       <div class="form-row">
         <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
-          🏷️ Tên video hiệu ứng (Để hiển thị trong Studio):
+          Tên video hiệu ứng
         </label>
         <input type="text" id="exportVideoNameInput" placeholder="Ví dụ: Bánh Vòng Dance Idol 60fps" style="font-size: 0.9rem; padding: 8px 10px; font-weight: 600;">
         <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">Tên này sẽ xuất hiện trong danh sách chọn video của quy tắc quà.</div>
@@ -764,31 +770,34 @@
       <!-- Lựa chọn Kiểu Chuyển Cảnh / Hiệu Ứng khi xuất -->
       <div class="form-row" style="margin-top: 12px;">
         <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
-          ✨ Hiệu ứng chuyển cảnh Video khi xuất:
+          Chuyển cảnh khi xuất
         </label>
         <select id="exportTransitionStyleSelect" style="font-size: 0.88rem; padding: 7px 10px; font-weight: 600;">
-          <option value="smooth_fade" selected>🌊 Mờ Dần Mượt Mà (Cubic Smooth - Mặc định)</option>
-          <option value="magic_transform">🌟 Biến Hình Ảo Diệu (Zoom Flash & Glow)</option>
-          <option value="flash_glow">⚡ Chớp Sáng Rực Rỡ (Flash Flare)</option>
-          <option value="as_timeline">🎯 Giữ theo từng clip trên timeline</option>
+          <option value="as_timeline" selected>Giữ hiệu ứng từng đoạn</option>
+          <option value="smooth_fade">Mờ dần</option>
+              <option value="magic_transform">Zoom và lóe sáng</option>
+              <option value="flash_glow">Chớp sáng</option>
+              <option value="slide_up">Trượt dọc</option>
+              <option value="wipe">Quét ngang</option>
+              <option value="focus">Lấy nét dần</option>
         </select>
         <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">
-          Chọn "Mờ Dần Mượt Mà" để video và nhạc xuất hiện êm ái, hoặc "Biến Hình Ảo Diệu" để có hiệu ứng zoom lóe sáng.
+          Tùy chọn này chỉ áp dụng cho video đang xuất.
         </div>
       </div>
 
       <!-- Lựa chọn FPS (Khớp video gốc hoặc 60fps mượt mà) -->
       <div class="form-row" style="margin-top: 12px;">
         <label style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 4px;">
-          🎯 Tốc độ khung hình (FPS) xuất ra:
+          Tốc độ khung hình
         </label>
         <select id="exportFpsSelect" style="font-size: 0.88rem; padding: 7px 10px; font-weight: 600;">
-          <option value="original" selected>✅ Khớp chính xác video gốc (<span id="optOriginalFpsText">30</span> FPS)</option>
-          <option value="60">🚀 60 FPS (Mượt mà tối đa chuẩn TikTok Live)</option>
-          <option value="30">⚡ 30 FPS (Tiêu chuẩn)</option>
+          <option value="original" id="optOriginalFpsText" selected>Theo video gốc (30 FPS)</option>
+          <option value="60">60 FPS</option>
+          <option value="30">30 FPS</option>
         </select>
         <div style="font-size: 0.72rem; color: #34d399; margin-top: 3px;">
-          💡 Khung hình được đồng bộ bằng GPU và chuẩn hóa qua FFmpeg 6.1 để không bị giật lag!
+          Video được lưu dưới dạng WebM trong suốt cho OBS.
         </div>
       </div>
 
@@ -796,7 +805,7 @@
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px;">
         <button class="btn btn-sm" onclick="closeExportModal()">Hủy</button>
         <button class="btn btn-sm btn-success" style="font-weight: 700; padding: 8px 16px;" onclick="confirmStartRender()">
-          🚀 Bắt Đầu Xuất Video
+          Bắt đầu xuất
         </button>
       </div>
     </div>
@@ -827,7 +836,7 @@
 
     // Cấu trúc Project Multi-Layer NLE
     let project = {
-      duration: 10,
+      duration: 0,
       pxPerSec: 60,
       currentTime: 0,
       selectedClipId: null,
@@ -918,22 +927,58 @@
       setupTimelineClipDragAndDrop();
       setupContextMenu();
 
-      // Mở trình editor ở trạng thái sạch sẽ ban đầu (không để mẫu sẵn)
+      updateUndoRedoBtnState();
       drawEmptyStage();
       renderTimeline();
     }
 
     // Lấy danh sách video từ server
+    let editorVideos = [];
+    let editorSourceRequest = 0;
+
+    function renderEditorLibrary() {
+      const shelf = document.getElementById('editorMediaItems');
+      const search = document.getElementById('editorMediaSearch').value.trim().toLocaleLowerCase('vi');
+      const filtered = editorVideos.filter(item => item.name.toLocaleLowerCase('vi').includes(search));
+      if (!filtered.length) {
+        const message = document.createElement('p');
+        message.className = 'studio-empty';
+        message.textContent = search ? 'Không có video khớp từ khóa.' : 'Kho trống. Nhập video để bắt đầu.';
+        shelf.replaceChildren(message);
+        return;
+      }
+      const select = document.getElementById('selectLibraryVideo');
+      shelf.replaceChildren(...filtered.map(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'editor-media-item';
+        button.setAttribute('aria-pressed', String(item.url === currentLoadedSourceUrl));
+        const title = document.createElement('strong');
+        title.textContent = item.name;
+        const size = document.createElement('small');
+        const megabyte = item.size >= 1048576;
+        size.textContent = ((item.size || 0) / (megabyte ? 1048576 : 1024)).toLocaleString('vi-VN', { maximumFractionDigits: megabyte ? 1 : 0 }) + (megabyte ? ' MB' : ' KB');
+        button.append(title, size);
+        button.onclick = () => {
+          select.value = item.url;
+          loadSelectedLibraryVideo(item.url);
+        };
+        return button;
+      }));
+    }
+
     async function fetchAvailableVideos() {
       try {
         const res = await fetch('/api/videos');
         const data = await res.json();
         if (data.success) {
-          const select = document.getElementById('selectLibraryVideo');
-          select.innerHTML = '<option value="">-- Chọn video trong Studio --</option>' +
-            data.videos.map(v => `<option value="${v.url}">${v.name}</option>`).join('');
+          editorVideos = Array.isArray(data.videos) ? data.videos : [];
         }
       } catch (_) {}
+      const select = document.getElementById('selectLibraryVideo');
+      select.replaceChildren(new Option('Chọn video', ''), ...editorVideos.map(video => new Option(video.name, video.url)));
+      select.value = currentLoadedSourceUrl || '';
+      renderEditorLibrary();
     }
 
     function loadSelectedLibraryVideo(url) {
@@ -946,35 +991,57 @@
     function handleLocalFileSelect(file) {
       if (!file) return;
       const url = URL.createObjectURL(file);
-      loadSourceUrl(url, file.name);
+      loadSourceUrl(url, file.name, file);
     }
 
     // Nạp Video và thăm dò FPS
-    async function loadSourceUrl(url, name) {
+    async function loadSourceUrl(url, name, localFile = null) {
+      if (isPlaying) togglePlay();
+      const request = ++editorSourceRequest;
+      const previous = currentLoadedSourceUrl;
+      if (previous?.startsWith('blob:') && previous !== url) URL.revokeObjectURL(previous);
       currentLoadedSourceUrl = url;
       currentLoadedSourceName = name;
+      project.duration = 0;
+      rawAudioBuffer = null;
+      detectedSourceFps = 30;
+      document.getElementById('sourceFpsBadge').textContent = 'FPS: 30';
+      document.getElementById('optOriginalFpsText').textContent = 'Tự động (30 FPS)';
+      renderEditorLibrary();
       document.getElementById('stageHudInfo').innerText = `Đang nạp: ${name}...`;
 
-      // 1. Thăm dò FPS từ server bằng FFmpeg
+      // Video cục bộ dùng tốc độ mặc định đến khi có thông tin nguồn từ Studio.
       try {
         const probeRes = await fetch(`/api/probe-video?url=${encodeURIComponent(url)}`);
         const probeData = await probeRes.json();
+        if (request !== editorSourceRequest) return;
         if (probeData.success && probeData.info) {
           detectedSourceFps = probeData.info.roundedFps || 30;
           document.getElementById('sourceFpsBadge').innerText = `FPS Gốc: ${detectedSourceFps}`;
-          document.getElementById('optOriginalFpsText').innerText = detectedSourceFps;
+          document.getElementById('optOriginalFpsText').textContent = 'Theo video gốc (' + detectedSourceFps + ' FPS)';
         }
       } catch (_) {}
 
-      hiddenVideo.src = url;
-      hiddenVideo.load();
+      if (request !== editorSourceRequest) return;
+      hiddenVideo.onerror = () => {
+        if (request !== editorSourceRequest) return;
+        project.duration = 0;
+        renderTimeline();
+        drawEmptyStage();
+        document.getElementById('stageHudInfo').textContent = 'Không đọc được video. Hãy thử MP4 hoặc WebM.';
+      };
 
       hiddenVideo.onloadedmetadata = async () => {
+        const audio = await extractAudioData(url, localFile);
+        if (request !== editorSourceRequest) return;
+        rawAudioBuffer = audio;
         const dur = hiddenVideo.duration || 10;
         project.duration = dur;
         project.currentTime = 0;
 
-        pushUndoState();
+        undoStack = [];
+        redoStack = [];
+        updateUndoRedoBtnState();
 
         // Tạo clip trên Video Layer 1 (V1)
         project.videoLayers = [
@@ -998,16 +1065,13 @@
           }
         ];
 
-        // Trích xuất âm thanh sang Web Audio
-        await extractAudioData(url);
-
         // Tạo clip trên Audio Layer 1 (A1)
         project.audioLayers = [
           {
             id: 'a_layer_1',
             name: 'A1',
             clips: [
-              {
+              ...(rawAudioBuffer ? [{
                 id: 'a_clip_1',
                 trackType: 'audio',
                 name: 'Nhạc (' + name.replace(/\.[^/.]+$/, '') + ')',
@@ -1018,7 +1082,7 @@
                 volume: 1.0,
                 fadeIn: 0.5,
                 fadeOut: 0.8
-              }
+              }] : [])
             ]
           }
         ];
@@ -1029,16 +1093,25 @@
         drawFrameAt(0);
         document.getElementById('stageHudInfo').innerText = `Sẵn sàng: ${name} (${dur.toFixed(1)}s)`;
       };
+      hiddenVideo.src = url;
+      hiddenVideo.load();
     }
 
-    async function extractAudioData(url) {
+    async function extractAudioData(url, localFile) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const res = await fetch(url);
-        const arrayBuf = await res.arrayBuffer();
-        rawAudioBuffer = await audioCtx.decodeAudioData(arrayBuf);
-      } catch (err) {
-        console.warn('Lỗi giải mã audio:', err);
+        if (localFile) {
+          const contents = await localFile.arrayBuffer();
+          try { return await audioCtx.decodeAudioData(contents); } catch (_) {}
+        }
+        const endpoint = '/api/editor/source-audio';
+        const options = localFile ? { method: 'POST', body: new FormData() } : undefined;
+        if (localFile) options.body.set('video', localFile);
+        const response = await fetch(localFile ? endpoint : endpoint + '?url=' + encodeURIComponent(url), options);
+        if (!response.ok || response.status === 204) return null;
+        return await audioCtx.decodeAudioData(await response.arrayBuffer());
+      } catch {
+        return null;
       }
     }
 
@@ -1084,7 +1157,7 @@
     // TÍNH TOÁN LẠI TỔNG THỜI LƯỢNG (VIDEO SẼ DÀI HƠN KHI KÉO)
     // ========================================================
     function recalcProjectDuration() {
-      let maxEnd = 3;
+      let maxEnd = 0;
 
       project.videoLayers.forEach(layer => {
         layer.clips.forEach(c => {
@@ -1241,8 +1314,8 @@
       let initialClipSourceStart = 0;
 
       window.addEventListener('mousedown', (e) => {
-        const handle = e.target.closest('.clip-trim-handle');
-        const clipEl = e.target.closest('.timeline-clip');
+        const handle = e.target.closest?.('.clip-trim-handle');
+        const clipEl = e.target.closest?.('.timeline-clip');
 
         if (!clipEl) return;
 
@@ -1432,6 +1505,12 @@
       const isVideo = clip.trackType === 'video';
       const videoRow = document.getElementById('videoTypeRow');
       const fxRow = document.getElementById('videoFxStyleRow');
+      for (const [id, visible] of [['videoLookRow', isVideo], ['videoFitRow', isVideo], ['audioVolumeRow', !isVideo]]) {
+        document.getElementById(id).hidden = !visible;
+      }
+      document.getElementById('propVideoLook').value = clip.look || 'original';
+      document.getElementById('propVideoFit').value = clip.fit || 'contain';
+      document.getElementById('propClipVolume').value = clip.volume ?? 1;
       const lblFadeIn = document.getElementById('lblPropFadeIn');
       const lblFadeOut = document.getElementById('lblPropFadeOut');
 
@@ -1463,6 +1542,7 @@
       renderTimeline();
       drawFrameAt(project.currentTime);
       updateInspector();
+      if (isPlaying && clip.trackType === 'audio') startAudioPlayback();
     }
 
     // ========================================================
@@ -1664,17 +1744,16 @@
       ctx.fillStyle = '#38bdf8';
       ctx.font = 'bold 26px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('🎬 CHƯA NẠP VIDEO', canvas.width / 2, canvas.height / 2 - 25);
+      ctx.fillText('Chưa chọn video', canvas.width / 2, canvas.height / 2 - 25);
       ctx.fillStyle = '#94a3b8';
       ctx.font = '16px system-ui';
-      ctx.fillText('Chọn video trong Studio hoặc Bấm Tải Lên', canvas.width / 2, canvas.height / 2 + 15);
-      ctx.fillText('để bắt đầu chỉnh sửa hiệu ứng', canvas.width / 2, canvas.height / 2 + 42);
+      ctx.fillText('Chọn video từ thư viện hoặc tải lên', canvas.width / 2, canvas.height / 2 + 15);
     }
 
     // ========================================================
     // PLAYBACK & CANVAS DRAWING (TRONG SUỐT VÀ ĐỒNG BỘ CHÍNH XÁC)
     // ========================================================
-    function drawFrameAt(time, isRendering = false) {
+    function drawFrameAt(time, isRendering = false, transitionOverride = null) {
       if (isRendering) {
         // Khi Render xuất file: Khởi tạo toàn bộ canvas với Chroma Green (#00FF00)
         // để mọi khoảng trống và hiệu ứng mờ dần (Fade In/Out) được FFmpeg colorkey chuyển thành TRONG SUỐT 100% không tì vết!
@@ -1714,62 +1793,49 @@
         }
       }
 
-      // TÍNH TOÁN HIỆU ỨNG BIẾN HÌNH ẢO DIỆU (MAGIC TRANSFORM)
-      let alpha = 1.0;
-      let scale = 1.0;
-      let brightness = 1.0;
+      const elapsed = time - activeVideoClip.startTime;
+      const remaining = activeVideoClip.duration - elapsed;
+      const fadeIn = Number(activeVideoClip.fadeIn) || 0;
+      const fadeOut = Number(activeVideoClip.fadeOut) || 0;
+      const entering = fadeIn > 0 && elapsed < fadeIn;
+      const progress = entering ? elapsed / fadeIn : fadeOut > 0 ? remaining / fadeOut : 1;
+      const normalized = Math.max(0, Math.min(1, progress));
+      const alpha = normalized * normalized * (3 - 2 * normalized);
+      const envelope = 1 - alpha;
+      let scale = 1;
+      let brightness = 1;
       let blurPx = 0;
+      let offsetY = 0;
+      let reveal = 1;
 
-      const elapsedInClip = time - activeVideoClip.startTime;
-      const remainingInClip = activeVideoClip.startTime + activeVideoClip.duration - time;
-      const fadeInDur = Math.max(0, Number(activeVideoClip.fadeIn) || 0);
-      const fadeOutDur = Math.max(0, Number(activeVideoClip.fadeOut) || 0);
-      const fxStyle = activeVideoClip.fxStyle || 'smooth_fade';
-
-      if (fadeInDur > 0 && elapsedInClip < fadeInDur) {
-        const rawP = Math.max(0, Math.min(1, elapsedInClip / fadeInDur));
-        // Smooth Cubic Easing: Đường cong S-curve mượt mà
-        const p = rawP < 0.5 ? 4 * Math.pow(rawP, 3) : 1 - Math.pow(-2 * rawP + 2, 3) / 2;
-        alpha = p;
-
-        if (fxStyle === 'magic_transform') {
-          // Zoom nhẹ 1.09 hạ dần xuống 1.00 chuẩn biến hình CapCut
-          scale = 1.0 + (1 - p) * 0.09;
-          // Flash sáng biến hình rực rỡ từ 1.40 xuống 1.0
-          brightness = 1.0 + (1 - p) * 0.40;
-          blurPx = (1 - p) * 3;
-        } else if (fxStyle === 'flash_glow') {
-          scale = 1.0 + (1 - p) * 0.04;
-          brightness = 1.0 + (1 - p) * 0.65;
-        } else {
-          // 'smooth_fade': Mờ dần thuần túy, không giật, không zoom, không chớp sáng
-          scale = 1.0;
-          brightness = 1.0;
-          blurPx = 0;
-        }
-      } else if (fadeOutDur > 0 && remainingInClip < fadeOutDur) {
-        const rawP = Math.max(0, Math.min(1, remainingInClip / fadeOutDur));
-        const p = rawP < 0.5 ? 4 * Math.pow(rawP, 3) : 1 - Math.pow(-2 * rawP + 2, 3) / 2;
-        alpha = p;
-
-        if (fxStyle === 'magic_transform') {
-          scale = 1.0 + (1 - p) * 0.07;
-          brightness = 1.0 + (1 - p) * 0.25;
-          blurPx = (1 - p) * 3;
-        } else if (fxStyle === 'flash_glow') {
-          brightness = 1.0 + (1 - p) * 0.45;
-        } else {
-          scale = 1.0;
-          brightness = 1.0;
-          blurPx = 0;
-        }
+      switch (transitionOverride ?? activeVideoClip.fxStyle) {
+        case 'magic_transform':
+          scale += envelope * (entering ? .09 : .07);
+          brightness += envelope * (entering ? .4 : .25);
+          blurPx = envelope * 3;
+          break;
+        case 'flash_glow':
+          scale += envelope * .04;
+          brightness += envelope * (entering ? .65 : .45);
+          break;
+        case 'slide_up':
+          offsetY = canvas.height * .23 * envelope * (entering ? 1 : -1);
+          break;
+        case 'wipe':
+          reveal = alpha;
+          break;
+        case 'focus':
+          blurPx = envelope * 14;
+          scale += envelope * .025;
+          break;
       }
 
       const vRatio = (hiddenVideo.videoWidth || 720) / (hiddenVideo.videoHeight || 1280);
       const cRatio = canvas.width / canvas.height;
       let dw, dh, dx, dy;
 
-      if (vRatio > cRatio) {
+      const cover = activeVideoClip.fit === 'cover';
+      if (cover ? vRatio < cRatio : vRatio > cRatio) {
         dw = canvas.width;
         dh = canvas.width / vRatio;
         dx = 0;
@@ -1794,7 +1860,16 @@
       if (blurPx > 0.4) {
         filterStr += `blur(${blurPx.toFixed(1)}px)`;
       }
+      const looks = { warm: 'sepia(.29) saturate(1.15)', cool: 'sepia(.18) hue-rotate(158deg) saturate(1.12)', mono: 'grayscale(1)', vivid: 'contrast(1.16) saturate(1.35)' };
+      const look = looks[activeVideoClip.look];
+      if (look) filterStr += look;
       if (filterStr) ctx.filter = filterStr.trim();
+      if (reveal < 1) {
+        ctx.beginPath();
+        ctx.rect(entering ? 0 : canvas.width * (1 - reveal), 0, canvas.width * reveal, canvas.height);
+        ctx.clip();
+      }
+      if (offsetY) ctx.translate(0, offsetY);
 
       // Vẽ hình ảnh với tâm Scale chính giữa khung hình
       const cx = canvas.width / 2;
@@ -1816,6 +1891,7 @@
       project.currentTime += dt;
       if (project.currentTime >= project.duration) {
         project.currentTime = 0;
+        startAudioPlayback();
       }
 
       updatePlayheadPosition();
@@ -1825,6 +1901,7 @@
     }
 
     function togglePlay() {
+      if (!project.duration) return;
       isPlaying = !isPlaying;
       const btn = document.getElementById('btnPlayPause');
 
@@ -1854,66 +1931,49 @@
       }
     }
 
+    function scheduleAudioClips(destination, fromTime) {
+      if (!rawAudioBuffer || !audioCtx) return [];
+      const now = audioCtx.currentTime;
+      const scheduled = [];
+      for (const layer of project.audioLayers) {
+        for (const clip of layer.clips) {
+          const elapsed = Math.max(0, fromTime - clip.startTime);
+          const offset = (clip.sourceStartTime || 0) + elapsed;
+          const duration = Math.min(clip.duration - elapsed, rawAudioBuffer.duration - offset);
+          if (duration <= 0) continue;
+
+          const srcNode = audioCtx.createBufferSource();
+          srcNode.buffer = rawAudioBuffer;
+          const gainNode = audioCtx.createGain();
+          srcNode.connect(gainNode);
+          gainNode.connect(destination);
+
+          const begin = now + Math.max(0, clip.startTime - fromTime);
+          const volume = Math.min(1, Math.max(0, Number(clip.volume ?? 1)));
+          const fadeIn = Math.min(clip.duration, Math.max(0, Number(clip.fadeIn) || 0));
+          const fadeOut = Math.min(clip.duration - fadeIn, Math.max(0, Number(clip.fadeOut) || 0));
+          const fadeOutStart = clip.duration - fadeOut;
+          const levelAt = time => volume * Math.min(1, fadeIn ? time / fadeIn : 1, fadeOut ? (clip.duration - time) / fadeOut : 1);
+          const end = elapsed + duration;
+
+          gainNode.gain.setValueAtTime(levelAt(elapsed), begin);
+          for (const point of new Set([fadeIn, fadeOutStart, end])) {
+            if (point > elapsed && point <= end) {
+              gainNode.gain.linearRampToValueAtTime(levelAt(point), begin + point - elapsed);
+            }
+          }
+          srcNode.start(begin, offset, duration);
+          scheduled.push({ srcNode, gainNode });
+        }
+      }
+      return scheduled;
+    }
+
     function startAudioPlayback() {
       if (!rawAudioBuffer || !audioCtx) return;
-      try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        stopAudioPlayback();
-
-        const curT = project.currentTime;
-
-        project.audioLayers.forEach(layer => {
-          layer.clips.forEach(clip => {
-            if (curT < clip.startTime + clip.duration) {
-              const srcNode = audioCtx.createBufferSource();
-              srcNode.buffer = rawAudioBuffer;
-
-              const gainNode = audioCtx.createGain();
-              srcNode.connect(gainNode);
-              gainNode.connect(audioCtx.destination);
-
-              let offsetInAudio = clip.sourceStartTime || 0;
-              let startDelay = 0;
-              let clipPlayDur = clip.duration;
-
-              if (curT >= clip.startTime) {
-                const elapsedInClip = curT - clip.startTime;
-                offsetInAudio += elapsedInClip;
-                clipPlayDur = clip.duration - elapsedInClip;
-              } else {
-                startDelay = clip.startTime - curT;
-              }
-
-              // Áp dụng Fade In & Fade Out mượt mà cho Audio khi phát thử
-              const fadeIn = Math.max(0, Number(clip.fadeIn) || 0);
-              const fadeOut = Math.max(0, Number(clip.fadeOut) || 0);
-              const now = audioCtx.currentTime;
-              const clipStartInCtx = now + startDelay;
-              const clipEndInCtx = clipStartInCtx + clipPlayDur;
-
-              gainNode.gain.cancelScheduledValues(now);
-
-              if (fadeIn > 0 && curT < clip.startTime + fadeIn) {
-                const elapsedFade = Math.max(0, curT - clip.startTime);
-                const currentGain = elapsedFade / fadeIn;
-                gainNode.gain.setValueAtTime(currentGain, now);
-                gainNode.gain.linearRampToValueAtTime(1.0, clipStartInCtx + (fadeIn - elapsedFade));
-              } else {
-                gainNode.gain.setValueAtTime(1.0, now);
-              }
-
-              if (fadeOut > 0) {
-                const fadeOutStartInCtx = Math.max(now, clipEndInCtx - fadeOut);
-                gainNode.gain.setValueAtTime(1.0, fadeOutStartInCtx);
-                gainNode.gain.linearRampToValueAtTime(0.001, clipEndInCtx);
-              }
-
-              srcNode.start(clipStartInCtx, offsetInAudio, clipPlayDur);
-              activeAudioSources.push({ srcNode, gainNode });
-            }
-          });
-        });
-      } catch (err) { console.warn('Lỗi phát audio:', err); }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      stopAudioPlayback();
+      activeAudioSources = scheduleAudioClips(audioCtx.destination, project.currentTime);
     }
 
     function stopAudioPlayback() {
@@ -1929,10 +1989,11 @@
 
     function setupKeyboard() {
       window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+        if (e.target.closest?.('input,select,textarea,button,[contenteditable=true]')) return;
+        if (e.code === 'Space') {
           e.preventDefault();
           togglePlay();
-        } else if (e.code === 'Delete' && e.target.tagName !== 'INPUT') {
+        } else if (e.code === 'Delete') {
           deleteSelectedClip();
         } else if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !e.shiftKey) {
           e.preventDefault();
@@ -1952,6 +2013,10 @@
     // MODAL XUẤT VIDEO (NHẬP TÊN BẮT BUỘC & CHỌN FPS GỐC/60FPS)
     // ========================================================
     function openExportModal() {
+      if (!currentLoadedSourceUrl || !project.duration) {
+        document.getElementById('stageHudInfo').textContent = 'Chọn video và thêm đoạn cắt để xuất.';
+        return;
+      }
       if (isPlaying) togglePlay();
 
       // Điền sẵn tên sạch sẽ (loại bỏ các chuỗi ID timestamp thừa nếu có)
@@ -1962,7 +2027,6 @@
       const defaultName = `${cleanBase}_Edited`;
 
       document.getElementById('exportVideoNameInput').value = defaultName;
-      document.getElementById('optOriginalFpsText').innerText = detectedSourceFps;
       document.getElementById('exportModal').classList.add('open');
     }
 
@@ -1983,26 +2047,16 @@
 
       // Áp dụng kiểu chuyển cảnh mà user đã chọn trong modal xuất
       const transitionSelect = document.getElementById('exportTransitionStyleSelect');
-      const transitionChoice = transitionSelect ? transitionSelect.value : 'smooth_fade';
-
-      if (transitionChoice !== 'as_timeline') {
-        project.videoLayers.forEach(l => {
-          l.clips.forEach(c => {
-            if (c.trackType === 'video') {
-              c.fxStyle = transitionChoice;
-            }
-          });
-        });
-      }
+      const transitionChoice = transitionSelect?.value || 'as_timeline';
 
       closeExportModal();
-      await executeHighFpsRender(nameInput, targetFps, fpsChoice);
+      await executeHighFpsRender(nameInput, targetFps, fpsChoice, transitionChoice === 'as_timeline' ? null : transitionChoice);
     }
 
     // ========================================================
     // ENGINE RENDER 60 FPS MƯỢT MÀ KHÔNG GIẬT KHUNG HÌNH
     // ========================================================
-    async function executeHighFpsRender(videoCustomName, targetFps, fpsChoice) {
+    async function executeHighFpsRender(videoCustomName, targetFps, fpsChoice, transitionOverride) {
       const overlay = document.getElementById('renderOverlay');
       const pBar = document.getElementById('renderProgressBar');
       const pText = document.getElementById('renderStatusText');
@@ -2018,36 +2072,8 @@
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const dest = audioCtx.createMediaStreamDestination();
 
-      project.audioLayers.forEach(layer => {
-        layer.clips.forEach(clip => {
-          if (rawAudioBuffer) {
-            const srcNode = audioCtx.createBufferSource();
-            srcNode.buffer = rawAudioBuffer;
-            const gain = audioCtx.createGain();
-            srcNode.connect(gain);
-            gain.connect(dest);
-
-            const clipStart = audioCtx.currentTime + clip.startTime;
-            const clipEnd = clipStart + clip.duration;
-            const fadeIn = Math.max(0, Number(clip.fadeIn) || 0);
-            const fadeOut = Math.max(0, Number(clip.fadeOut) || 0);
-
-            if (fadeIn > 0) {
-              gain.gain.setValueAtTime(0.001, clipStart);
-              gain.gain.linearRampToValueAtTime(1.0, clipStart + fadeIn);
-            } else {
-              gain.gain.setValueAtTime(1.0, clipStart);
-            }
-
-            if (fadeOut > 0) {
-              gain.gain.setValueAtTime(1.0, clipEnd - fadeOut);
-              gain.gain.linearRampToValueAtTime(0.001, clipEnd);
-            }
-
-            srcNode.start(clipStart, clip.sourceStartTime || 0, clip.duration);
-          }
-        });
-      });
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      const renderAudio = scheduleAudioClips(dest, 0);
 
       dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
 
@@ -2064,6 +2090,11 @@
       recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
       recorder.onstop = async () => {
+        canvasStream.getTracks().forEach(track => track.stop());
+        for (const { srcNode, gainNode } of renderAudio) {
+          srcNode.disconnect();
+          gainNode.disconnect();
+        }
         pBar.style.width = '90%';
         pText.innerText = 'Đang tối ưu qua FFmpeg và lưu vào Studio...';
 
@@ -2092,6 +2123,7 @@
           // Gửi lên server xử lý qua FFmpeg
           const res = await fetch('/api/render-export', { method: 'POST', body: formData });
           const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || 'Studio chưa lưu được video.');
           pBar.style.width = '100%';
           pText.innerText = '✅ Xuất video thành công!';
 
@@ -2122,7 +2154,7 @@
         project.currentTime = elapsed;
 
         updatePlayheadPosition();
-        drawFrameAt(project.currentTime, true);
+        drawFrameAt(project.currentTime, true, transitionOverride);
 
         const pct = Math.min(88, Math.round((elapsed / totalSec) * 88));
         pBar.style.width = `${pct}%`;
