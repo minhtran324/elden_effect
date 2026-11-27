@@ -1,6 +1,71 @@
 {
   "templates": [
     {
+      "id": "tmpl_1795695479374_wdong",
+      "name": "hu dung xinh iu",
+      "aspect": "square",
+      "canvasWidth": 480,
+      "canvasHeight": 480,
+      "padding": {
+        "top": 20,
+        "bottom": 20,
+        "left": 15,
+        "right": 15
+      },
+      "imageUrl": "/uploads/templates/tmpl_1795695479374_wdong.png",
+      "previewUrl": "/uploads/templates/tmpl_1795695479374_wdong.png",
+      "frontImageUrl": "/uploads/templates/tmpl_1795695479378_izcpj.png",
+      "createdAt": "2026-11-26T12:17:59.481Z",
+      "stateData": {
+        "design": {
+          "style": "custom_image",
+          "hideDefaultJarOnCustom": true,
+          "jarAspect": "square",
+          "jarPadding": {
+            "top": 20,
+            "bottom": 20,
+            "left": 15,
+            "right": 15
+          },
+          "stickers": [
+            {
+              "id": "stk_1795695388758",
+              "name": "exec-6b989ccb-6e9c-4d1b-8d17-de2ef0864637",
+              "url": "/uploads/decor/decor_exec-6b989ccb-6e9c-4d1b-8d17-de2ef0864637_19a890bd-16a3-4e2f-aaca-58643d2f30e1_1795695388719.png",
+              "x": 51.48,
+              "y": 87.07,
+              "scale": 1.3,
+              "rotation": 0,
+              "opacity": 1,
+              "layer": "front"
+            }
+          ],
+          "decorImage": "",
+          "decorText": "",
+          "shimmerRimEffect": true,
+          "shimmerRimSpeed": 0.8,
+          "shimmerSparkles": true,
+          "jarPosX": 65,
+          "jarPosY": 78,
+          "jarScale": 0.55,
+          "hitbox": {
+            "shape": "sphere",
+            "radiusX": 0.42,
+            "radiusY": 0.385,
+            "centerY": 0.53,
+            "mouthY": 0.08,
+            "neckWidth": 0.49,
+            "neckHeight": 0.2,
+            "offsetX": -2,
+            "offsetY": 0
+          },
+          "clipGiftsToJar": true,
+          "glassRealism": true,
+          "debugHitbox": false
+        }
+      }
+    },
+    {
       "id": "tmpl_1795692054558_1c94n",
       "name": "hu miao moi",
       "aspect": "square",
@@ -127,6 +192,10 @@
     {
       "name": "exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7",
       "url": "/uploads/decor/decor_exec-fdfc0115-bbc9-4dd1-927e-4899b1fc8bc7_75884ddf-535a-475c-b353-683859fe8bef_1795691267299.png"
+    },
+    {
+      "name": "exec-6b989ccb-6e9c-4d1b-8d17-de2ef0864637",
+      "url": "/uploads/decor/decor_exec-6b989ccb-6e9c-4d1b-8d17-de2ef0864637_19a890bd-16a3-4e2f-aaca-58643d2f30e1_1795695388719.png"
     },
     {
       "name": "aa",
